@@ -1,554 +1,3 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>이상욱 루틴</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-:root {
-  color-scheme:light;
-  --bg:#f4f2ff;--surface:#fff;--card:#fff;--border:#e8e4f8;
-  --accent:#6c5ce7;--accent-soft:#eeebff;--accent-mid:#b8adf7;
-  --green:#0fb57a;--green-soft:#e6fff5;
-  --yellow:#d98a0a;--yellow-soft:#fff8e6;
-  --red:#e03131;--red-soft:#fff0f0;
-  --text:#18163a;--text-2:#5a5878;--text-3:#9896b8;
-  --mono:'Space Grotesk',sans-serif;--sans:'Noto Sans KR',sans-serif;
-  --r:16px;--rs:10px;--sh:0 1px 6px rgba(80,60,180,.08);--shm:0 4px 18px rgba(80,60,180,.12);
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh;padding-bottom:140px}
-
-/* HEADER */
-.hdr{background:linear-gradient(145deg,#5246d4 0%,#7c6af7 60%,#9a84ff 100%);padding:20px 20px 0;color:#fff}
-.hdr-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
-.hdr-greeting{font-size:11px;opacity:.7;letter-spacing:.3px}
-.hdr-name{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.5px;margin-top:2px}
-.hdr-date{font-size:11px;opacity:.6;margin-top:3px}
-.streak-box{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:8px 14px;min-width:58px}
-.streak-num{font-family:var(--mono);font-size:24px;font-weight:700;line-height:1}
-.streak-label{font-size:10px;opacity:.7;margin-top:2px}
-.injury-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(253,210,60,.18);border:1px solid rgba(253,210,60,.35);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:#ffd060;margin-bottom:12px}
-.hdr-prog-bar{background:rgba(255,255,255,.12);border-radius:var(--rs);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
-.prog-ring-wrap{position:relative;width:46px;height:46px;flex-shrink:0}
-.prog-svg{transform:rotate(-90deg)}
-.prog-track{fill:none;stroke:rgba(255,255,255,.2);stroke-width:4}
-.prog-fill{fill:none;stroke:#fff;stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .5s ease}
-.prog-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;color:#fff}
-.prog-text{flex:1}
-.prog-title{font-size:13px;font-weight:600;opacity:.95}
-.prog-sub{font-size:11px;opacity:.6;margin-top:2px}
-
-/* WEEK STRIP */
-.week-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 0 10px}
-.week-strip{display:flex;gap:7px;padding:0 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.week-strip::-webkit-scrollbar{display:none}
-.day-pill{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:12px;padding:8px 13px;min-width:50px;border:1.5px solid transparent;background:var(--bg);transition:all .15s}
-.day-pill.clickable{cursor:pointer}
-.day-pill.today{background:var(--accent-soft);border-color:var(--accent)}
-.day-pill.done{background:var(--green-soft);border-color:var(--green)}
-.dp-label{font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase}
-.dp-type{font-size:12px;color:var(--text-2);font-weight:700}
-.day-pill.today .dp-label,.day-pill.today .dp-type{color:var(--accent)}
-.day-pill.done .dp-label,.day-pill.done .dp-type{color:var(--green)}
-.dp-check{font-size:12px;line-height:1}
-
-/* BOTTOM NAV */
-.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:6px 0 max(6px,env(safe-area-inset-bottom));z-index:100;box-shadow:0 -4px 20px rgba(80,60,180,.07)}
-.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 0;font-family:var(--sans)}
-.bnav-icon{font-size:20px;line-height:1;transition:transform .15s}
-.bnav-label{font-size:10px;font-weight:600;color:var(--text-3)}
-.bnav-btn.active .bnav-label{color:var(--accent)}
-.bnav-btn.active .bnav-icon{transform:scale(1.12)}
-.tab-panel{display:none}.tab-panel.active{display:block}
-.main{padding:16px 16px calc(130px + env(safe-area-inset-bottom))}
-body.gym-active .main{padding-bottom:calc(190px + env(safe-area-inset-bottom))}
-body:not(.gym-active) .main{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
-.tab-panel{padding-bottom:24px}
-
-/* REST TIMER */
-.rest-bar{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;box-shadow:var(--sh)}
-.rest-top{display:flex;align-items:center;gap:12px}
-.rest-info{flex:1}
-.rest-lbl{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px}
-.rest-timer{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--text);line-height:1.1;margin-top:1px;transition:color .3s}
-.rest-timer.warn{color:var(--yellow)}.rest-timer.danger{color:var(--red)}
-.rest-btn{background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;font-family:var(--sans);padding:10px 18px;cursor:pointer;white-space:nowrap}
-.rest-prog-track{height:3px;background:var(--border);border-radius:99px;margin-top:10px;overflow:hidden}
-.rest-prog-fill{height:100%;background:var(--accent);border-radius:99px;transition:width 1s linear,background .3s}
-.rest-hint{font-size:10px;color:var(--text-3);margin-top:5px;text-align:right}
-
-/* ROUTINE SELECTOR */
-.routine-selector{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.routine-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:var(--sans);box-shadow:var(--sh)}
-.routine-chip.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-
-/* SEC HEADER */
-.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:4px}
-.sec-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;background:var(--accent-soft);flex-shrink:0}
-.sec-title{font-size:16px;font-weight:700}
-.sec-badge{margin-left:auto;font-size:10px;font-family:var(--mono);color:var(--text-3);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px 8px}
-
-/* COMPLETE BANNER */
-.complete-banner{display:none;background:linear-gradient(135deg,#0ea571,#00cc88);border-radius:var(--r);padding:20px;margin-bottom:16px;color:#fff;text-align:center;box-shadow:var(--shm)}
-.complete-banner.show{display:block}
-.complete-banner h2{font-size:20px;font-weight:700;margin-bottom:4px}
-.complete-banner p{font-size:12px;opacity:.8;margin-bottom:14px}
-.complete-stats{display:flex;gap:12px;justify-content:center;margin-bottom:14px}
-.cs-val{font-family:var(--mono);font-size:22px;font-weight:700;display:block}
-.cs-label{font-size:10px;opacity:.75;margin-top:1px}
-.cal-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:12px;color:#fff;font-size:13px;font-weight:700;font-family:var(--sans);padding:10px 20px;cursor:pointer;width:100%}
-.cal-btn:disabled{opacity:.5;cursor:default}
-
-/* EX CARD */
-.ex-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;box-shadow:var(--sh);transition:border-color .2s,box-shadow .2s}
-.ex-card.done{border-color:var(--green);background:var(--green-soft)}
-.ex-card.open{border-color:var(--accent-mid);box-shadow:var(--shm)}
-.ex-card.plateau{border-color:var(--yellow)}
-.ex-head{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;user-select:none}
-.ex-num{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:7px;padding:3px 7px;flex-shrink:0}
-.ex-card.done .ex-num{color:var(--green);background:rgba(15,181,122,.12)}
-.ex-name-wrap{flex:1;min-width:0}
-.ex-name{font-size:14px;font-weight:700;display:block}
-.ex-target{font-size:11px;color:var(--text-3);margin-top:1px}
-.ex-right{display:flex;align-items:center;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.done-check{width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;display:none;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-.ex-card.done .done-check{display:flex}
-.pr-badge{display:none;font-size:10px;font-weight:700;color:var(--yellow);background:var(--yellow-soft);border:1px solid rgba(217,138,10,.25);border-radius:6px;padding:2px 6px}
-.vol-badge{font-size:10px;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid rgba(15,181,122,.3);border-radius:6px;padding:2px 7px;display:none}
-.plateau-badge{font-size:10px;font-weight:700;color:var(--yellow);background:var(--yellow-soft);border:1px solid rgba(217,138,10,.3);border-radius:6px;padding:2px 6px;display:none}
-.ex-chev{color:var(--text-3);font-size:13px;flex-shrink:0;transition:transform .2s}
-.ex-card.open .ex-chev{transform:rotate(180deg)}
-.ex-sets-row{display:flex;gap:6px;padding:0 14px 12px;flex-wrap:wrap}
-.set-chip{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text-2)}
-.ex-detail{display:none;border-top:1px solid var(--border);padding:14px;background:var(--bg)}
-.ex-card.open .ex-detail{display:block}
-.dl{margin-bottom:12px}.dl:last-child{margin-bottom:0}
-.dl-label{font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--text-3);text-transform:uppercase;margin-bottom:5px}
-.dl-text{font-size:13px;line-height:1.65;color:var(--text-2)}
-.tip-box{display:flex;gap:8px;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:8px 10px;font-size:12px;color:var(--accent);line-height:1.5;margin-top:10px}
-.warn-box{display:flex;gap:8px;background:var(--red-soft);border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:8px 10px;font-size:12px;color:var(--red);line-height:1.5;margin-top:8px}
-
-/* Record section */
-.rec-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);cursor:pointer;background:var(--surface)}
-.ex-card.done .rec-toggle{background:var(--green-soft)}
-.rec-toggle-lbl{font-size:11px;font-weight:600;color:var(--text-3)}
-.rec-body{display:none;padding:12px 14px 14px;background:var(--surface);border-top:1px solid var(--border)}
-.rec-open .rec-body{display:block}
-.rec-prev{font-size:11px;color:var(--text-3);margin-bottom:10px;padding:7px 10px;background:var(--bg);border-radius:var(--rs)}
-.rec-prev strong{color:var(--accent)}
-
-/* ── COACH RECOMMENDATION BAR (NEW) ── */
-.coach-rec-bar{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--accent-soft),#fff);border:1.5px solid var(--accent-mid);border-radius:12px;padding:9px 12px;margin-bottom:12px}
-.crb-icon{font-size:16px;flex-shrink:0}
-.crb-text{flex:1;font-size:12px;color:var(--text-2);line-height:1.5}
-.crb-apply-btn{background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:11px;font-weight:700;font-family:var(--sans);padding:7px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0}
-.crb-apply-btn:active{opacity:.8}
-.plateau-warning{background:var(--yellow-soft);border:1px solid rgba(217,138,10,.3);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--yellow);line-height:1.5}
-
-/* SET ROW */
-.rec-set-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:10px}
-.set-check-btn{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;flex-shrink:0;transition:all .15s;color:transparent;align-self:flex-end;margin-bottom:1px}
-.set-check-btn.checked{border-color:var(--green);background:var(--green);color:#fff}
-.rec-inputs{display:flex;align-items:flex-end;gap:6px;flex:1}
-.rec-fw{flex:1;min-width:0}
-.rec-flbl{font-size:9px;color:var(--text-3);margin-bottom:3px;text-align:center;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
-.adj-wrap{display:flex;align-items:center}
-.adj-s{width:22px;height:36px;background:var(--bg);border:1.5px solid var(--border);color:var(--text-2);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono);transition:all .1s;flex-shrink:0;line-height:1}
-.adj-s:first-child{border-radius:7px 0 0 7px;border-right:none}
-.adj-s:last-child{border-radius:0 7px 7px 0;border-left:none}
-.adj-s:active{background:var(--accent-soft);color:var(--accent)}
-.rec-inp{flex:1;min-width:0;background:#fff;border:1.5px solid var(--border);border-left:none;border-right:none;color:#111;font-size:17px;font-family:var(--mono);font-weight:700;padding:8px 4px;text-align:center;-webkit-appearance:none;appearance:none;height:36px;transition:border-color .15s}
-.rec-inp:focus{outline:none;border-color:var(--accent);background:#f8f6ff;color:var(--accent)}
-.rec-inp::placeholder{color:var(--text-3);font-size:13px;font-weight:500}
-/* pre-filled highlight */
-.rec-inp.prefilled{background:#f0fff7;color:var(--green)}
-.rec-sep{font-size:14px;color:var(--border);flex-shrink:0;font-weight:700;padding-bottom:8px}
-.rec-save-btn{width:100%;margin-top:10px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;font-family:var(--sans);padding:12px;cursor:pointer}
-.set-1rm{font-size:10px;color:var(--accent);margin-top:2px;text-align:right;display:none;font-family:var(--mono)}
-.set-1rm.show{display:block}
-.rec-extra{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-.rec-extra select,.rec-note{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:12px;font-weight:700;font-family:var(--sans);padding:9px 10px}
-.rec-note{grid-column:1/-1;resize:vertical;min-height:40px;font-weight:500;line-height:1.5}
-.next-rec{font-size:11px;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-mid);border-radius:10px;padding:8px 10px;margin-bottom:10px;line-height:1.5}
-
-/* LIST CARDS */
-.list-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;box-shadow:var(--sh)}
-.list-head{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer}
-.list-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.list-name{font-size:14px;font-weight:700;flex:1}
-.list-dur{font-family:var(--mono);font-size:11px;color:var(--text-3);font-weight:600}
-.list-detail{display:none;border-top:1px solid var(--border);padding:14px;background:var(--bg);font-size:13px;color:var(--text-2);line-height:1.7}
-.list-card.open .list-detail{display:block}
-
-/* RULES / RECOVERY / PAIN */
-.rule-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:0;overflow:hidden;box-shadow:var(--sh);margin-bottom:10px}
-.rule-item{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-2);align-items:flex-start}
-.rule-item:last-child{border-bottom:none}
-.p-num{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;padding-top:1px}
-.rec-check-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
-.rci-move{font-size:13px;font-weight:700;margin-bottom:4px}
-.rci-pass{font-size:12px;color:var(--green);margin-bottom:2px}
-.rci-unlock{font-size:12px;color:var(--text-3)}
-.pain-item{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
-.pain-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
-.pain-type{font-size:13px;font-weight:700;margin-bottom:2px}
-.pain-desc{font-size:12px;color:var(--text-3)}
-
-/* STATS */
-.stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center;box-shadow:var(--sh)}
-.stat-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--accent);line-height:1}
-.stat-lbl{font-size:10px;color:var(--text-3);margin-top:4px;font-weight:600}
-
-/* CALENDAR */
-.cal-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:var(--sh)}
-.cal-month{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);text-align:center;margin-bottom:10px}
-.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
-.cal-dow-lbl{font-size:10px;font-weight:700;color:var(--text-3);text-align:center;padding:3px 0}
-.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.cd{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;font-family:var(--mono);font-weight:600;color:var(--text-3);border-radius:8px}
-.cd.has{background:var(--accent-soft);color:var(--accent);font-weight:700}
-.cd.today{background:var(--accent);color:#fff;font-weight:700}
-.cd.empty{opacity:0}
-
-/* PR BOARD */
-.pr-board{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px;box-shadow:var(--sh)}
-.pr-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}
-.pr-row:last-child{border-bottom:none}
-.pr-medal{font-size:16px;flex-shrink:0}
-.pr-info{flex:1;min-width:0}
-.pr-name{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pr-1rm{font-size:10px;color:var(--text-3);font-family:var(--mono)}
-.pr-val{text-align:right;flex-shrink:0}
-.pr-kg{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent)}
-
-/* CHART */
-.chart-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:var(--sh)}
-.chart-sel-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;margin-bottom:4px}
-.chart-sel-row::-webkit-scrollbar{display:none}
-.cchip{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--text-3);background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:5px 11px;cursor:pointer;font-family:var(--sans);white-space:nowrap;transition:all .15s}
-.cchip.act{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-.chart-empty{text-align:center;font-size:12px;color:var(--text-3);padding:20px 0}
-
-/* BAR CHART */
-.hist-chart-wrap{display:flex;gap:5px;align-items:flex-end;height:90px;margin-bottom:8px;padding:0 2px}
-.hist-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.hist-bar-outer{flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;background:var(--bg);border-radius:6px 6px 0 0;overflow:hidden;border:1px solid var(--border)}
-.hist-bar-inner{background:linear-gradient(to top,var(--accent),var(--accent-mid));border-radius:5px 5px 0 0;transition:height .5s ease;min-height:3px}
-.hist-bar-inner.today-bar{background:linear-gradient(to top,var(--green),#54eab4)}
-.hist-day-lbl{font-size:9px;font-weight:700;color:var(--text-3);text-transform:uppercase}
-.hist-vol-lbl{font-size:9px;color:var(--text-3);font-family:var(--mono)}
-.hist-legend{font-size:11px;color:var(--text-3);text-align:center;margin-bottom:16px}
-.hist-log{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
-.hist-log-item{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px}
-.hist-log-item:last-child{border-bottom:none}
-.hist-date{font-family:var(--mono);font-size:11px;color:var(--text-3);width:60px;flex-shrink:0;padding-top:1px}
-.hist-routine{font-weight:700;color:var(--text);margin-bottom:2px}
-.hist-detail{color:var(--text-3);font-size:12px}
-
-/* PLATE CALC */
-.plate-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:var(--sh)}
-.pc-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.pc-inp{flex:1;height:44px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;font-weight:700;font-family:var(--mono);text-align:center;-webkit-appearance:none}
-.pc-inp:focus{outline:none;border-color:var(--accent)}
-.pc-unit{font-size:13px;font-weight:700;color:var(--text-3);flex-shrink:0}
-.pc-bar-sel{display:flex;gap:6px;margin-bottom:12px}
-.pc-bar-btn{flex:1;padding:7px 6px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;font-size:11px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:var(--sans);text-align:center;transition:all .15s}
-.pc-bar-btn.act{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-.pc-result{min-height:44px}
-.pc-side{font-size:11px;color:var(--text-3);margin-bottom:8px}
-.pc-plates{display:flex;gap:5px;flex-wrap:wrap}
-.plate-chip{padding:5px 10px;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:700;color:#fff}
-.p20{background:#e63946}.p15{background:#d98a0a}.p10{background:var(--accent)}.p5{background:var(--green)}.p25{background:#7878a0}.p125{background:#c0c0e0;color:var(--text)}
-.pc-empty{font-size:12px;color:var(--text-3)}
-
-/* AI */
-.ai-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent-soft),#e4deff);border:1.5px solid var(--accent-mid);border-radius:var(--r);color:var(--accent);font-size:14px;font-weight:700;font-family:var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
-.ai-result{display:none;margin-top:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:16px;font-size:13px;line-height:1.8;color:var(--text-2);white-space:pre-wrap;box-shadow:var(--sh)}
-.ai-result.visible{display:block}
-
-/* ALERTS */
-.alert-warn{background:var(--yellow-soft);border:1px solid rgba(217,138,10,.22);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--yellow);line-height:1.6}
-.alert-danger{background:var(--red-soft);border:1px solid rgba(224,49,49,.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--red);line-height:1.6}
-.divider{height:1px;background:var(--border);margin:20px 0}
-
-/* TOAST */
-.toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;font-size:13px;font-weight:700;font-family:var(--sans);padding:10px 20px;border-radius:20px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.18)}
-.toast.show{opacity:1}
-
-/* COACH CARDS */
-.coach-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
-.coach-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
-.coach-card.good{border-color:rgba(15,181,122,.55);background:linear-gradient(180deg,#fff,#f2fff9)}
-.coach-card.warn{border-color:rgba(217,138,10,.45);background:linear-gradient(180deg,#fff,#fffaf0)}
-.coach-card.danger{border-color:rgba(224,49,49,.38);background:linear-gradient(180deg,#fff,#fff5f5)}
-.coach-title{font-size:13px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.coach-text{font-size:12px;color:var(--text-2);line-height:1.65;white-space:pre-line}
-.coach-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
-.coach-chip{font-size:10px;font-weight:800;border-radius:999px;padding:4px 8px;background:var(--bg);border:1px solid var(--border);color:var(--text-2)}
-.readiness-row{display:grid;grid-template-columns:64px 1fr 34px;gap:8px;align-items:center;margin:8px 0}
-.readiness-row label{font-size:11px;font-weight:800;color:var(--text-2)}
-.readiness-row input{width:100%;accent-color:var(--accent)}
-.readiness-score{font-family:var(--mono);font-weight:800;color:var(--accent);text-align:right}
-.muscle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
-.muscle-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px;box-shadow:var(--sh)}
-.muscle-name{font-size:11px;font-weight:800;color:var(--text-2)}
-.muscle-vol{font-family:var(--mono);font-size:18px;font-weight:800;color:var(--accent);line-height:1.2;margin-top:2px}
-.muscle-bar{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:7px}
-.muscle-fill{height:100%;background:var(--accent);border-radius:99px}
-.weekly-report{background:linear-gradient(135deg,var(--accent-soft),#fff);border:1.5px solid var(--accent-mid);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:var(--sh);font-size:12px;color:var(--text-2);line-height:1.7;white-space:pre-line}
-
-
-/* ── QUICK UX UPGRADE ── */
-.quick-row{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:10px 0 12px}
-.quick-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:11px;color:var(--text-2);font-size:12px;font-weight:800;font-family:var(--sans);padding:10px 8px;cursor:pointer;text-align:center}
-.quick-btn.primary{background:var(--accent-soft);border-color:var(--accent-mid);color:var(--accent)}
-.quick-btn.danger{background:var(--red-soft);border-color:rgba(224,49,49,.25);color:var(--red)}
-.quick-btn:active{transform:translateY(1px);opacity:.85}
-.sticky-progress{position:fixed;left:10px;right:10px;bottom:62px;background:rgba(24,22,58,.94);color:#fff;border-radius:16px;padding:10px 12px;z-index:90;display:flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.18);backdrop-filter:blur(8px)}
-.sp-main{flex:1;min-width:0}.sp-btn.is-open{background:var(--accent);border-color:var(--accent)}.sp-btn.is-hidden{display:none}.sp-title{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sp-sub{font-size:10px;opacity:.68;margin-top:1px}.sp-btn{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);color:#fff;border-radius:11px;font-size:11px;font-weight:900;font-family:var(--sans);padding:8px 10px;cursor:pointer;white-space:nowrap}.sp-bar{height:4px;background:rgba(255,255,255,.16);border-radius:99px;overflow:hidden;margin-top:6px}.sp-fill{height:100%;background:#fff;border-radius:99px;width:0%;transition:width .25s}
-.focus-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;padding:18px 18px calc(36px + env(safe-area-inset-bottom));overflow:auto}.focus-overlay.show{display:block}.focus-card{background:var(--surface);border:1.5px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shm);max-width:540px;margin:0 auto}.focus-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.focus-title{font-size:20px;font-weight:900}.focus-close{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:8px 12px;font-weight:900;color:var(--text-2);font-family:var(--sans);cursor:pointer}.focus-target{font-family:var(--mono);font-size:32px;font-weight:900;color:var(--accent);line-height:1.1;margin:12px 0}.focus-meta{font-size:12px;color:var(--text-2);line-height:1.7;white-space:pre-line}.focus-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.focus-actions button{padding:14px;border-radius:14px;border:1.5px solid var(--border);font-weight:900;font-family:var(--sans);background:var(--bg);color:var(--text-2);cursor:pointer}.focus-actions .primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.theme-btn{position:fixed;right:12px;top:12px;z-index:110;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;font-size:13px;font-weight:900;padding:7px 10px;cursor:pointer;backdrop-filter:blur(8px)}
-.swim-log-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:var(--sh)}.swim-log-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.swim-log-grid input,.swim-log-grid select,.swim-log-grid textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;font-family:var(--sans);color:var(--text)}.swim-log-grid textarea{grid-column:1/-1;min-height:56px;resize:vertical}.swim-save{width:100%;margin-top:10px;background:var(--accent);color:#fff;border:0;border-radius:12px;padding:12px;font-weight:900;font-family:var(--sans)}
-body.dark{--bg:#111124;--surface:#1b1b33;--card:#1b1b33;--border:#323052;--accent-soft:#27244c;--green-soft:#123629;--yellow-soft:#3a2b12;--red-soft:#3b181f;--text:#f4f1ff;--text-2:#c6c0e6;--text-3:#918bb8;color-scheme:dark}body.dark .rec-inp,body.dark .pc-inp{background:#141429;color:#fff}body.dark .hdr{background:linear-gradient(145deg,#26215f 0%,#4d3fd3 70%,#6857e8 100%)}body.dark .theme-btn{background:rgba(0,0,0,.25)}
-
-/* 집중모드는 헬스 탭에서만 노출 */
-body:not(.gym-active) #focusOverlay{display:none!important;visibility:hidden!important;pointer-events:none!important}
-body:not(.gym-active) #stickyProgress{display:none!important;visibility:hidden!important;pointer-events:none!important}
-body:not(.gym-active) #focusToggleBtn{display:none!important}
-@media (min-width:700px){.quick-row{grid-template-columns:repeat(4,1fr)}.coach-grid{grid-template-columns:1fr 1fr}.muscle-grid{grid-template-columns:repeat(4,1fr)}.sticky-progress{left:50%;right:auto;transform:translateX(-50%);width:min(680px,calc(100% - 20px))}}
-
-
-
-/* ── FINAL UX COACH UPGRADE ── */
-.today-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.ts-card{background:var(--surface);border:1.5px solid var(--border);border-radius:13px;padding:10px;text-align:center;box-shadow:var(--sh)}
-.ts-val{font-family:var(--mono);font-size:18px;font-weight:900;color:var(--accent);line-height:1.1}
-.ts-lbl{font-size:10px;color:var(--text-3);font-weight:800;margin-top:3px}
-.coach-nudge{display:none;background:linear-gradient(135deg,var(--accent-soft),#fff);border:1.5px solid var(--accent-mid);border-radius:14px;padding:11px 13px;margin-bottom:14px;box-shadow:var(--sh);font-size:12px;color:var(--text-2);line-height:1.6;white-space:pre-line}
-.coach-nudge.show{display:block}
-.floating-next{position:fixed;right:14px;bottom:128px;z-index:95;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:12px 15px;font-size:12px;font-weight:900;font-family:var(--sans);box-shadow:0 8px 26px rgba(60,45,150,.26);cursor:pointer;display:none}
-body.gym-active .floating-next{display:block}
-body:not(.gym-active) .floating-next{display:none!important;visibility:hidden!important;pointer-events:none!important}
-.rec-set-row{align-items:center}
-.set-check-btn{position:relative;width:42px!important;height:42px!important;border-radius:14px!important;font-size:18px!important;align-self:center!important;margin-bottom:0!important;color:var(--text-3);font-weight:900}
-.set-check-btn.checked{color:#fff}
-.set-check-btn::after{content:'완료';font-size:9px;position:absolute;transform:translateY(17px);opacity:.65;color:inherit}
-.ex-card.done:not(.open) .rec-body{display:none!important}
-.focus-overlay.show .hdr,.focus-overlay.show~.hdr{display:none}
-.focus-mini{background:var(--accent-soft);border:1px solid var(--accent-mid);border-radius:13px;padding:9px 11px;margin-bottom:12px;font-size:12px;font-weight:900;color:var(--accent);display:flex;justify-content:space-between;gap:8px}
-.focus-setbox{background:var(--bg);border:1.5px solid var(--border);border-radius:16px;padding:14px;margin:12px 0}
-.focus-set-title{font-size:11px;font-weight:900;color:var(--text-3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.focus-set-main{font-family:var(--mono);font-size:26px;font-weight:900;color:var(--text)}
-.focus-actions .primary{font-size:15px;min-height:54px}
-.done-card{background:linear-gradient(135deg,#0ea571,#00cc88);border-radius:20px;padding:18px;color:#fff;margin-bottom:16px;text-align:left;box-shadow:var(--shm)}
-.done-title{font-size:22px;font-weight:900;margin-bottom:10px;text-align:center}.done-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.done-mini{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:13px;padding:9px;text-align:center}.done-val{font-family:var(--mono);font-size:20px;font-weight:900}.done-lbl{font-size:10px;opacity:.75}.done-advice{font-size:12px;line-height:1.65;background:rgba(0,0,0,.12);border-radius:12px;padding:10px;margin-top:10px;white-space:pre-line}
-@media (max-width:430px){.today-summary{grid-template-columns:repeat(3,1fr)}.floating-next{bottom:122px;right:10px}.ts-val{font-size:16px}.set-check-btn{width:40px!important;height:40px!important}}
-
-
-/* fixed bottom nav overlap guard */
-.ex-card,.list-card,.rule-card,.pain-item,.rec-check-item,.cal-box,.plate-box,.pr-board,.weekly-report{scroll-margin-bottom:calc(170px + env(safe-area-inset-bottom))}
-body:not(.gym-active) .ex-card,body:not(.gym-active) .list-card,body:not(.gym-active) .rule-card,body:not(.gym-active) .pain-item,body:not(.gym-active) .rec-check-item{scroll-margin-bottom:calc(100px + env(safe-area-inset-bottom))}
-</style>
-</head>
-<body class="gym-active">
-<button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-
-<div class="hdr">
-  <div class="hdr-top">
-    <div>
-      <div class="hdr-greeting" id="greeting">안녕하세요</div>
-      <div class="hdr-name">이상욱 루틴</div>
-      <div class="hdr-date" id="todayLabel"></div>
-    </div>
-    <div class="streak-box">
-      <div class="streak-num" id="streakNum">0</div>
-      <div class="streak-label">🔥 연속</div>
-    </div>
-  </div>
-  <div class="injury-pill">⚠️ 이상근 회복기</div>
-  <div class="hdr-prog-bar">
-    <div class="prog-ring-wrap">
-      <svg class="prog-svg" width="46" height="46" viewBox="0 0 46 46">
-        <circle class="prog-track" cx="23" cy="23" r="19"/>
-        <circle class="prog-fill" id="progFill" cx="23" cy="23" r="19" stroke-dasharray="119.4" stroke-dashoffset="119.4"/>
-      </svg>
-      <div class="prog-label" id="progLabel">0%</div>
-    </div>
-    <div class="prog-text">
-      <div class="prog-title" id="progTitle">오늘 운동 시작해봐</div>
-      <div class="prog-sub" id="progSub"></div>
-    </div>
-  </div>
-</div>
-
-<div class="week-wrap"><div class="week-strip" id="weekStrip"></div></div>
-
-<div class="main">
-  <!-- 헬스 -->
-  <div class="tab-panel active" id="tab-gym">
-    <div class="complete-banner" id="completeBanner">
-      <h2>🎉 운동 완료!</h2>
-      <p id="completeTime"></p>
-      <div class="complete-stats">
-        <div class="cs"><span class="cs-val" id="completeExCount">0</span><div class="cs-label">운동 종목</div></div>
-        <div class="cs"><span class="cs-val" id="completeVolume">0</span><div class="cs-label">총 볼륨 kg</div></div>
-        <div class="cs"><span class="cs-val" id="completeSets">0</span><div class="cs-label">총 세트</div></div>
-      </div>
-      <button class="cal-btn" id="calBtn" onclick="logToCalendar()">📅 Google Calendar에 기록</button>
-    </div>
-    <div class="today-summary" id="todaySummary">
-      <div class="ts-card"><div class="ts-val" id="tsRemain">—</div><div class="ts-lbl">남은운동</div></div>
-      <div class="ts-card"><div class="ts-val" id="tsTime">—</div><div class="ts-lbl">예상시간</div></div>
-      <div class="ts-card"><div class="ts-val" id="tsVolume">—</div><div class="ts-lbl">현재볼륨</div></div>
-    </div>
-    <div class="coach-nudge" id="coachNudge">🤖 코치 대기 중</div>
-    <div class="coach-grid">
-      <div class="coach-card" id="readinessCard">
-        <div class="coach-title">🧭 오늘 컨디션 체크</div>
-        <div class="readiness-row"><label>수면</label><input id="readySleep" type="range" min="1" max="5" value="3" oninput="saveReadiness()"><span class="readiness-score" id="readySleepVal">3</span></div>
-        <div class="readiness-row"><label>피로</label><input id="readyFatigue" type="range" min="1" max="5" value="3" oninput="saveReadiness()"><span class="readiness-score" id="readyFatigueVal">3</span></div>
-        <div class="readiness-row"><label>통증</label><input id="readyPain" type="range" min="1" max="5" value="1" oninput="saveReadiness()"><span class="readiness-score" id="readyPainVal">1</span></div>
-        <div class="coach-text" id="readinessText">오늘 운동 강도 판단 대기.</div>
-      </div>
-      <div class="coach-card" id="coachPanel">
-        <div class="coach-title">🤖 실시간 코치</div>
-        <div class="coach-text" id="coachText">기록을 넣으면 다음 중량·세트 추천이 뜬다.</div>
-        <div class="coach-actions" id="coachActions"></div>
-      </div>
-    </div>
-    <div class="rest-bar">
-      <div class="rest-top">
-        <div class="rest-info">
-          <div class="rest-lbl">세트 간 휴식</div>
-          <div class="rest-timer" id="restDisplay">1:30</div>
-        </div>
-        <button class="rest-btn" id="restBtn" onclick="toggleRest()">시작</button>
-      </div>
-      <div class="rest-prog-track"><div class="rest-prog-fill" id="restFill" style="width:100%"></div></div>
-      <div class="rest-hint" id="restHint"></div>
-    </div>
-    <div class="routine-selector" id="routineSelector"></div>
-    <div id="routineContent"></div>
-    <button class="ai-btn" onclick="getAiFeedback()">✨ AI 운동 피드백</button>
-    <div class="ai-result" id="aiResult"></div>
-  </div>
-
-  <!-- 교정 -->
-  <div class="tab-panel" id="tab-correct">
-    <div class="sec-hdr"><div class="sec-icon">🔄</div><div class="sec-title">골반 교정 루틴</div><div class="sec-badge">매일 5~7분</div></div>
-    <div class="alert-warn">⚠️ <strong>부상 회복 중</strong> — 이상근 직접 스트레칭 금지.<br><span style="opacity:.7">07.27 이태임 교수 진료 전까지 현 루틴 유지.</span></div>
-    <div id="corrList"></div>
-  </div>
-
-  <!-- 수영 -->
-  <div class="tab-panel" id="tab-swim">
-    <div class="sec-hdr"><div class="sec-icon">🏊</div><div class="sec-title">자유형 훈련</div><div class="sec-badge">주 2~3회</div></div>
-    <div class="alert-danger">🚫 헬스 + 수영 같은 날 금지<br><span style="opacity:.7">용인시청·분당올림픽: 보조기구 금지 / 동백미르: 킥판 허용</span></div>
-    
-    <div class="swim-log-box">
-      <div class="coach-title">🏊 25m 기록</div>
-      <div class="swim-log-grid">
-        <input id="swimStrokes" type="number" inputmode="numeric" placeholder="스트로크 수">
-        <select id="swimBreath"><option value="">호흡 느낌</option><option>편함</option><option>보통</option><option>짧음</option><option>물 들어옴</option></select>
-        <select id="swimLeft"><option value="">왼팔 감각</option><option>좋음</option><option>보통</option><option>흐트러짐</option></select>
-        <select id="swimRight"><option value="">오른팔 감각</option><option>좋음</option><option>보통</option><option>흐트러짐</option></select>
-        <textarea id="swimMemo" placeholder="오늘 수영 메모: 오른팔 캐치, 호흡, 롤링 느낌"></textarea>
-      </div>
-      <button class="swim-save" onclick="saveSwimLog()">수영 기록 저장</button>
-    </div>
-    <div id="swimList"></div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">핵심 개념</div></div>
-    <div id="swimConcepts"></div>
-    <button class="ai-btn" onclick="getSwimFeedback()">✨ AI 수영 코칭</button>
-    <div class="ai-result" id="swimAiResult"></div>
-  </div>
-
-  <!-- 기록 -->
-  <div class="tab-panel" id="tab-history">
-    <div class="stats-strip">
-      <div class="stat-card"><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">총 운동일</div></div>
-      <div class="stat-card"><div class="stat-val" id="statMonVol">—</div><div class="stat-lbl">이번달 볼륨</div></div>
-      <div class="stat-card"><div class="stat-val" id="statPRs">—</div><div class="stat-lbl">PR 기록</div></div>
-    </div>
-    <div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">주간 코치 리포트</div></div>
-    <div class="weekly-report" id="weeklyReport">기록 누적 후 분석 가능</div>
-    <div class="sec-hdr"><div class="sec-icon">💪</div><div class="sec-title">근육별 이번달 볼륨</div></div>
-    <div class="muscle-grid" id="muscleGrid"></div>
-    <div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">이번달 출석</div></div>
-    <div class="cal-box" id="calBox"></div>
-    <div class="sec-hdr"><div class="sec-icon">🏆</div><div class="sec-title">개인 기록 (PR)</div></div>
-    <div class="pr-board" id="prBoard"><div style="padding:16px;text-align:center;font-size:13px;color:var(--text-3)">기록 없음</div></div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">📈</div><div class="sec-title">진행도 차트</div><div class="sec-badge">추정 1RM</div></div>
-    <div class="chart-box">
-      <div class="chart-sel-row" id="chartSel"></div>
-      <div id="chartArea"><div class="chart-empty">운동을 선택하세요</div></div>
-    </div>
-    <div class="sec-hdr"><div class="sec-icon">📊</div><div class="sec-title">주간 볼륨</div></div>
-    <div id="histChart"></div>
-    <div class="sec-hdr"><div class="sec-icon">🧮</div><div class="sec-title">플레이트 계산기</div></div>
-    <div class="plate-box">
-      <div class="pc-row">
-        <input class="pc-inp" type="number" inputmode="decimal" id="pcKg" placeholder="목표 중량" oninput="calcPlates()">
-        <span class="pc-unit">kg</span>
-      </div>
-      <div class="pc-bar-sel" id="pcBarSel"></div>
-      <div class="pc-result" id="pcResult"><div class="pc-empty">중량을 입력하세요</div></div>
-    </div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">최근 운동</div></div>
-    <div id="histLog"></div>
-  </div>
-
-  <!-- 원칙 -->
-  <div class="tab-panel" id="tab-rules">
-    <div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">운동 원칙</div></div>
-    <div class="rule-card" id="rulesList"></div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">🩻</div><div class="sec-title">부상 복귀 기준</div></div>
-    <div id="recoveryChecks"></div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">⚡</div><div class="sec-title">통증 구분</div></div>
-    <div id="painGuide"></div>
-  </div>
-</div>
-
-<nav class="bnav">
-  <button class="bnav-btn active" onclick="switchTab('gym')"><span class="bnav-icon">🏋️</span><span class="bnav-label">헬스</span></button>
-  <button class="bnav-btn" onclick="switchTab('correct')"><span class="bnav-icon">🔄</span><span class="bnav-label">교정</span></button>
-  <button class="bnav-btn" onclick="switchTab('swim')"><span class="bnav-icon">🏊</span><span class="bnav-label">수영</span></button>
-  <button class="bnav-btn" onclick="switchTab('history')"><span class="bnav-icon">📊</span><span class="bnav-label">기록</span></button>
-  <button class="bnav-btn" onclick="switchTab('rules')"><span class="bnav-icon">📋</span><span class="bnav-label">원칙</span></button>
-</nav>
-
-<div class="sticky-progress" id="stickyProgress">
-  <div class="sp-main"><div class="sp-title" id="spTitle">운동 대기</div><div class="sp-sub" id="spSub">기록을 시작하면 진행률이 표시됨</div><div class="sp-bar"><div class="sp-fill" id="spFill"></div></div></div>
-  <button class="sp-btn" id="focusToggleBtn" onclick="toggleFocusMode()">집중모드 열기</button>
-</div>
-<button class="floating-next" id="floatingNextBtn" onclick="jumpNextExercise()">▶ 다음 운동</button>
-<div class="focus-overlay" id="focusOverlay" onclick="focusBackdropClose(event)">
-  <div class="focus-card" onclick="event.stopPropagation()">
-    <div class="focus-top"><div class="focus-title" id="focusName">운동</div><button class="focus-close" onclick="closeFocusMode()">집중모드 닫기</button></div>
-    <div class="focus-mini"><span id="focusRoutineMini">A루틴</span><span id="focusProgressMini">0/0</span></div>
-    <div class="focus-target" id="focusTarget">—</div>
-    <div class="focus-setbox"><div class="focus-set-title" id="focusSetTitle">현재 세트</div><div class="focus-set-main" id="focusSetMain">—</div></div>
-    <div class="focus-meta" id="focusMeta">오늘 할 운동을 선택해라.</div>
-    <div class="focus-actions">
-      <button class="primary" onclick="focusCompleteSet()">현재 세트 완료</button>
-      <button onclick="focusOpenCurrent()">기록화면 보기</button>
-      <button onclick="focusPrev()">이전</button>
-      <button onclick="focusNext()">다음</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
 /* ═══ DATA ═══ */
 const ROUTINES={
   A:{label:'A루틴',day:'월요일',tag:'Push-Pull · 8종목',exercises:[
@@ -581,7 +30,7 @@ const CORRECTIONS=[
   {name:'클램쉘',dur:'15회 × 3세트',detail:'옆으로 누워 무릎 굽히고, 발 붙인 채 위쪽 무릎만 천장 향해 벌리기. 골반은 뒤로 굴리지 않음.\n\n목적: 중둔근 활성화. 이상근 보상 패턴 차단.\n\n💡 복귀 기준: 30회 무통증 → 레그프레스·런지 복귀 조건 절반.'},
   {name:'한발 브릿지',dur:'15초 × 3세트',detail:'누워서 한쪽 발만 바닥에 놓고 골반 들어올리기.\n\n목적: 대둔근 편측 활성화.\n\n💡 복귀 기준: 오른발 15초 안정 → 레그프레스·런지 복귀 조건 절반.'},
   {name:'데드버그',dur:'10회 × 2세트',detail:'누운 상태에서 팔과 반대쪽 다리를 동시에 천천히 내리며 허리가 바닥에서 뜨지 않게.\n\n목적: 코어 안정화 — 다열근·횡복근 활성화.'},
-  {name:'왼쪽 대퇴직근 스트레칭',dur:'30초 × 3',detail:'서서 왼발을 뒤로 잡아 스트레칭.\n\n⚠️ 가설: 왼쪽 대퇴직근+중둔근 단축 → 오른쪽 QL·고관절 과부하 패턴. 07.27 진료 시 이태임 교수에게 보고.'},
+  {name:'왼쪽 대퇴직근 스트레칭',dur:'30초 × 3',detail:'서서 왼발을 뒤로 잡아 스트레칭.\n\n⚠️ 가설: 왼쪽 대퇴직근+중둔근 단축 → 오른쪽 QL·고관절 과부하 패턴. 진료 시 담당의에게 보고.'},
 ];
 const SWIM_DRILLS=[
   {name:'외팔 드릴 (왼팔)',ratio:'5비율',detail:'오른팔 앞으로 뻗어 고정, 왼팔만 스트로크.\n\n목적: 왼팔 캐치 감각 단독 발달.\n\n💡 큐: ① 입수 시 팔꿈치가 손보다 높게 ② 전완으로 물 걸기 (손목 스냅 X)'},
@@ -807,22 +256,24 @@ function showRoutine(key){
       const rpVal=todayRp!==undefined?todayRp:(prevRp!==undefined?prevRp:'');
       const isPrefilled=todayKg===undefined&&prevKg!==undefined;
       const checked=!!rec['checked_'+s];
-      const e1=kgVal&&rpVal?`<div class="set-1rm show">추정 1RM: ${(parseFloat(kgVal)*(1+parseInt(rpVal)/30)).toFixed(1)}kg</div>`:'<div class="set-1rm"></div>';
+      const e1=kgVal&&rpVal?`<div class="set-1rm show" id="orm_${idx}_${s}">추정 1RM: ${(parseFloat(kgVal)*(1+parseInt(rpVal)/30)).toFixed(1)}kg</div>`:'<div class="set-1rm" id="orm_${idx}_${s}"></div>';
       setRowsHtml+=`
 <div class="rec-set-row">
-  <button class="set-check-btn${checked?' checked':''}" id="chk_${idx}_${s}" onclick="toggleSetCheck(${idx},${s})" type="button">✓</button>
+  <div class="set-card-head">
+    <span class="set-title">SET ${s+1}</span>
+    <button class="set-check-btn${checked?' checked':''}" id="chk_${idx}_${s}" onclick="toggleSetCheck(${idx},${s})" type="button">✓ 완료</button>
+  </div>
   <div class="rec-inputs">
     <div class="rec-fw">
-      <div class="rec-flbl">kg</div>
+      <div class="rec-flbl">중량 KG</div>
       <div class="adj-wrap">
         <button class="adj-s" onclick="adj('kg',${idx},${s},-2.5)" type="button">−</button>
         <input class="rec-inp${isPrefilled?' prefilled':''}" type="number" inputmode="decimal" placeholder="—" id="kg_${idx}_${s}" value="${kgVal}" onchange="onInpChange(${idx},${s})">
         <button class="adj-s" onclick="adj('kg',${idx},${s},2.5)" type="button">+</button>
       </div>${e1}
     </div>
-    <div class="rec-sep">×</div>
     <div class="rec-fw">
-      <div class="rec-flbl">회</div>
+      <div class="rec-flbl">횟수 REP</div>
       <div class="adj-wrap">
         <button class="adj-s" onclick="adj('rp',${idx},${s},-1)" type="button">−</button>
         <input class="rec-inp${isPrefilled?' prefilled':''}" type="number" inputmode="numeric" placeholder="—" id="rp_${idx}_${s}" value="${rpVal}" onchange="onInpChange(${idx},${s})">
@@ -901,7 +352,7 @@ function adj(type,idx,s,d){
 function onInpChange(idx,s){
   const kg=document.getElementById(`kg_${idx}_${s}`)?.value||'';
   const rp=document.getElementById(`rp_${idx}_${s}`)?.value||'';
-  const ormEl=document.querySelector(`#ex-${idx} .rec-set-row:nth-child(${s+1}) .set-1rm`);
+  const ormEl=document.getElementById(`orm_${idx}_${s}`);
   if(ormEl&&kg&&rp){ormEl.textContent=`추정 1RM: ${(parseFloat(kg)*(1+parseInt(rp)/30)).toFixed(1)}kg`;ormEl.classList.add('show')}
   clearTimeout(window['_t'+idx]);window['_t'+idx]=setTimeout(()=>saveEx(idx,true),600);
 }
@@ -1209,10 +660,64 @@ function buildHistLog(){const logWrap=document.getElementById('histLog');const h
 function buildPlateCalcUI(){document.getElementById('pcBarSel').innerHTML=BAR_WEIGHTS.map((b,i)=>`<button class="pc-bar-btn${i===selectedBar?' act':''}" onclick="selBar(${i})" type="button">${b.label}</button>`).join('')}
 function selBar(i){selectedBar=i;document.querySelectorAll('.pc-bar-btn').forEach((b,j)=>b.classList.toggle('act',j===i));calcPlates()}
 function calcPlates(){const tgt=parseFloat(document.getElementById('pcKg').value)||0,res=document.getElementById('pcResult');if(!tgt){res.innerHTML='<div class="pc-empty">중량을 입력하세요</div>';return}const barKg=BAR_WEIGHTS[selectedBar].kg,sideKg=(tgt-barKg)/2;if(sideKg<0){res.innerHTML=`<div class="pc-empty">바벨(${barKg}kg)보다 작습니다</div>`;return}const PLATES=[{w:20,cls:'p20'},{w:15,cls:'p15'},{w:10,cls:'p10'},{w:5,cls:'p5'},{w:2.5,cls:'p25'},{w:1.25,cls:'p125'}];let rem=sideKg,result=[];PLATES.forEach(p=>{const cnt=Math.floor(rem/p.w+.001);if(cnt>0){result.push({...p,cnt});rem=Math.round((rem-cnt*p.w)*100)/100}});const chips=result.map(p=>`<div class="plate-chip ${p.cls}">${p.w}kg × ${p.cnt}</div>`).join('');res.innerHTML=`<div class="pc-side">각 사이드: <strong>${sideKg.toFixed(2).replace(/\.?0+$/,'')}kg</strong>${barKg>0?' (바벨 '+barKg+'kg 제외)':''}</div><div class="pc-plates">${chips||'<span class="pc-empty">플레이트 없음</span>'}</div>`}
-async function logToCalendar(){const btn=document.getElementById('calBtn');btn.disabled=true;btn.textContent='기록 중…';try{const r=ROUTINES[currentRoutine];const today=todayStr();const vol=computeVolume(currentRoutine);let ts=0;r.exercises.forEach(e=>ts+=e.sets);const logs=r.exercises.map((ex,i)=>{const rec=getRecord(`${currentRoutine}_${i}_${today}`);return rec.summary?`${ex.name}: ${rec.summary}`:null}).filter(Boolean).join('\n');const now=new Date();const startDT=new Date(now.getTime()-60*60*1000).toISOString().slice(0,16)+':00';const endDT=now.toISOString().slice(0,16)+':00';const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,mcp_servers:[{type:'url',url:'https://calendarmcp.googleapis.com/mcp/v1',name:'google-calendar'}],messages:[{role:'user',content:`Google Calendar에 운동 이벤트를 생성해줘:\n제목: 💪 ${r.label} 완료\n시작: ${startDT}\n종료: ${endDT}\n타임존: Asia/Seoul\n내용: 총 볼륨 ${vol}kg · ${ts}세트\n\n${logs}`}]})});const data=await res.json();if(data.content){btn.textContent='✅ 캘린더에 기록됨';showToast('📅 캘린더에 기록했어!')}else{btn.disabled=false;btn.textContent='⚠️ 실패 (다시 시도)'}}catch{btn.disabled=false;btn.textContent='⚠️ 실패 (다시 시도)'}}
-async function callAI(prompt,elId){const el=document.getElementById(elId);el.className='ai-result visible';el.textContent='…';try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:prompt}]})});const data=await res.json();el.textContent=data.content?.map(b=>b.text||'').join('')||'응답 없음'}catch{el.textContent='AI 연결 실패.'}}
-function getAiFeedback(){const r=ROUTINES[currentRoutine];const today=todayStr();const logs=r.exercises.map((ex,i)=>{const rec=getRecord(`${currentRoutine}_${i}_${today}`);return`${ex.name}: ${rec.summary||'기록 없음'}`});callAI(`헬스 트레이너. 오늘 기록:\n고관절 회복 중. 레그프레스·런지·RDL 제외. 07.27 이태임 교수 진료 예정.\n\n[${r.label}]\n${logs.join('\n')}\n\n증량/유지 여부, 회복기 주의사항. 5줄 이내. 반말.`,'aiResult')}
-function getSwimFeedback(){callAI(`자유형 코치. 현재: 왼팔 캐치 발달 중, 오른팔 미발달, CO₂ 축적, 바디롤 부족.\n오늘 핵심 큐 2개 + 드릴 순서 한 줄. 반말.`,'swimAiResult')}
+function buildWorkoutSummary(){
+  const r=ROUTINES[currentRoutine];
+  const today=todayStr();
+  const vol=computeVolume(currentRoutine);
+  let totalSets=0;
+  r.exercises.forEach(e=>totalSets+=e.sets);
+  const logs=r.exercises.map((ex,i)=>{
+    const rec=getRecord(`${currentRoutine}_${i}_${today}`);
+    const extra=[rec.rpe?`RPE ${rec.rpe}`:'',rec.pain?`통증 ${rec.pain}`:'',rec.note?`메모 ${rec.note}`:''].filter(Boolean).join(' / ');
+    return rec.summary?`- ${ex.name}: ${rec.summary}${extra?' ('+extra+')':''}`:null;
+  }).filter(Boolean).join('\n');
+  return `💪 ${r.label} 완료\n날짜: ${today}\n총 볼륨: ${vol}kg\n총 세트: ${totalSets}세트\n회복점수: ${readinessScore()}점\n\n${logs || '기록 없음'}`;
+}
+function copyWorkoutSummary(){
+  const btn=document.getElementById('calBtn');
+  const text=buildWorkoutSummary();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{if(btn)btn.textContent='✅ 요약 복사됨';showToast('📋 운동 요약 복사됨');}).catch(()=>showLocalSummary(text));
+  }else showLocalSummary(text);
+}
+function showLocalSummary(text){
+  const el=document.getElementById('aiResult');
+  if(el){el.className='ai-result visible';el.textContent=text;}
+  showToast('📋 요약을 화면에 표시했어');
+}
+function localGymFeedback(){
+  const r=ROUTINES[currentRoutine];
+  const today=todayStr();
+  const recs=r.exercises.map((ex,i)=>({ex,i,rec:getRecord(`${currentRoutine}_${i}_${today}`),smart:getSmartRec(currentRoutine,i)}));
+  const done=recs.filter(x=>x.rec.allDone).length;
+  const vol=computeVolume(currentRoutine);
+  const rs=readinessScore();
+  const pain=recs.filter(x=>x.rec.pain==='joint'||x.rec.pain==='nerve');
+  const avgRpe=avg(recs.map(x=>+x.rec.rpe||0).filter(Boolean));
+  const next=recs.find(x=>!x.rec.allDone);
+  let lines=[];
+  lines.push(`현재 ${done}/${r.exercises.length}종목 완료 · 볼륨 ${vol}kg · 회복 ${rs}점.`);
+  if(rs<55) lines.push('오늘은 회복 낮음. 실패 세트 금지, 중량보다 자세 우선.');
+  else if(rs<75) lines.push('오늘은 보통 컨디션. 마지막 세트 1~2회 여유 남겨라.');
+  else lines.push('오늘은 정상 볼륨 가능. 단, 통증 나오면 바로 감량.');
+  if(avgRpe) lines.push(`평균 RPE ${avgRpe.toFixed(1)}. ${avgRpe>=9?'다음 세션 증량 금지.':avgRpe<=7?'다음 세션 일부 종목 증량 후보.':'강도 적정.'}`);
+  if(pain.length) lines.push(`통증 플래그: ${pain.map(x=>x.ex.name).join(', ')}. 다음엔 10~15% 감량 또는 대체.`);
+  if(next) lines.push(`다음 운동: ${next.ex.name}. ${next.smart.msg}`);
+  else lines.push('오늘 루틴 완료. 다음 48시간 회복 확보.');
+  return lines.join('\n');
+}
+function getAiFeedback(){
+  const el=document.getElementById('aiResult');
+  if(!el)return;
+  el.className='ai-result visible';
+  el.textContent=localGymFeedback();
+}
+function getSwimFeedback(){
+  const el=document.getElementById('swimAiResult');
+  if(!el)return;
+  el.className='ai-result visible';
+  el.textContent='오늘 목표 1개만 잡자.\n1) 왼팔은 감각 유지, 오른팔 캐치에서 팔꿈치 수면 유지.\n2) 25m는 속도 올리지 말고 물속 호기를 끝까지 내뱉어라.\n3) 드릴 순서: 왼팔 외팔 5 → 오른팔 외팔 3 → 캐치업 2 → 풀스트로크 확인.';
+}
 function switchTabById(id){
   const tabs=['gym','correct','swim','history','rules'];
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+id));
@@ -1228,6 +733,3 @@ function switchTab(id){switchTabById(id)}
 let toastTimer=null;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200)}
 initStorage().then(()=>{initTheme();buildHeader();buildWeekStrip();buildSelector();buildCorrections();buildSwim();buildRules();renderReadiness();showRoutine({1:'A',4:'B',0:'C'}[new Date().getDay()]||'A');updateCoachPanel();syncFocusVisibility()});
-</script>
-</body>
-</html>
