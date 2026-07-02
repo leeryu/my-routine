@@ -3,42 +3,30 @@ const ROUTINES = {
   A: {
     label: 'A루틴',
     day: '월요일',
-    tag: 'Push-Pull · 8종목',
+    tag: 'Pull 중심 · 7종목',
     exercises: [
       {
         name: '랫풀다운',
         target: '광배근 · 대원근 · 이두',
-        sets: 3,
-        reps: '10/10/6',
-        weight: '35/35/30kg',
+        sets: 4,
+        reps: '10/10/10/8',
+        weight: '스트랩 45kg 시도',
         defKg: 35,
         con: '팔꿈치를 뒷주머니로. 등으로 당기기. 2초.',
         ecc: '광배근 완전 스트레칭 3초.',
-        tip: '팔 먼저 피로 → 팔로 당기는 것. 팔꿈치 드라이브 큐.',
-        warn: null,
-      },
-      {
-        name: '덤벨 벤치프레스',
-        target: '대흉근 · 삼두 · 전면삼각',
-        sets: 3,
-        reps: '10/10/10',
-        weight: '현재 중량',
-        defKg: 0,
-        con: '가슴 조임. 정수리 위에서 살짝 모아주는 느낌. 1초.',
-        ecc: '팔꿈치 90도. 어깨 아래 내려가지 않게. 3초.',
-        tip: '어깨 앞쪽 당기면 그립 넓거나 깊이 과한 것.',
+        tip: '폼 교정 완료(광배 DOMS 확인). 스트랩 착용 후 40→45 점진 시도. 폼 무너지면 즉시 감량.',
         warn: null,
       },
       {
         name: '덤벨 로우',
         target: '광배근 · 승모 중하부 · 능형근',
-        sets: 3,
-        reps: '10/10/10',
-        weight: '14kg × 3',
+        sets: 4,
+        reps: '10/10/10/10',
+        weight: '14 → 16kg 시도',
         defKg: 14,
         con: '팔꿈치를 엉덩이 방향으로. 배꼽 옆. 어깨뼈 조임.',
         ecc: '어깨뼈 완전히 열며 광배 스트레칭. 3초.',
-        tip: '반대 손 벤치 짚어 허리 회전 최소화.',
+        tip: '반대 손 벤치 짚어 허리 회전 최소화. 마지막 세트 왼팔 먼저(크로스도미넌스).',
         warn: null,
       },
       {
@@ -57,7 +45,7 @@ const ROUTINES = {
         name: '레터럴 레이즈',
         target: '측면삼각근',
         sets: 3,
-        reps: '12/12/12',
+        reps: '15/15/15',
         weight: '매우 가볍게',
         defKg: 0,
         con: '새끼손가락이 엄지보다 살짝 높게. 2초.',
@@ -98,7 +86,7 @@ const ROUTINES = {
         defKg: 0,
         con: '무릎 90% 지점까지만. 완전 신전 금지. 1~2초.',
         ecc: '천천히 버티며 2~3초.',
-        tip: '재활 처방. 대퇴직근 단축 교정.',
+        tip: '재활 처방. 대퇴직근 단축 교정. 무통증일만.',
         warn: '⚠️ 오른쪽만. 통증 오면 즉시 중단.',
       },
     ],
@@ -106,30 +94,54 @@ const ROUTINES = {
   B: {
     label: 'B루틴',
     day: '목요일',
-    tag: 'Pull 위주 · 5종목',
+    tag: 'Push · 등 보조 · 7종목',
     exercises: [
       {
-        name: '랫풀다운',
-        target: '광배근 · 대원근 · 이두',
-        sets: 3,
-        reps: '10/10/6',
-        weight: '35/35/30kg',
-        defKg: 35,
-        con: '팔꿈치를 뒷주머니로. 등으로 당기기.',
-        ecc: '3초. 광배 완전 스트레칭.',
-        tip: '팔 피로 먼저 → 팔로 당기는 것.',
+        name: '덤벨 벤치프레스',
+        target: '대흉근 · 삼두 · 전면삼각',
+        sets: 4,
+        reps: '10/10/10/10',
+        weight: '10~15kg',
+        defKg: 12,
+        con: '가슴 조임. 정수리 위에서 살짝 모아주는 느낌. 1초.',
+        ecc: '팔꿈치 90도. 어깨 아래 내려가지 않게. 3초.',
+        tip: '어깨 앞쪽 당기면 그립 넓거나 깊이 과한 것. 마지막 세트 왼팔 먼저(크로스도미넌스).',
         warn: null,
+      },
+      {
+        name: '숄더 프레스',
+        target: '삼각근 · 삼두',
+        sets: 3,
+        reps: '12/12/12',
+        weight: '가볍게 시작',
+        defKg: 0,
+        con: '자연스럽게 밀어올리기 1초.',
+        ecc: '어깨 높이 아래로 3초.',
+        tip: '회복기 신규 종목. 앉아서, 코어 조이고 수행.',
+        warn: '⚠️ 골반 전방경사 — 허리 과신전 금지. 어깨 시큰하면 즉시 중단.',
       },
       {
         name: '덤벨 로우',
         target: '광배근 · 승모 중하부 · 능형근',
         sets: 3,
         reps: '10/10/10',
-        weight: '14kg × 3',
+        weight: '15kg 전후',
         defKg: 14,
         con: '팔꿈치 엉덩이 방향. 어깨뼈 조임.',
         ecc: '3초. 광배 스트레칭.',
-        tip: '허리 회전 최소화.',
+        tip: '등 주2회 유지용 보조. A보다 가볍게, 감각 위주.',
+        warn: null,
+      },
+      {
+        name: '레터럴 레이즈',
+        target: '측면삼각근',
+        sets: 3,
+        reps: '15/15/15',
+        weight: '매우 가볍게',
+        defKg: 0,
+        con: '새끼손가락 높이 2초.',
+        ecc: '천천히 3초.',
+        tip: '어깨 높이 이상 금지.',
         warn: null,
       },
       {
@@ -165,7 +177,7 @@ const ROUTINES = {
         defKg: 0,
         con: '90% 지점까지.',
         ecc: '2~3초.',
-        tip: '재활.',
+        tip: '재활. 무통증일만.',
         warn: '⚠️ 오른쪽만. 통증 시 즉시 중단.',
       },
     ],
@@ -399,6 +411,59 @@ function sls(k, v) {
     localStorage.setItem('routine:' + k, JSON.stringify(v));
   } catch {}
   if (window.storage) window.storage.set(k, JSON.stringify(v)).catch(() => {});
+}
+function dls(k) {
+  delete _cache[k];
+  try {
+    localStorage.removeItem('routine:' + k);
+  } catch {}
+  if (window.storage) window.storage.delete(k).catch(() => {});
+}
+/* v8→v9 루틴 재편 마이그레이션: 인덱스 기반 기록·PR 키 재배치 (1회 실행)
+   old A: 랫풀/덤벨벤치/덤벨로우/리버스펙덱/레터럴/크런치/사이드플랭크/레그익스텐션
+   old B: 랫풀/덤벨로우/크런치/사이드플랭크/레그익스텐션 */
+function migrateV9() {
+  if (gls('migrV9')) return;
+  const mapA = {
+    0: 'A_0',
+    1: 'B_0',
+    2: 'A_1',
+    3: 'A_2',
+    4: 'A_3',
+    5: 'A_4',
+    6: 'A_5',
+    7: 'A_6',
+  };
+  const mapB = { 0: 'A_0', 1: 'B_2', 2: 'B_4', 3: 'B_5', 4: 'B_6' };
+  const remap = (rk, idx) =>
+    rk === 'A' ? mapA[idx] : rk === 'B' ? mapB[idx] : null;
+  const moves = [];
+  Object.keys(_cache).forEach((k) => {
+    let m = k.match(/^rec:([AB])_(\d+)_(\d{4}-\d{2}-\d{2})$/);
+    if (m) {
+      const to = remap(m[1], +m[2]);
+      if (to && 'rec:' + to + '_' + m[3] !== k)
+        moves.push({ from: k, to: 'rec:' + to + '_' + m[3], type: 'rec' });
+      return;
+    }
+    m = k.match(/^pr:([AB])_(\d+)$/);
+    if (m) {
+      const to = remap(m[1], +m[2]);
+      if (to && 'pr:' + to !== k)
+        moves.push({ from: k, to: 'pr:' + to, type: 'pr' });
+    }
+  });
+  // 2단계: 스냅샷 → 전체 삭제 → 재기록 (체인 이동 충돌 방지)
+  const snap = moves.map((mv) => ({ ...mv, v: gls(mv.from) }));
+  snap.forEach((mv) => dls(mv.from));
+  snap.forEach((mv) => {
+    if (mv.type === 'pr') {
+      sls(mv.to, Math.max(+gls(mv.to) || 0, +mv.v || 0)); // PR 충돌은 max 병합
+    } else if (!gls(mv.to)) {
+      sls(mv.to, mv.v); // rec 충돌(같은 날 A·B 동시 수행)은 기존 우선
+    }
+  });
+  sls('migrV9', true);
 }
 async function initStorage() {
   try {
@@ -2038,6 +2103,7 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 initStorage().then(() => {
+  migrateV9();
   initTheme();
   buildHeader();
   buildWeekStrip();
