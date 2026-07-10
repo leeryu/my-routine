@@ -679,6 +679,8 @@ let lastRestSecs = 90;
 function setRestDuration(secs) {
   lastRestSecs = secs;
   restTotal = secs;
+  if (!restRunning) restLeft = secs;
+  renderRestTimer();
   const hint = document.getElementById('restHint');
   if (hint)
     hint.textContent =
@@ -1416,50 +1418,75 @@ let restInterval = null,
   restLeft = 90,
   restTotal = 90,
   restRunning = false;
+
+function formatRestTime(secs) {
+  const safe = Math.max(0, Math.round(secs));
+  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, '0')}`;
+}
+
+function renderRestTimer(state = '') {
+  const display = restLeft <= 0 ? 'GO! 💪' : formatRestTime(restLeft);
+  const mainDisplay = document.getElementById('restDisplay');
+  const floatDisplay = document.getElementById('floatingRestDisplay');
+  const float = document.getElementById('floatingRest');
+  const floatLabel = document.getElementById('floatingRestLabel');
+  const btn = document.getElementById('restBtn');
+  const fill = document.getElementById('restFill');
+
+  if (mainDisplay) {
+    mainDisplay.textContent = display;
+    mainDisplay.className = 'rest-timer' + (state ? ` ${state}` : '');
+  }
+  if (floatDisplay) floatDisplay.textContent = display;
+  if (floatLabel) floatLabel.textContent = restRunning ? '휴식 중 · 누르면 초기화' : restLeft <= 0 ? '완료 · 누르면 재시작' : '휴식 · 누르면 시작';
+  if (float) {
+    float.classList.remove('running', 'warn', 'danger', 'done');
+    if (restRunning) float.classList.add('running');
+    if (state) float.classList.add(state === 'danger' || state === 'warn' ? state : 'done');
+  }
+  if (btn) btn.textContent = restRunning ? '초기화' : '시작';
+  if (fill) {
+    fill.style.width = restLeft <= 0 ? '100%' : `${Math.max(0, (restLeft / restTotal) * 100)}%`;
+    fill.style.background = state === 'danger' ? 'var(--red)' : state === 'warn' ? 'var(--yellow)' : state === 'done' ? 'var(--green)' : 'var(--accent)';
+  }
+}
+
+function adjustRestTime(seconds, event) {
+  event?.stopPropagation();
+  restTotal = Math.max(15, restTotal + seconds);
+  restLeft = Math.max(0, restLeft + seconds);
+  lastRestSecs = restTotal;
+  const hint = document.getElementById('restHint');
+  if (hint) hint.textContent = `⏱ ${restTotal}초 설정`;
+  renderRestTimer(restLeft <= 10 && restRunning ? 'danger' : restLeft <= 30 && restRunning ? 'warn' : '');
+  showToast(`휴식시간 ${seconds > 0 ? '+' : ''}${seconds}초`);
+}
+
 function toggleRest(autoStart) {
   if (restRunning && !autoStart) {
     clearInterval(restInterval);
+    restInterval = null;
     restRunning = false;
     restLeft = restTotal;
-    document.getElementById('restDisplay').textContent = '1:30';
-    document.getElementById('restDisplay').className = 'rest-timer';
-    document.getElementById('restBtn').textContent = '시작';
-    document.getElementById('restFill').style.width = '100%';
-    document.getElementById('restFill').style.background = 'var(--accent)';
+    renderRestTimer();
     return;
   }
   if (restRunning) return;
+
   restRunning = true;
   restLeft = restTotal;
-  document.getElementById('restBtn').textContent = '초기화';
+  renderRestTimer();
   restInterval = setInterval(() => {
     restLeft--;
-    const m = Math.floor(restLeft / 60),
-      s = restLeft % 60;
-    document.getElementById('restDisplay').textContent =
-      `${m}:${String(s).padStart(2, '0')}`;
-    document.getElementById('restFill').style.width =
-      (restLeft / restTotal) * 100 + '%';
-    const timer = document.getElementById('restDisplay');
-    if (restLeft <= 10) {
-      timer.className = 'rest-timer danger';
-      document.getElementById('restFill').style.background = 'var(--red)';
-    } else if (restLeft <= 30) {
-      timer.className = 'rest-timer warn';
-      document.getElementById('restFill').style.background = 'var(--yellow)';
-    }
+    const state = restLeft <= 10 ? 'danger' : restLeft <= 30 ? 'warn' : '';
+    renderRestTimer(state);
     if (restLeft <= 0) {
       clearInterval(restInterval);
+      restInterval = null;
       restRunning = false;
-      restLeft = restTotal;
-      document.getElementById('restDisplay').textContent = 'GO! 💪';
-      document.getElementById('restBtn').textContent = '시작';
-      document.getElementById('restFill').style.width = '100%';
-      document.getElementById('restFill').style.background = 'var(--green)';
+      renderRestTimer('done');
       showToast('⏱ 휴식 완료!');
-      try {
-        navigator.vibrate?.([100, 50, 100]);
-      } catch {}
+      try { navigator.vibrate?.([100, 50, 100]); } catch {}
     }
   }, 1000);
 }
@@ -2191,4 +2218,5 @@ initStorage().then(() => {
   showRoutine({ 1: 'A', 4: 'B', 0: 'C' }[new Date().getDay()] || 'A');
   updateCoachPanel();
   syncFocusVisibility();
+  renderRestTimer();
 });

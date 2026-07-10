@@ -200,6 +200,14 @@
   </div>
 </div>
 
+<div class="floating-rest" id="floatingRest" role="timer" aria-live="polite">
+  <button class="floating-rest-main" id="floatingRestMain" type="button" onclick="toggleRest()" aria-label="휴식 타이머 시작 또는 초기화">
+    <span class="floating-rest-icon">⏱</span>
+    <span class="floating-rest-copy"><small id="floatingRestLabel">휴식</small><strong id="floatingRestDisplay">1:30</strong></span>
+  </button>
+  <button class="floating-rest-add" type="button" onclick="adjustRestTime(15,event)" aria-label="휴식시간 15초 추가">+15</button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="js/app.js" defer></script>
