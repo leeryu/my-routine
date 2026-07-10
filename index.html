@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>내 루틴</title>
+<meta name="theme-color" content="#6c5ce7">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="css/style.css">
 
 </head>
@@ -103,9 +108,10 @@
     <div class="alert-danger">🚫 헬스 + 수영 같은 날 금지<br><span style="opacity:.7">이용 수영장별 보조기구 규정 확인</span></div>
     
     <div class="swim-log-box">
-      <div class="coach-title">🏊 25m 기록</div>
+      <div class="coach-title">🏊 랩 기록</div>
       <div class="swim-log-grid">
-        <input id="swimStrokes" type="number" inputmode="numeric" placeholder="스트로크 수">
+        <select id="swimPool"><option value="18" selected>18m 풀 (동네 실측)</option><option value="25">25m 풀</option></select>
+        <input id="swimStrokes" type="number" inputmode="numeric" placeholder="스트로크 수 (1랩)">
         <select id="swimBreath"><option value="">호흡 느낌</option><option>편함</option><option>보통</option><option>짧음</option><option>물 들어옴</option></select>
         <select id="swimLeft"><option value="">왼팔 감각</option><option>좋음</option><option>보통</option><option>흐트러짐</option></select>
         <select id="swimRight"><option value="">오른팔 감각</option><option>좋음</option><option>보통</option><option>흐트러짐</option></select>
@@ -168,6 +174,17 @@
     <div class="divider"></div>
     <div class="sec-hdr"><div class="sec-icon">⚡</div><div class="sec-title">통증 구분</div></div>
     <div id="painGuide"></div>
+    <div class="divider"></div>
+    <div class="sec-hdr"><div class="sec-icon">💾</div><div class="sec-title">데이터 관리</div></div>
+    <div class="backup-box">
+      <div class="backup-note" id="backupNote">마지막 백업: 확인 중…</div>
+      <div class="backup-btns">
+        <button class="ai-btn" onclick="exportBackup()">📤 전체 백업 (JSON)</button>
+        <button class="ai-btn" onclick="document.getElementById('importFile').click()">📥 백업 복원</button>
+      </div>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
+      <div class="backup-hint">기록은 이 브라우저에만 저장된다. 폰 교체·브라우저 데이터 삭제 전 반드시 백업.</div>
+    </div>
   </div>
 </div>
 

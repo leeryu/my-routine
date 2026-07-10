@@ -405,3 +405,10 @@ body:not(.gym-active) .floating-rest{display:none!important;visibility:hidden!im
 .floating-rest-add{border:0;border-left:1px solid var(--border);background:var(--accent-soft);color:var(--accent);padding:0 10px;font-size:11px;font-weight:900;font-family:var(--mono);cursor:pointer}
 .focus-overlay.show~.floating-rest{display:flex}
 @media (max-width:430px){.floating-rest{left:10px;bottom:122px;max-width:calc(100vw - 132px)}.floating-rest-main{min-width:94px;padding:8px 9px}.floating-rest-copy strong{font-size:18px}.floating-rest-add{padding:0 8px}}
+
+/* ═══ BACKUP BOX ═══ */
+.backup-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+.backup-note{font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:4px}
+.backup-btns{display:flex;gap:8px}
+.backup-btns .ai-btn{margin-top:8px;padding:12px}
+.backup-hint{margin-top:10px;font-size:11px;color:var(--text-3);line-height:1.5}

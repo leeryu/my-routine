@@ -503,7 +503,7 @@ function getHistory() {
 function addHistory(e) {
   const h = getHistory();
   h.unshift(e);
-  sls('wh', h.slice(0, 90));
+  sls('wh', h.slice(0, 400));
 }
 function fmtDate(d) {
   const y = d.getFullYear(),
@@ -659,13 +659,22 @@ function getSmartRec(rk, idx) {
       msg: `RPE ${lastRpe} — ${lastKg}kg 유지. 형태 우선. 증량 금지.`,
       restSecs: 120,
     };
-  if (lastRpe >= 1 && lastRpe <= 7)
+  if (lastRpe >= 1 && lastRpe <= 7) {
+    // 당일 컨디션 게이트: 회복도 낮으면 증량 보류 (지침: 주의 → 강도 하향)
+    if (readinessScore() < 55)
+      return {
+        action: 'MAINTAIN',
+        kg: lastKg,
+        msg: `RPE ${lastRpe}지만 오늘 회복도 ${readinessScore()}점 — 증량 보류, ${lastKg}kg 유지. 자세·감각 위주.`,
+        restSecs: 120,
+      };
     return {
       action: 'INCREASE',
       kg: roundHalf(lastKg * 1.05),
       msg: `RPE ${lastRpe} — +5% 증량 시도: ${roundHalf(lastKg * 1.05)}kg. 자세 무너지면 원중량.`,
       restSecs: 75,
     };
+  }
   return {
     action: 'MAINTAIN',
     kg: lastKg,
@@ -1283,9 +1292,14 @@ function initTheme() {
   }
 }
 function saveSwimLog() {
+  const poolLen = +document.getElementById('swimPool')?.value || 18;
+  const strokes = +document.getElementById('swimStrokes')?.value || 0;
+  const dps = strokes > 0 ? Math.round((poolLen / strokes) * 100) / 100 : null;
   const log = {
     date: todayStr(),
+    poolLen,
     strokes: document.getElementById('swimStrokes')?.value || '',
+    dps,
     breath: document.getElementById('swimBreath')?.value || '',
     left: document.getElementById('swimLeft')?.value || '',
     right: document.getElementById('swimRight')?.value || '',
@@ -1293,13 +1307,13 @@ function saveSwimLog() {
   };
   const h = gls('swimLogs') || [];
   h.unshift(log);
-  sls('swimLogs', h.slice(0, 60));
+  sls('swimLogs', h.slice(0, 200));
   addHistory({
     date: log.date,
     routine: '수영',
-    summary: `25m ${log.strokes || '?'}스트로크 · 호흡 ${log.breath || '-'}`,
+    summary: `${poolLen}m ${log.strokes || '?'}스트로크${dps ? ` · DPS ${dps}m` : ''} · 호흡 ${log.breath || '-'}`,
   });
-  showToast('🏊 수영 기록 저장됨');
+  showToast(dps ? `🏊 저장됨 — 스트로크당 ${dps}m` : '🏊 수영 기록 저장됨');
 }
 
 /* ═══ FINAL UX COACH FUNCTIONS ═══ */
@@ -1454,6 +1468,7 @@ function renderRestTimer(state = '') {
 function adjustRestTime(seconds, event) {
   event?.stopPropagation();
   restTotal = Math.max(15, restTotal + seconds);
+  if (restRunning && restEndAt) restEndAt += seconds * 1000;
   restLeft = Math.max(0, restLeft + seconds);
   lastRestSecs = restTotal;
   const hint = document.getElementById('restHint');
@@ -1462,34 +1477,64 @@ function adjustRestTime(seconds, event) {
   showToast(`휴식시간 ${seconds > 0 ? '+' : ''}${seconds}초`);
 }
 
+/* timestamp 기반 — 백그라운드 스로틀링에도 시간 정확 */
+let restEndAt = null,
+  restWakeLock = null;
+async function acquireWakeLock() {
+  try {
+    restWakeLock = await navigator.wakeLock?.request('screen');
+  } catch {}
+}
+function releaseWakeLock() {
+  try {
+    restWakeLock?.release();
+  } catch {}
+  restWakeLock = null;
+}
+function restTick() {
+  if (!restEndAt) return;
+  restLeft = Math.round((restEndAt - Date.now()) / 1000);
+  if (restLeft <= 0) {
+    clearInterval(restInterval);
+    restInterval = null;
+    restRunning = false;
+    restEndAt = null;
+    restLeft = 0;
+    releaseWakeLock();
+    renderRestTimer('done');
+    showToast('⏱ 휴식 완료!');
+    try { navigator.vibrate?.([100, 50, 100]); } catch {}
+    return;
+  }
+  renderRestTimer(restLeft <= 10 ? 'danger' : restLeft <= 30 ? 'warn' : '');
+}
 function toggleRest(autoStart) {
   if (restRunning && !autoStart) {
     clearInterval(restInterval);
     restInterval = null;
     restRunning = false;
+    restEndAt = null;
     restLeft = restTotal;
+    releaseWakeLock();
     renderRestTimer();
     return;
   }
   if (restRunning) return;
 
   restRunning = true;
+  restEndAt = Date.now() + restTotal * 1000;
   restLeft = restTotal;
   renderRestTimer();
-  restInterval = setInterval(() => {
-    restLeft--;
-    const state = restLeft <= 10 ? 'danger' : restLeft <= 30 ? 'warn' : '';
-    renderRestTimer(state);
-    if (restLeft <= 0) {
-      clearInterval(restInterval);
-      restInterval = null;
-      restRunning = false;
-      renderRestTimer('done');
-      showToast('⏱ 휴식 완료!');
-      try { navigator.vibrate?.([100, 50, 100]); } catch {}
-    }
-  }, 1000);
+  acquireWakeLock();
+  restInterval = setInterval(restTick, 250);
 }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (restRunning && restEndAt) {
+    restTick(); // 복귀 즉시 실제 경과 반영
+    if (restRunning) acquireWakeLock(); // 백그라운드 진입 시 자동 해제되므로 재요청
+  }
+});
 
 /* ═══ READINESS ═══ */
 function getReadiness() {
@@ -1590,14 +1635,19 @@ function updateCoachPanel() {
     }
   }
   txt.textContent = line;
-  if (acts)
-    acts.innerHTML = [
+  if (acts) {
+    const chips = [
       `예상 ${Math.round(r.exercises.reduce((m, e) => m + e.sets * 2.5 + 2, 0))}분`,
       `월볼륨 ${formatKg(monthVolume())}`,
       `회복 ${readinessScore()}점`,
-    ]
+    ];
+    const bd = daysSinceBackup();
+    if (bd === null || bd >= 14)
+      chips.push(bd === null ? '📤 백업 없음' : `📤 백업 ${bd}일 전`);
+    acts.innerHTML = chips
       .map((x) => `<span class="coach-chip">${x}</span>`)
       .join('');
+  }
   updateStickyProgress();
 }
 function detectOvertraining() {
@@ -2105,7 +2155,8 @@ function buildWorkoutSummary() {
     })
     .filter(Boolean)
     .join('\n');
-  return `💪 ${r.label} 완료\n날짜: ${today}\n총 볼륨: ${vol}kg\n총 세트: ${totalSets}세트\n회복점수: ${readinessScore()}점\n\n${logs || '기록 없음'}`;
+  const rd = getReadiness();
+  return `💪 ${r.label} 완료\n날짜: ${today}\n총 볼륨: ${vol}kg\n총 세트: ${totalSets}세트\n컨디션: 수면 ${rd.sleep}/5 · 피로 ${rd.fatigue}/5 · 통증 ${rd.pain}/5 (회복 ${readinessScore()}점)\n\n${logs || '기록 없음'}\n\n(Claude 분석용: 위 기록 기준으로 다음 세션 중량·볼륨·회복 판단 요청)`;
 }
 function copyWorkoutSummary() {
   const btn = document.getElementById('calBtn');
@@ -2177,7 +2228,7 @@ function getSwimFeedback() {
   if (!el) return;
   el.className = 'ai-result visible';
   el.textContent =
-    '오늘 목표 1개만 잡자.\n1) 왼팔은 감각 유지, 오른팔 캐치에서 팔꿈치 수면 유지.\n2) 25m는 속도 올리지 말고 물속 호기를 끝까지 내뱉어라.\n3) 드릴 순서: 왼팔 외팔 5 → 오른팔 외팔 3 → 캐치업 2 → 풀스트로크 확인.';
+    '오늘 목표 1개만 잡자.\n1) 풀 실측 18m 기준 — 스트로크당 거리(DPS) 2.0m 이상 유지가 지표.\n2) 속도 올리지 말고 물속 호기를 끝까지 내뱉어라.\n3) 오른팔 EVF: 캐치에서 팔꿈치 높게, 전완으로 물 걸기. 손목 스냅 금지.\n4) 양측 호흡 훈련은 오른팔 상완근 회복 확인 후 도입 — 그 전엔 무리한 전환 금지.\n5) 드릴 순서: 왼팔 외팔 5 → 오른팔 외팔 3 → 캐치업 2 → 풀스트로크 확인.';
 }
 function switchTabById(id) {
   const tabs = ['gym', 'correct', 'swim', 'history', 'rules'];
@@ -2197,6 +2248,74 @@ function switchTabById(id) {
 function switchTab(id) {
   switchTabById(id);
 }
+/* ═══ BACKUP / RESTORE ═══ */
+function exportBackup() {
+  const data = {};
+  Object.keys(_cache).forEach((k) => {
+    data[k] = _cache[k];
+  });
+  const payload = {
+    app: 'my-routine',
+    schemaVersion: 9,
+    exportedAt: new Date().toISOString(),
+    data,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: 'application/json',
+  });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `routine-backup-${todayStr()}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  sls('lastBackup', todayStr());
+  updateBackupNote();
+  showToast('📤 백업 파일 저장됨');
+}
+function importBackup(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const payload = JSON.parse(reader.result);
+      const data = payload?.data;
+      if (payload?.app !== 'my-routine' || !data || typeof data !== 'object')
+        throw new Error('bad format');
+      const n = Object.keys(data).length;
+      if (
+        !confirm(
+          `${(payload.exportedAt || '?').slice(0, 10)} 백업 (${n}개 항목)을 복원할까?\n같은 키는 백업 내용으로 덮어쓴다.`,
+        )
+      )
+        return;
+      Object.keys(data).forEach((k) => sls(k, data[k]));
+      showToast('📥 복원 완료 — 새로고침');
+      setTimeout(() => location.reload(), 800);
+    } catch {
+      showToast('⚠️ 백업 파일을 읽을 수 없음');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+function daysSinceBackup() {
+  const d = gls('lastBackup');
+  if (!d) return null;
+  return Math.floor((new Date(todayStr()) - new Date(d)) / 86400000);
+}
+function updateBackupNote() {
+  const el = document.getElementById('backupNote');
+  if (!el) return;
+  const bd = daysSinceBackup();
+  el.textContent =
+    bd === null
+      ? '마지막 백업: 없음 — 브라우저 데이터 삭제 시 기록 전체가 사라진다. 지금 백업해라.'
+      : bd === 0
+        ? '마지막 백업: 오늘 ✅'
+        : `마지막 백업: ${bd}일 전${bd >= 14 ? ' — 백업 권장 ⚠️' : ''}`;
+}
+
 let toastTimer = null;
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -2219,4 +2338,12 @@ initStorage().then(() => {
   updateCoachPanel();
   syncFocusVisibility();
   renderRestTimer();
+  updateBackupNote();
 });
+
+/* ═══ PWA ═══ */
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
