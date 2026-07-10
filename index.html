@@ -57,12 +57,14 @@
         <div class="cs"><span class="cs-val" id="completeSets">0</span><div class="cs-label">총 세트</div></div>
       </div>
       <button class="cal-btn" id="calBtn" onclick="copyWorkoutSummary()">📋 운동 요약 복사</button>
+      <button class="cal-btn" onclick="exportBackup()">📤 백업</button>
     </div>
     <div class="today-summary" id="todaySummary">
       <div class="ts-card"><div class="ts-val" id="tsRemain">—</div><div class="ts-lbl">남은운동</div></div>
       <div class="ts-card"><div class="ts-val" id="tsTime">—</div><div class="ts-lbl">예상시간</div></div>
       <div class="ts-card"><div class="ts-val" id="tsVolume">—</div><div class="ts-lbl">현재볼륨</div></div>
     </div>
+    <div id="guardBanner" style="display:none"></div>
     <div class="coach-nudge" id="coachNudge">🤖 코치 대기 중</div>
     <div class="coach-grid">
       <div class="coach-card" id="readinessCard">
@@ -84,6 +86,7 @@
           <div class="rest-lbl">세트 간 휴식</div>
           <div class="rest-timer" id="restDisplay">1:30</div>
         </div>
+        <button class="sound-btn" id="soundBtn" onclick="toggleSound()" aria-label="휴식 종료음 켜기/끄기">🔕</button>
         <button class="rest-btn" id="restBtn" onclick="toggleRest()">시작</button>
       </div>
       <div class="rest-prog-track"><div class="rest-prog-fill" id="restFill" style="width:100%"></div></div>
@@ -99,6 +102,7 @@
   <div class="tab-panel" id="tab-correct">
     <div class="sec-hdr"><div class="sec-icon">🔄</div><div class="sec-title">골반 교정 루틴</div><div class="sec-badge">매일 5~7분</div></div>
     <div class="alert-warn">⚠️ <strong>부상 회복 중</strong> — 이상근 직접 스트레칭 금지.<br><span style="opacity:.7">진료 전까지 현 루틴 유지.</span></div>
+    <div class="corr-progress" id="corrProgress"></div>
     <div id="corrList"></div>
   </div>
 
@@ -119,6 +123,7 @@
       </div>
       <button class="swim-save" onclick="saveSwimLog()">수영 기록 저장</button>
     </div>
+    <div id="swimRecent"></div>
     <div id="swimList"></div>
     <div class="divider"></div>
     <div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">핵심 개념</div></div>
@@ -134,34 +139,49 @@
       <div class="stat-card"><div class="stat-val" id="statMonVol">—</div><div class="stat-lbl">이번달 볼륨</div></div>
       <div class="stat-card"><div class="stat-val" id="statPRs">—</div><div class="stat-lbl">PR 기록</div></div>
     </div>
-    <div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">주간 코치 리포트</div></div>
-    <div class="weekly-report" id="weeklyReport">기록 누적 후 분석 가능</div>
-    <div class="sec-hdr"><div class="sec-icon">💪</div><div class="sec-title">근육별 이번달 볼륨</div></div>
-    <div class="muscle-grid" id="muscleGrid"></div>
-    <div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">이번달 출석</div></div>
-    <div class="cal-box" id="calBox"></div>
-    <div class="sec-hdr"><div class="sec-icon">🏆</div><div class="sec-title">개인 기록 (PR)</div></div>
-    <div class="pr-board" id="prBoard"><div style="padding:16px;text-align:center;font-size:13px;color:var(--text-3)">기록 없음</div></div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">📈</div><div class="sec-title">진행도 차트</div><div class="sec-badge">추정 1RM</div></div>
-    <div class="chart-box">
-      <div class="chart-sel-row" id="chartSel"></div>
-      <div id="chartArea"><div class="chart-empty">운동을 선택하세요</div></div>
-    </div>
-    <div class="sec-hdr"><div class="sec-icon">📊</div><div class="sec-title">주간 볼륨</div></div>
-    <div id="histChart"></div>
-    <div class="sec-hdr"><div class="sec-icon">🧮</div><div class="sec-title">플레이트 계산기</div></div>
-    <div class="plate-box">
-      <div class="pc-row">
-        <input class="pc-inp" type="number" inputmode="decimal" id="pcKg" placeholder="목표 중량" oninput="calcPlates()">
-        <span class="pc-unit">kg</span>
+    <details class="hist-sec" open>
+      <summary><div class="sec-hdr"><div class="sec-icon">🏆</div><div class="sec-title">개인 기록 (PR)</div><span class="sec-chev">▾</span></div></summary>
+      <div class="pr-board" id="prBoard"><div style="padding:16px;text-align:center;font-size:13px;color:var(--text-3)">기록 없음</div></div>
+    </details>
+    <details class="hist-sec" open>
+      <summary><div class="sec-hdr"><div class="sec-icon">📈</div><div class="sec-title">진행도 차트</div><div class="sec-badge">추정 1RM</div><span class="sec-chev">▾</span></div></summary>
+      <div class="chart-box">
+        <div class="chart-sel-row" id="chartSel"></div>
+        <div id="chartArea"><div class="chart-empty">운동을 선택하세요</div></div>
       </div>
-      <div class="pc-bar-sel" id="pcBarSel"></div>
-      <div class="pc-result" id="pcResult"><div class="pc-empty">중량을 입력하세요</div></div>
-    </div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">최근 운동</div></div>
-    <div id="histLog"></div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">주간 코치 리포트</div><span class="sec-chev">▾</span></div></summary>
+      <div class="weekly-report" id="weeklyReport">기록 누적 후 분석 가능</div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">💪</div><div class="sec-title">근육별 이번달 볼륨</div><span class="sec-chev">▾</span></div></summary>
+      <div class="muscle-grid" id="muscleGrid"></div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">이번달 출석</div><span class="sec-chev">▾</span></div></summary>
+      <div class="cal-box" id="calBox"></div>
+      <div class="cal-legend">● 운동일 · <span class="cal-legend-corr">•</span> 교정 전체 수행일</div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">📊</div><div class="sec-title">주간 볼륨</div><span class="sec-chev">▾</span></div></summary>
+      <div id="histChart"></div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">🧮</div><div class="sec-title">플레이트 계산기</div><span class="sec-chev">▾</span></div></summary>
+      <div class="plate-box">
+        <div class="pc-row">
+          <input class="pc-inp" type="number" inputmode="decimal" id="pcKg" placeholder="목표 중량" oninput="calcPlates()">
+          <span class="pc-unit">kg</span>
+        </div>
+        <div class="pc-bar-sel" id="pcBarSel"></div>
+        <div class="pc-result" id="pcResult"><div class="pc-empty">중량을 입력하세요</div></div>
+      </div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">최근 운동</div><span class="sec-chev">▾</span></div></summary>
+      <div id="histLog"></div>
+    </details>
   </div>
 
   <!-- 원칙 -->

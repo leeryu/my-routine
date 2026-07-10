@@ -412,3 +412,36 @@ body:not(.gym-active) .floating-rest{display:none!important;visibility:hidden!im
 .backup-btns{display:flex;gap:8px}
 .backup-btns .ai-btn{margin-top:8px;padding:12px}
 .backup-hint{margin-top:10px;font-size:11px;color:var(--text-3);line-height:1.5}
+
+/* ═══ 교정 체크 ═══ */
+.corr-chk{width:30px;height:30px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg);color:var(--text-3);font-size:14px;font-weight:900;cursor:pointer;flex-shrink:0;transition:all .15s}
+.corr-chk.checked{background:var(--green,#00b894);border-color:var(--green,#00b894);color:#fff}
+.corr-progress{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin-bottom:12px}
+
+/* ═══ 수영 최근 기록 + DPS ═══ */
+.dps-spark{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-top:14px;box-shadow:var(--sh)}
+.dps-spark-title{font-size:12px;font-weight:800;color:var(--text-2);margin-bottom:8px}
+.dps-spark svg{width:100%;height:52px;display:block}
+.dps-spark-range{font-size:10px;font-family:var(--mono);color:var(--text-3);margin-top:6px}
+.swim-rows{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:8px;margin-bottom:14px}
+.swim-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px}
+.swim-row:last-child{border-bottom:0}
+.sr-date{font-family:var(--mono);font-size:11px;color:var(--text-3);flex-shrink:0}
+.sr-main{flex:1;color:var(--text-2)}
+.sr-main b{color:var(--accent)}
+.sr-sub{font-size:11px;color:var(--text-3)}
+
+/* ═══ 사운드 토글 ═══ */
+.sound-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-size:15px;padding:9px 12px;cursor:pointer;margin-right:8px}
+
+/* ═══ 기록 탭 접이식 ═══ */
+.hist-sec{margin-bottom:4px}
+.hist-sec summary{list-style:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hist-sec summary::-webkit-details-marker{display:none}
+.hist-sec .sec-chev{margin-left:auto;color:var(--text-3);font-size:12px;transition:transform .2s}
+.hist-sec .sec-hdr .sec-badge{margin-left:8px}
+.hist-sec[open] .sec-chev{transform:rotate(180deg)}
+.cal-legend{font-size:10px;color:var(--text-3);margin:6px 2px 14px}
+.cal-legend-corr{color:var(--green,#00b894);font-weight:900}
+.cd.corr{position:relative}
+.cd.corr::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--green,#00b894)}

@@ -638,6 +638,24 @@ function getSmartRec(rk, idx) {
   const lastRpe = +last.rpe || 0;
   const lastPain = last.pain || '';
   const done = last.allDone;
+  /* 자중·저중량(0kg) 종목: 중량 % 추천 무의미 → 수행 기준 안내 */
+  if (lastKg === 0) {
+    if (lastPain === 'joint' || lastPain === 'nerve')
+      return {
+        action: 'REDUCE',
+        kg: 0,
+        msg: '지난번 통증 기록 — 가동범위 줄이고 감각 위주. 통증 시 즉시 중단.',
+        restSecs: 90,
+      };
+    return {
+      action: 'MAINTAIN',
+      kg: 0,
+      msg: last.summary
+        ? `지난 기록: ${last.summary}. 동일 수행, 여유 있으면 마지막 세트 +1~2회.`
+        : '자중·저중량 종목 — 중량보다 수축 감각과 템포 우선.',
+      restSecs: 90,
+    };
+  }
   if (lastPain === 'joint' || lastPain === 'nerve')
     return {
       action: 'REDUCE',
@@ -660,6 +678,14 @@ function getSmartRec(rk, idx) {
       restSecs: 120,
     };
   if (lastRpe >= 1 && lastRpe <= 7) {
+    // 컨디션 미입력 = "양호"가 아님 → 체크 유도 후 증량 판단
+    if (!hasReadinessToday())
+      return {
+        action: 'MAINTAIN',
+        kg: lastKg,
+        msg: `오늘 컨디션 미입력 — 위 체크 먼저. 그 전엔 ${lastKg}kg 유지.`,
+        restSecs: 90,
+      };
     // 당일 컨디션 게이트: 회복도 낮으면 증량 보류 (지침: 주의 → 강도 하향)
     if (readinessScore() < 55)
       return {
@@ -781,6 +807,7 @@ function buildSelector() {
   });
 }
 function showRoutine(key) {
+  renderGuards();
   currentRoutine = key;
   document
     .querySelectorAll('.routine-chip')
@@ -974,6 +1001,10 @@ function toggleSetCheck(idx, s) {
 
   /* ── Adaptive rest time (NEW) ── */
   if (isChecked) {
+    if (swamToday() && !window._swimGymWarned) {
+      window._swimGymWarned = true;
+      showToast('🚫 오늘 수영함 — 헬스 병행 금지 원칙. 정말 할 거면 저강도로.');
+    }
     const rpe = +document.getElementById(`rpe_${idx}`)?.value || 0;
     const restSecs = rpe >= 9 ? 120 : rpe >= 1 && rpe <= 7 ? 75 : 90;
     setRestDuration(restSecs);
@@ -1291,6 +1322,42 @@ function initTheme() {
     if (b) b.textContent = '☀️';
   }
 }
+/* ═══ 원칙 가드: 헬스+수영 같은 날 / 48시간 회복 ═══ */
+function swamToday() {
+  return (gls('swimLogs') || []).some((l) => l.date === todayStr());
+}
+function gymActivityToday() {
+  const t = todayStr();
+  return Object.keys(_cache).some((k) => {
+    if (!k.startsWith('rec:') || !k.endsWith(t)) return false;
+    const r = _cache[k] || {};
+    return Object.keys(r).some((f) => f.startsWith('checked_') && r[f]);
+  });
+}
+function gymYesterday() {
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  const ys = fmtDate(y);
+  return getHistory().some((h) => h.date === ys && h.routine !== '수영');
+}
+function renderGuards() {
+  const el = document.getElementById('guardBanner');
+  if (!el) return;
+  const warns = [];
+  if (swamToday())
+    warns.push(
+      '🚫 오늘 수영 기록 있음 — 헬스+수영 같은 날 금지 원칙. 의도한 예외가 아니면 오늘 근력은 쉬어라.',
+    );
+  else if (gymYesterday() && !gymActivityToday())
+    warns.push(
+      '⏳ 어제 근력운동 완료 — 48시간 회복 미경과. 오늘은 유산소·교정·수영 권장.',
+    );
+  el.innerHTML = warns
+    .map((w) => `<div class="alert-warn">${w}</div>`)
+    .join('');
+  el.style.display = warns.length ? '' : 'none';
+}
+
 function saveSwimLog() {
   const poolLen = +document.getElementById('swimPool')?.value || 18;
   const strokes = +document.getElementById('swimStrokes')?.value || 0;
@@ -1314,6 +1381,13 @@ function saveSwimLog() {
     summary: `${poolLen}m ${log.strokes || '?'}스트로크${dps ? ` · DPS ${dps}m` : ''} · 호흡 ${log.breath || '-'}`,
   });
   showToast(dps ? `🏊 저장됨 — 스트로크당 ${dps}m` : '🏊 수영 기록 저장됨');
+  if (gymActivityToday())
+    setTimeout(
+      () => showToast('⚠️ 오늘 헬스 기록 있음 — 같은 날 병행 금지 원칙'),
+      2400,
+    );
+  renderSwimLogs();
+  renderGuards();
 }
 
 /* ═══ FINAL UX COACH FUNCTIONS ═══ */
@@ -1477,6 +1551,45 @@ function adjustRestTime(seconds, event) {
   showToast(`휴식시간 ${seconds > 0 ? '+' : ''}${seconds}초`);
 }
 
+/* 휴식 종료음 (기본 off — 토글로 활성화) */
+let audioCtx = null;
+function soundOn() {
+  return !!gls('soundOn');
+}
+function ensureAudio() {
+  try {
+    audioCtx =
+      audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch {}
+}
+function toggleSound() {
+  const on = !soundOn();
+  sls('soundOn', on);
+  if (on) ensureAudio();
+  const b = document.getElementById('soundBtn');
+  if (b) b.textContent = on ? '🔔' : '🔕';
+  showToast(on ? '🔔 휴식 종료음 켜짐' : '🔕 휴식 종료음 꺼짐');
+}
+function playDoneBeep() {
+  if (!soundOn() || !audioCtx) return;
+  try {
+    [0, 0.18, 0.36].forEach((t, i) => {
+      const o = audioCtx.createOscillator(),
+        g = audioCtx.createGain();
+      o.frequency.value = i === 2 ? 1318 : 880;
+      o.connect(g);
+      g.connect(audioCtx.destination);
+      const st = audioCtx.currentTime + t;
+      g.gain.setValueAtTime(0.0001, st);
+      g.gain.exponentialRampToValueAtTime(0.25, st + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, st + 0.15);
+      o.start(st);
+      o.stop(st + 0.16);
+    });
+  } catch {}
+}
+
 /* timestamp 기반 — 백그라운드 스로틀링에도 시간 정확 */
 let restEndAt = null,
   restWakeLock = null;
@@ -1502,6 +1615,7 @@ function restTick() {
     restLeft = 0;
     releaseWakeLock();
     renderRestTimer('done');
+    playDoneBeep();
     showToast('⏱ 휴식 완료!');
     try { navigator.vibrate?.([100, 50, 100]); } catch {}
     return;
@@ -1526,6 +1640,7 @@ function toggleRest(autoStart) {
   restLeft = restTotal;
   renderRestTimer();
   acquireWakeLock();
+  if (soundOn()) ensureAudio();
   restInterval = setInterval(restTick, 250);
 }
 document.addEventListener('visibilitychange', () => {
@@ -1537,6 +1652,9 @@ document.addEventListener('visibilitychange', () => {
 });
 
 /* ═══ READINESS ═══ */
+function hasReadinessToday() {
+  return gls('readiness:' + todayStr()) !== null;
+}
 function getReadiness() {
   return gls('readiness:' + todayStr()) || { sleep: 3, fatigue: 3, pain: 1 };
 }
@@ -1639,7 +1757,7 @@ function updateCoachPanel() {
     const chips = [
       `예상 ${Math.round(r.exercises.reduce((m, e) => m + e.sets * 2.5 + 2, 0))}분`,
       `월볼륨 ${formatKg(monthVolume())}`,
-      `회복 ${readinessScore()}점`,
+      hasReadinessToday() ? `회복 ${readinessScore()}점` : '회복 미입력 ⚠️',
     ];
     const bd = daysSinceBackup();
     if (bd === null || bd >= 14)
@@ -1659,14 +1777,91 @@ function detectOvertraining() {
     return `${streak}일 연속 운동 + 낮은 회복도. 내일 쉬는 게 맞다.`;
   return null;
 }
+/* ═══ 교정 루틴 수행 추적 ═══ */
+function getCorrDone(date = todayStr()) {
+  return gls('corr:' + date) || {};
+}
+function corrDoneCount(date = todayStr()) {
+  const d = getCorrDone(date);
+  return CORRECTIONS.filter((_, i) => d[i]).length;
+}
+function corrWeekDays() {
+  let n = 0;
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() - i);
+    if (corrDoneCount(fmtDate(dt)) === CORRECTIONS.length) n++;
+  }
+  return n;
+}
+function renderCorrProgress() {
+  const el = document.getElementById('corrProgress');
+  if (!el) return;
+  el.textContent = `오늘 ${corrDoneCount()}/${CORRECTIONS.length} 완료 · 최근 7일 중 ${corrWeekDays()}일 전체 수행`;
+}
+function toggleCorr(i) {
+  const key = 'corr:' + todayStr();
+  const d = gls(key) || {};
+  d[i] = !d[i];
+  sls(key, d);
+  const btn = document.getElementById('corrChk_' + i);
+  if (btn) btn.classList.toggle('checked', !!d[i]);
+  renderCorrProgress();
+  if (CORRECTIONS.every((_, j) => d[j])) {
+    showToast('🔄 오늘 교정 루틴 완료!');
+    try { navigator.vibrate?.(60); } catch {}
+  }
+}
 function buildCorrections() {
   const list = document.getElementById('corrList');
-  CORRECTIONS.forEach((c) => {
+  const done = getCorrDone();
+  CORRECTIONS.forEach((c, i) => {
     const card = document.createElement('div');
     card.className = 'list-card';
-    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')"><div class="list-dot" style="background:var(--green)"></div><div class="list-name">${c.name}</div><div class="list-dur">${c.dur}</div><span class="ex-chev">▾</span></div><div class="list-detail">${c.detail.replace(/\n/g, '<br>')}</div>`;
+    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')"><button class="corr-chk${done[i] ? ' checked' : ''}" id="corrChk_${i}" onclick="event.stopPropagation();toggleCorr(${i})" aria-label="${c.name} 완료 체크">✓</button><div class="list-name">${c.name}</div><div class="list-dur">${c.dur}</div><span class="ex-chev">▾</span></div><div class="list-detail">${c.detail.replace(/\n/g, '<br>')}</div>`;
     list.appendChild(card);
   });
+  renderCorrProgress();
+}
+function renderSwimLogs() {
+  const el = document.getElementById('swimRecent');
+  if (!el) return;
+  const logs = gls('swimLogs') || [];
+  if (!logs.length) {
+    el.innerHTML = '';
+    return;
+  }
+  const withDps = logs
+    .filter((l) => l.dps)
+    .slice(0, 15)
+    .reverse();
+  let spark = '';
+  if (withDps.length >= 2) {
+    const vals = withDps.map((l) => l.dps);
+    const min = Math.min(...vals),
+      max = Math.max(...vals),
+      range = max - min || 1;
+    const W = 280,
+      H = 52,
+      pad = 8;
+    const pts = vals
+      .map(
+        (v, i) =>
+          `${(pad + (i / (vals.length - 1)) * (W - 2 * pad)).toFixed(1)},${(H - pad - ((v - min) / range) * (H - 2 * pad)).toFixed(1)}`,
+      )
+      .join(' ');
+    spark = `<div class="dps-spark"><div class="dps-spark-title">📈 DPS 추세 (최근 ${vals.length}회 · 목표 2.0m+)</div><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="dps-spark-range">최저 ${min}m · 최고 ${max}m</div></div>`;
+  }
+  const rows = logs
+    .slice(0, 8)
+    .map(
+      (l) =>
+        `<div class="swim-row"><span class="sr-date">${(l.date || '').slice(5)}</span><span class="sr-main">${l.poolLen || 25}m · ${l.strokes || '?'}스트로크${l.dps ? ` · <b>DPS ${l.dps}m</b>` : ''}</span><span class="sr-sub">${l.breath || ''}</span></div>`,
+    )
+    .join('');
+  el.innerHTML =
+    spark +
+    `<div class="coach-title" style="margin-top:12px">🗒 최근 기록</div><div class="swim-rows">${rows}</div>`;
 }
 function buildSwim() {
   const list = document.getElementById('swimList');
@@ -1907,17 +2102,31 @@ function buildCalendar() {
   ];
   const dow = ['월', '화', '수', '목', '금', '토', '일'];
   const worked = new Set();
+  const corrDays = new Set();
   Object.keys(_cache).forEach((k) => {
     if (k.startsWith('done:')) {
       const d = k.replace('done:', '');
       if (d.startsWith(`${yr}-${String(mo + 1).padStart(2, '0')}`))
         worked.add(parseInt(d.slice(8)));
     }
+    if (k.startsWith('corr:')) {
+      const d = k.replace('corr:', '');
+      if (
+        d.startsWith(`${yr}-${String(mo + 1).padStart(2, '0')}`) &&
+        corrDoneCount(d) === CORRECTIONS.length
+      )
+        corrDays.add(parseInt(d.slice(8)));
+    }
   });
   let html = `<div class="cal-month">${yr}년 ${mNames[mo]}</div><div class="cal-dow">${dow.map((d) => `<div class="cal-dow-lbl">${d}</div>`).join('')}</div><div class="cal-days">`;
   for (let i = 0; i < startOff; i++) html += '<div class="cd empty"></div>';
   for (let d = 1; d <= days; d++) {
-    const cls = ['cd', d === todayD ? 'today' : '', worked.has(d) ? 'has' : '']
+    const cls = [
+      'cd',
+      d === todayD ? 'today' : '',
+      worked.has(d) ? 'has' : '',
+      corrDays.has(d) ? 'corr' : '',
+    ]
       .filter(Boolean)
       .join(' ');
     html += `<div class="${cls}">${d}</div>`;
@@ -2339,6 +2548,10 @@ initStorage().then(() => {
   syncFocusVisibility();
   renderRestTimer();
   updateBackupNote();
+  renderGuards();
+  renderSwimLogs();
+  const sb = document.getElementById('soundBtn');
+  if (sb) sb.textContent = soundOn() ? '🔔' : '🔕';
 });
 
 /* ═══ PWA ═══ */
