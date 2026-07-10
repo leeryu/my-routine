@@ -1670,65 +1670,141 @@ function buildStats() {
   document.getElementById('statPRs').textContent =
     Object.keys(_cache).filter((k) => k.startsWith('pr:')).length + '개';
 }
-function buildWeeklyReport() {
-  const el = document.getElementById('weeklyReport');
-  if (!el) return;
-  const last7 = new Set();
-  for (let i = 0; i < 7; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    last7.add(fmtDate(d));
-  }
-  let days = 0,
-    vol = 0;
-  last7.forEach((date) => {
-    if (gls('done:' + date)) days++;
-  });
-  Object.keys(_cache).forEach((k) => {
-    if (k.startsWith('rec:')) {
-      const date = k.slice(-10);
-      if (last7.has(date)) {
-        const rec = gls(k) || {};
-        for (let s = 0; s < 6; s++)
-          vol += (+rec['kg_' + s] || 0) * (+rec['reps_' + s] || 0);
-      }
-    }
-  });
-  const prs = Object.keys(_cache).filter((k) => k.startsWith('pr:')).length;
-  el.textContent = days
-    ? `최근 7일 운동 ${days}회. 총 볼륨 ${formatKg(Math.round(vol))}. PR 기록 ${prs}개.\n판단: ${days >= 3 ? '빈도 좋음. 이제 중량보다 회복 안정성까지 같이 봐야 한다.' : days >= 2 ? '나쁘지 않다. 주 3회 패턴을 맞추면 성장 신호가 더 선명해진다.' : '운동 빈도 부족. 이번주는 기록 쌓는 게 먼저다.'}\n다음 목표: 주요 등 운동 1개만 증량 시도, 통증 있으면 즉시 유지/감량.`
-    : '최근 7일 완료 기록 없음.';
-}
-function buildMuscleGrid() {
-  const grid = document.getElementById('muscleGrid');
-  if (!grid) return;
-  const m2 = todayStr().slice(0, 7);
-  const m = {};
+function getMonthMuscleVolume(monthKey) {
+  const result = {};
   ['A', 'B', 'C'].forEach((rk) =>
     ROUTINES[rk].exercises.forEach((ex, i) => {
       Object.keys(_cache)
-        .filter((k) => k.startsWith(`rec:${rk}_${i}_`) && k.includes(m2))
+        .filter((k) => k.startsWith(`rec:${rk}_${i}_${monthKey}`))
         .forEach((k) => {
           const rec = gls(k) || {};
           let vol = 0;
           for (let s = 0; s < ex.sets; s++)
             vol += (+rec['kg_' + s] || 0) * (+rec['reps_' + s] || 0);
           (MUSCLE_MAP[ex.name] || ['기타']).forEach(
-            (name) => (m[name] = (m[name] || 0) + vol),
+            (name) => (result[name] = (result[name] || 0) + vol),
           );
         });
     }),
   );
-  const max = Math.max(1, ...Object.values(m));
-  const arr = Object.entries(m).sort((a, b) => b[1] - a[1]);
+  return result;
+}
+function getMonthKey(offset = 0) {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + offset);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+function sumValues(obj) {
+  return Object.values(obj).reduce((a, b) => a + b, 0);
+}
+function getTopEntry(obj) {
+  return Object.entries(obj).sort((a, b) => b[1] - a[1])[0] || null;
+}
+function getMuscleCoachText(muscles) {
+  const upper = ['가슴', '등', '광배', '후면어깨', '측면어깨', '어깨'];
+  const relevant = upper
+    .map((name) => [name, muscles[name] || 0])
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => b[1] - a[1]);
+  if (!relevant.length) return '근육별 기록이 더 필요하다.';
+
+  const [topName, topVol] = relevant[0];
+  const side = muscles['측면어깨'] || 0;
+  const back = (muscles['등'] || 0) + (muscles['광배'] || 0);
+  const chest = muscles['가슴'] || 0;
+
+  if (chest > back * 1.25)
+    return `가슴 비중이 높다. 다음 헬스는 랫풀다운·로우를 우선해서 당기기 볼륨을 보충해.`;
+  if (back > chest * 1.6 && side < topVol * 0.3)
+    return `등·광배는 충분히 쌓였다. 프레임 목표라면 측면어깨 세트를 먼저 늘리는 게 효율적이다.`;
+  if (side > 0 && side < topVol * 0.25)
+    return `현재 최다 부위는 ${topName}. 측면어깨 볼륨은 상대적으로 낮아서 다음 운동에 레터럴레이즈 1~2세트 추가가 적절하다.`;
+  return `현재 최다 부위는 ${topName}. 큰 편중 없이 진행 중이니 중량보다 주간 반복성과 회복을 유지해.`;
+}
+function buildWeeklyReport() {
+  const el = document.getElementById('weeklyReport');
+  if (!el) return;
+  const last7 = new Set();
+  const prev7 = new Set();
+  for (let i = 0; i < 14; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    (i < 7 ? last7 : prev7).add(fmtDate(d));
+  }
+
+  const calcPeriod = (dates) => {
+    let days = 0;
+    let vol = 0;
+    dates.forEach((date) => {
+      if (gls('done:' + date)) days++;
+    });
+    Object.keys(_cache).forEach((k) => {
+      if (!k.startsWith('rec:')) return;
+      const date = k.slice(-10);
+      if (!dates.has(date)) return;
+      const rec = gls(k) || {};
+      for (let s = 0; s < 8; s++)
+        vol += (+rec['kg_' + s] || 0) * (+rec['reps_' + s] || 0);
+    });
+    return { days, vol };
+  };
+
+  const cur = calcPeriod(last7);
+  const prev = calcPeriod(prev7);
+  if (!cur.days && !cur.vol) {
+    el.innerHTML = '<div class="report-empty">최근 7일 완료 기록 없음.</div>';
+    return;
+  }
+
+  const volDiff = prev.vol > 0 ? Math.round(((cur.vol - prev.vol) / prev.vol) * 100) : null;
+  const dayDiff = cur.days - prev.days;
+  const muscles = getMonthMuscleVolume(getMonthKey());
+  const coach = getMuscleCoachText(muscles);
+  const status = cur.days >= 3 ? '빈도 좋음' : cur.days >= 2 ? '유지 가능' : '빈도 부족';
+  const trendText = volDiff === null
+    ? '비교 데이터 부족'
+    : `${volDiff >= 0 ? '▲' : '▼'} ${Math.abs(volDiff)}%`;
+
+  el.innerHTML = `
+    <div class="report-head">
+      <div><div class="report-kicker">최근 7일</div><div class="report-title">${status}</div></div>
+      <div class="report-badge">${trendText}</div>
+    </div>
+    <div class="report-metrics">
+      <div class="report-metric"><strong>${cur.days}회</strong><span>운동일</span><small>${dayDiff === 0 ? '지난주와 동일' : `${dayDiff > 0 ? '+' : ''}${dayDiff}회`}</small></div>
+      <div class="report-metric"><strong>${formatKg(Math.round(cur.vol))}</strong><span>총 볼륨</span><small>지난주 ${formatKg(Math.round(prev.vol))}</small></div>
+      <div class="report-metric"><strong>${cur.days ? formatKg(Math.round(cur.vol / cur.days)) : '0kg'}</strong><span>회당 볼륨</span><small>강도 참고값</small></div>
+    </div>
+    <div class="report-coach"><b>🤖 코치 판단</b><span>${coach}</span></div>`;
+}
+function buildMuscleGrid() {
+  const grid = document.getElementById('muscleGrid');
+  if (!grid) return;
+  const current = getMonthMuscleVolume(getMonthKey());
+  const previous = getMonthMuscleVolume(getMonthKey(-1));
+  const max = Math.max(1, ...Object.values(current));
+  const total = Math.max(1, sumValues(current));
+  const arr = Object.entries(current).sort((a, b) => b[1] - a[1]);
+
   grid.innerHTML = arr.length
     ? arr
-        .map(
-          ([name, vol]) =>
-            `<div class="muscle-card"><div class="muscle-name">${name}</div><div class="muscle-vol">${formatKg(Math.round(vol))}</div><div class="muscle-bar"><div class="muscle-fill" style="width:${Math.round((vol / max) * 100)}%"></div></div></div>`,
-        )
+        .map(([name, vol]) => {
+          const prev = previous[name] || 0;
+          const diff = prev > 0 ? Math.round(((vol - prev) / prev) * 100) : null;
+          const share = Math.round((vol / total) * 100);
+          const delta = diff === null
+            ? '<span class="muscle-delta neutral">신규</span>'
+            : `<span class="muscle-delta ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff)}%</span>`;
+          return `<div class="muscle-card">
+            <div class="muscle-card-top"><div class="muscle-name">${name}</div>${delta}</div>
+            <div class="muscle-vol">${formatKg(Math.round(vol))}</div>
+            <div class="muscle-meta"><span>구성비 ${share}%</span><span>지난달 ${prev ? formatKg(Math.round(prev)) : '—'}</span></div>
+            <div class="muscle-bar"><div class="muscle-fill" style="width:${Math.round((vol / max) * 100)}%"></div></div>
+          </div>`;
+        })
         .join('')
-    : '<div class="coach-card"><div class="coach-text">이번달 볼륨 기록 없음.</div></div>';
+    : '<div class="coach-card muscle-empty"><div class="coach-text">이번달 볼륨 기록 없음.</div></div>';
 }
 function buildCalendar() {
   const now = new Date();
