@@ -97,6 +97,9 @@ const ROUTINES = {
     tag: 'Push · 등 보조 · 8종목',
     exercises: [
       {
+        // 정책: 기존 B_0 덤벨 벤치프레스 기록을 체스트 프레스 기록으로
+        // 이어서 사용한다. 두 운동은 현재 같은 B_0 키를 공유하며, 향후
+        // 영구 운동 ID 도입 시 별도 기록으로 분리할 수 있다.
         name: '체스트 프레스',
         target: '대흉근 · 삼두 · 전면삼각',
         sets: 3,
@@ -431,6 +434,72 @@ function dls(k) {
   } catch {}
   if (window.storage) window.storage.delete(k).catch(() => {});
 }
+const STORAGE_SCHEMA_VERSION = StorageMigration.CURRENT_SCHEMA_VERSION;
+const MIGRATION_BACKUP_V10 = 'migrationBackup:v10';
+const MIGRATION_CONFLICT_V10 = 'migrationConflict:v10';
+const MIGRATION_STATUS_V10 = 'migrationStatus:v10';
+
+function storageSnapshot() {
+  return JSON.parse(JSON.stringify(_cache));
+}
+async function persistSet(k, v) {
+  const serialized = JSON.stringify(v);
+  localStorage.setItem('routine:' + k, serialized);
+  if (window.storage) await window.storage.set(k, serialized);
+  _cache[k] = v;
+}
+async function persistDelete(k) {
+  localStorage.removeItem('routine:' + k);
+  if (window.storage) await window.storage.delete(k);
+  delete _cache[k];
+}
+async function createSafetyBackup(key, schemaVersion, source, targetKeys) {
+  if (gls(key)) return true;
+  const data = {};
+  targetKeys.forEach((k) => {
+    if (Object.prototype.hasOwnProperty.call(source, k)) data[k] = source[k];
+  });
+  const backup = {
+    createdAt: new Date().toISOString(),
+    sourceSchemaVersion: schemaVersion ?? null,
+    keys: data,
+  };
+  try {
+    await persistSet(key, backup);
+    return !!gls(key);
+  } catch (error) {
+    console.error(
+      '[storage migration] safety backup failed; migration aborted',
+      error,
+    );
+    return false;
+  }
+}
+async function applySnapshotTransaction(before, after, metadata) {
+  const finalState = JSON.parse(JSON.stringify(after));
+  finalState.storageSchemaVersion = STORAGE_SCHEMA_VERSION;
+  finalState[MIGRATION_STATUS_V10] = metadata;
+  finalState.migrV10 = true;
+  try {
+    await StorageMigration.commitSnapshot(
+      { set: persistSet, delete: persistDelete },
+      before,
+      finalState,
+      ['storageSchemaVersion', MIGRATION_STATUS_V10, 'migrV10'],
+    );
+  } catch (error) {
+    console.error(
+      '[storage migration] write failed; original keys were restored',
+      error,
+    );
+    if (error.rollbackError)
+      console.error(
+        '[storage migration] rollback failed; safety backup is preserved',
+        error.rollbackError,
+      );
+    throw error;
+  }
+}
 /* v8→v9 루틴 재편 마이그레이션: 인덱스 기반 기록·PR 키 재배치 (1회 실행)
    old A: 랫풀/덤벨벤치/덤벨로우/리버스펙덱/레터럴/크런치/사이드플랭크/레그익스텐션
    old B: 랫풀/덤벨로우/크런치/사이드플랭크/레그익스텐션 */
@@ -477,30 +546,69 @@ function migrateV9() {
   });
   sls('migrV9', true);
 }
-function migrateV10() {
-  if (gls('migrV10')) return;
-  // B_1~B_6 → B_2~B_7 (랫풀다운이 B_1로 삽입되어 기존 인덱스가 한 칸씩 밀림)
-  const snap = [];
-  for (let n = 6; n >= 1; n--) {
-    Object.keys(_cache).forEach((k) => {
-      let m = k.match(/^rec:B_(\d+)_(\d{4}-\d{2}-\d{2})$/);
-      if (m && +m[1] === n) {
-        snap.push({ from: k, to: `rec:B_${n + 1}_${m[2]}`, v: gls(k) });
-        return;
-      }
-      m = k.match(/^pr:B_(\d+)$/);
-      if (m && +m[1] === n) snap.push({ from: k, to: `pr:B_${n + 1}`, v: gls(k) });
-    });
+async function migrateV10() {
+  const source = storageSnapshot();
+  const classification = StorageMigration.classifyStorage(source);
+  if (classification.type === 'current') {
+    if (source.storageSchemaVersion !== STORAGE_SCHEMA_VERSION)
+      await persistSet('storageSchemaVersion', STORAGE_SCHEMA_VERSION);
+    return { status: 'current' };
   }
-  snap.forEach((mv) => dls(mv.from));
-  snap.forEach((mv) => {
-    if (mv.from.startsWith('pr:')) {
-      sls(mv.to, Math.max(+gls(mv.to) || 0, +mv.v || 0));
-    } else if (!gls(mv.to)) {
-      sls(mv.to, mv.v);
-    }
+  if (classification.type === 'fresh') {
+    await persistSet('storageSchemaVersion', STORAGE_SCHEMA_VERSION);
+    await persistSet(MIGRATION_STATUS_V10, {
+      status: 'fresh',
+      completedAt: new Date().toISOString(),
+    });
+    return { status: 'fresh' };
+  }
+
+  const targetKeys = Object.keys(source).filter(StorageMigration.isBExerciseKey);
+  const backupOk = await createSafetyBackup(
+    MIGRATION_BACKUP_V10,
+    classification.version,
+    source,
+    targetKeys,
+  );
+  if (!backupOk) return { status: 'backup-failed' };
+
+  if (classification.type !== 'v9') {
+    const pending = StorageMigration.buildHoldStatus(
+      classification,
+      targetKeys,
+      new Date().toISOString(),
+    );
+    await persistSet(MIGRATION_STATUS_V10, pending);
+    console.warn(
+      '[storage migration] v10 migration pending: legacy and new B data cannot be distinguished safely',
+      pending,
+    );
+    return pending;
+  }
+
+  const transformed = StorageMigration.transformV9ToV10(source);
+  if (!transformed.ok) {
+    const conflict = {
+      status: 'conflict',
+      detectedAt: new Date().toISOString(),
+      sourceSchemaVersion: 9,
+      conflicts: transformed.conflicts,
+    };
+    await persistSet(MIGRATION_CONFLICT_V10, conflict);
+    await persistSet(MIGRATION_STATUS_V10, conflict);
+    console.warn(
+      '[storage migration] v10 migration blocked by key conflicts',
+      conflict,
+    );
+    return conflict;
+  }
+
+  await applySnapshotTransaction(source, transformed.result, {
+    status: 'completed',
+    completedAt: new Date().toISOString(),
+    movedKeys: transformed.moves.map(({ from, to }) => ({ from, to })),
   });
-  sls('migrV10', true);
+  return { status: 'completed' };
 }
 async function initStorage() {
   try {
@@ -2502,7 +2610,7 @@ function exportBackup() {
   });
   const payload = {
     app: 'my-routine',
-    schemaVersion: 9,
+    schemaVersion: STORAGE_SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     data,
   };
@@ -2517,6 +2625,18 @@ function exportBackup() {
   sls('lastBackup', todayStr());
   updateBackupNote();
   showToast('📤 백업 파일 저장됨');
+}
+async function backupBeforeImport() {
+  const key = `importBackup:${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  await persistSet(key, {
+    createdAt: new Date().toISOString(),
+    sourceSchemaVersion: gls('storageSchemaVersion') ?? null,
+    data: storageSnapshot(),
+  });
+  return key;
+}
+async function prepareImportedData(payload) {
+  return StorageMigration.convertBackupPayload(payload);
 }
 function importBackup(input) {
   const file = input.files?.[0];
@@ -2535,10 +2655,54 @@ function importBackup(input) {
         )
       )
         return;
-      Object.keys(data).forEach((k) => sls(k, data[k]));
-      showToast('📥 복원 완료 — 새로고침');
-      setTimeout(() => location.reload(), 800);
-    } catch {
+      (async () => {
+        try {
+          const prepared = await prepareImportedData(payload);
+          await backupBeforeImport();
+          const current = storageSnapshot();
+          const collisions = Object.keys(prepared).filter(
+            (k) =>
+              Object.prototype.hasOwnProperty.call(current, k) &&
+              JSON.stringify(current[k]) !== JSON.stringify(prepared[k]),
+          );
+          const identityCollisions = collisions.filter(
+            StorageMigration.isIdentityDataKey,
+          );
+          const settingCollisions = collisions.filter(
+            (k) => !StorageMigration.isIdentityDataKey(k),
+          );
+          if (identityCollisions.length) {
+            const conflict = {
+              status: 'import-conflict',
+              detectedAt: new Date().toISOString(),
+              keys: identityCollisions,
+              nonBlockingSettingCollisions: settingCollisions,
+              importedSchemaVersion: payload.schemaVersion,
+            };
+            await persistSet(MIGRATION_CONFLICT_V10, conflict);
+            console.warn(
+              '[backup import] merge stopped because keys conflict',
+              conflict,
+            );
+            showToast('⚠️ 같은 키 충돌 — 현재 데이터 유지');
+            return;
+          }
+          if (settingCollisions.length)
+            console.info(
+              '[backup import] replacing non-record settings',
+              settingCollisions,
+            );
+          for (const k of Object.keys(prepared))
+            await persistSet(k, prepared[k]);
+          showToast('📥 복원 완료 — 새로고침');
+          setTimeout(() => location.reload(), 800);
+        } catch (error) {
+          console.error('[backup import] failed', error);
+          showToast('⚠️ 지원하지 않거나 충돌한 백업');
+        }
+      })();
+    } catch (error) {
+      console.error('[backup import] invalid file', error);
       showToast('⚠️ 백업 파일을 읽을 수 없음');
     }
   };
@@ -2570,9 +2734,16 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
-initStorage().then(() => {
-  migrateV9();
-  migrateV10();
+initStorage().then(async () => {
+  // An explicit schema version is authoritative. A legacy migrV10 flag is
+  // unverified, but still blocks older remaps so indexes are never shifted
+  // again before migrateV10 records the completed-unverified state.
+  if (!gls('storageSchemaVersion') && !gls('migrV10')) migrateV9();
+  try {
+    await migrateV10();
+  } catch (error) {
+    console.error('[storage migration] initialization failed', error);
+  }
   initTheme();
   buildHeader();
   buildWeekStrip();
