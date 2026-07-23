@@ -477,6 +477,31 @@ function migrateV9() {
   });
   sls('migrV9', true);
 }
+function migrateV10() {
+  if (gls('migrV10')) return;
+  // B_1~B_6 → B_2~B_7 (랫풀다운이 B_1로 삽입되어 기존 인덱스가 한 칸씩 밀림)
+  const snap = [];
+  for (let n = 6; n >= 1; n--) {
+    Object.keys(_cache).forEach((k) => {
+      let m = k.match(/^rec:B_(\d+)_(\d{4}-\d{2}-\d{2})$/);
+      if (m && +m[1] === n) {
+        snap.push({ from: k, to: `rec:B_${n + 1}_${m[2]}`, v: gls(k) });
+        return;
+      }
+      m = k.match(/^pr:B_(\d+)$/);
+      if (m && +m[1] === n) snap.push({ from: k, to: `pr:B_${n + 1}`, v: gls(k) });
+    });
+  }
+  snap.forEach((mv) => dls(mv.from));
+  snap.forEach((mv) => {
+    if (mv.from.startsWith('pr:')) {
+      sls(mv.to, Math.max(+gls(mv.to) || 0, +mv.v || 0));
+    } else if (!gls(mv.to)) {
+      sls(mv.to, mv.v);
+    }
+  });
+  sls('migrV10', true);
+}
 async function initStorage() {
   try {
     for (let i = 0; i < localStorage.length; i++) {
@@ -2547,6 +2572,7 @@ function showToast(msg) {
 }
 initStorage().then(() => {
   migrateV9();
+  migrateV10();
   initTheme();
   buildHeader();
   buildWeekStrip();
