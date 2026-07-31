@@ -1,0 +1,33 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const app = fs.readFileSync('js/app.js', 'utf8');
+const rehab = fs.readFileSync('js/rehab.js', 'utf8');
+const html = fs.readFileSync('index.html', 'utf8');
+const css = fs.readFileSync('css/style.css', 'utf8');
+function ok(name, value) { assert.ok(value, name); console.log(`ok - ${name}`); }
+const routineBlock = (id, next) => app.match(new RegExp(`  ${id}: \\{([\\s\\S]*?)\\n  ${next}: \\{`))[1];
+const names = block => [...block.matchAll(/\n\s+name: '([^']+)'/g)].map(x => x[1]);
+assert.deepEqual(names(routineBlock('A','B')), ['랫풀다운','덤벨 로우','리버스 펙덱','레터럴 레이즈','크런치','사이드 플랭크','레그 익스텐션']);
+assert.deepEqual(names(routineBlock('B','C')), ['체스트 프레스','랫풀다운','숄더 프레스','덤벨 로우','레터럴 레이즈','크런치','사이드 플랭크','레그 익스텐션','팔로프프레스']);
+console.log('ok - existing A/B exercise indexes stay fixed and Pallof is appended');
+ok('independent routine ids exist', /id: 'pilates'/.test(app) && /id: 'home-core'/.test(app));
+ok('session records do not use gym rec keys', /`session:\$\{id\}:\$\{date\}`/.test(rehab) && !/saveRecord\(/.test(rehab));
+ok('Pilates and home-core save every required field', ['minutes','intensity','neck','back','rightQl','hip','coreFeel','nextDay','note','completed'].every(x => rehab.includes(x)));
+ok('rehab tab exists and focus mode remains gym-only', /id="tab-rehab"/.test(html) && /body:not\(\.gym-active\) #focusOverlay/.test(css) && /if \(id !== 'gym'\) closeFocusMode/.test(app));
+ok('360/390 mobile layout remains single-column where needed', /@media\(max-width:380px\)/.test(css) && /@media \(max-width:430px\)/.test(css));
+ok('bottom navigation overlap guards include safe area', /env\(safe-area-inset-bottom\)/.test(css) && /scroll-margin-bottom/.test(css));
+ok('doctor and app proposal badges are distinct', /source-badge doctor/.test(rehab) && /source-badge app/.test(rehab));
+ok('service worker caches rehab module', /js\/rehab\.js/.test(fs.readFileSync('sw.js','utf8')));
+
+ok('v9 conversion lands on v10 before full v11 backup', /finalState\.storageSchemaVersion = 10/.test(app) && /createSafetyBackup\(MIGRATION_BACKUP_V11, 10, before, Object\.keys\(before\)\)/.test(app));
+ok('Pilates day is unset and conflict policy is data-driven', /scheduleDay: null/.test(app) && /conflictPolicy/.test(app));
+ok('Pallof has permanent id and records/prs persist it in parallel', /id: 'pallof-press'/.test(app) && /rec\.exerciseId = ex\.id/.test(app) && /prExerciseId:/.test(app));
+ok('one-session-per-day edits are explicit and revision-backed', /하루 1세션/.test(rehab) && /sessionRevision:/.test(rehab) && /기존 기록 수정/.test(rehab));
+ok('session date selection can update the original session on a later day', /type=\"date\"/.test(rehab) && /selectedSessionDate/.test(rehab));
+ok('removed correction DOM is safely ignored during startup', /if \(!list\) return;/.test(app));
+ok('clinical profile metadata defaults exist', ['assessedAt','source','status','updatedAt','version'].every(k => app.includes(k)));
+ok('import uses transactional commit with rollback', /afterImport/.test(app) && /StorageMigration\.commitSnapshot/.test(app));
+ok('startup reconciliation declares localStorage authority', /reconcileStorageSnapshots/.test(app) && /authority: 'localStorage'/.test(require('fs').readFileSync('js/storage-migration.js','utf8')));
+ok('invalid existing v11 backup blocks migration without overwrite', /status: 'backup-conflict'/.test(app) && /existingBackup\.sourceSchemaVersion !== 10/.test(app));
+ok('selected bottom tab is persisted and restored after restart', /sls\('activeTab', id\)/.test(app) && /const savedTab = gls\('activeTab'\)/.test(app));

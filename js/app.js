@@ -62,7 +62,7 @@ const ROUTINES = {
         defKg: 0,
         con: '배꼽을 척추 쪽으로. 복근으로 일어나기.',
         ecc: '완전히 눕지 않고 긴장 유지. 2초.',
-        tip: '처방 운동. 무릎 90도. 목으로 당기지 말 것.',
+        tip: '앱 운영용 보조 운동. 무릎 90도. 목으로 당기지 말 것.',
         warn: null,
       },
       {
@@ -74,7 +74,7 @@ const ROUTINES = {
         defKg: 0,
         con: '왼쪽을 아래로. 골반 들어올려 몸 일직선.',
         ecc: '30초 버티기.',
-        tip: '처방 운동. 골반 전방경사 교정.',
+        tip: '앱 운영용 보조 운동. 갈비뼈-골반 중립을 유지한다.',
         warn: '⚠️ 오른쪽 절대 금지. 왼쪽 아래로만.',
       },
       {
@@ -86,7 +86,7 @@ const ROUTINES = {
         defKg: 0,
         con: '무릎 90% 지점까지만. 완전 신전 금지. 1~2초.',
         ecc: '천천히 버티며 2~3초.',
-        tip: '재활 처방. 대퇴직근 단축 교정. 무통증일만.',
+        tip: '기존 앱 재활 운동. 과거 기록은 유지하며 무통증일만 수행.',
         warn: '⚠️ 오른쪽만. 통증 오면 즉시 중단.',
       },
     ],
@@ -94,7 +94,7 @@ const ROUTINES = {
   B: {
     label: 'B루틴',
     day: '목요일',
-    tag: 'Push · 등 보조 · 8종목',
+    tag: 'Push · 등 보조 · 9종목',
     exercises: [
       {
         // 정책: 기존 B_0 덤벨 벤치프레스 기록을 체스트 프레스 기록으로
@@ -132,7 +132,7 @@ const ROUTINES = {
         defKg: 0,
         con: '자연스럽게 밀어올리기 1초.',
         ecc: '어깨 높이 아래로 3초.',
-        tip: '회복기 신규 종목. 앉아서, 코어 조이고 수행.',
+        tip: '앉아서 코어를 유지한다. 갈비뼈가 들리거나 허리가 과하게 꺾이면 중량을 낮춰라.',
         warn: '⚠️ 골반 전방경사 — 허리 과신전 금지. 어깨 시큰하면 즉시 중단.',
       },
       {
@@ -168,7 +168,7 @@ const ROUTINES = {
         defKg: 0,
         con: '복근으로 일어나기.',
         ecc: '긴장 유지 2초.',
-        tip: '처방. 무릎 90도.',
+        tip: '앱 운영용 보조 운동. 무릎 90도.',
         warn: null,
       },
       {
@@ -180,7 +180,7 @@ const ROUTINES = {
         defKg: 0,
         con: '왼쪽 아래. 골반 일직선.',
         ecc: '30초 유지.',
-        tip: '처방.',
+        tip: '앱 운영용 보조 운동.',
         warn: '⚠️ 오른쪽 절대 금지.',
       },
       {
@@ -194,6 +194,19 @@ const ROUTINES = {
         ecc: '2~3초.',
         tip: '재활. 무통증일만.',
         warn: '⚠️ 오른쪽만. 통증 시 즉시 중단.',
+      },
+      {
+        id: 'pallof-press',
+        name: '팔로프프레스',
+        target: '코어 · 몸통 회전 저항',
+        sets: 2,
+        reps: '좌우 10회',
+        weight: '저중량 시작',
+        defKg: 0,
+        con: '갈비뼈와 골반의 중립을 유지한 채 케이블을 밀기.',
+        ecc: '몸통이 돌아가지 않게 천천히 되돌리기.',
+        tip: '앱 제안 보조 운동. B루틴 마지막에서 좌우 동일하게 수행.',
+        warn: null,
       },
     ],
   },
@@ -223,7 +236,7 @@ const ROUTINES = {
         defKg: 0,
         con: '자연스럽게 밀어올리기 1초.',
         ecc: '어깨 높이 아래로 3초.',
-        tip: '허리 과신전 주의.',
+        tip: '갈비뼈가 들리거나 허리가 과하게 꺾이면 중량을 낮춰라.',
         warn: null,
       },
       {
@@ -265,12 +278,34 @@ const ROUTINES = {
     ],
   },
 };
+const CLINICAL_PROFILE = {
+  assessedAt: '2026-07-27', source: '재활의학과 진료', status: 'active', updatedAt: '2026-07-31', version: 1,
+  structuralAbnormality: '없음', spineAlignment: '정상', pelvisAlignment: '정상', hipAlignment: '정상',
+  forwardHead: '경미', coreStability: '부족', anteriorPelvicTilt: '경미, 기능성', exerciseRestriction: '구조적 제한 없음',
+  medicalRecommendation: { activity: '필라테스', frequency: '주 1회', durationWeeks: 8 },
+  goals: ['갈비뼈-골반 중립 유지', '코어 안정성', '목 정렬 개선'],
+  summary: '현재 검사상 뼈·관절의 구조적 이상이나 정렬 이상은 확인되지 않았습니다.\n거북목 경향과 코어 안정성 부족으로 인한 가벼운 골반 전방경사가 있습니다.\n목표는 골반을 억지로 말아 넣는 것이 아니라, 갈비뼈와 골반의 중립을 유지한 채 움직이는 능력을 높이는 것입니다.',
+};
+const SESSION_ROUTINES = {
+  pilates: { id: 'pilates', name: '필라테스', frequency: '주 1회', durationWeeks: 8, minutes: 50, source: '재활의학과 권고', intensity: '저강도~중강도', scheduleDay: null, conflictPolicy: { nextDayLowerBody: '중간 이상 강도 또는 복부·둔근 근육통 시 주의', sameAreaRecovery: '피로·통증 상태에 따라 48시간 권장' } },
+  'home-core': { id: 'home-core', name: '홈코어', frequency: '주 2회 (적응 후 최대 주 3회)', minutes: '8~10', source: '진단 결과 기반 보조 루틴' },
+};
+const WEEKLY_GOALS = { A: 1, B: 1, pilates: 1, 'home-core': 2, swim: 1, recovery: '선택' };
+const HOME_CORE_EXERCISES = [
+  ['데드버그', '8회 × 2세트', '좌우 한 쌍을 1회로 기록. 허리 과신전 금지, 갈비뼈가 들리지 않게.'],
+  ['브릿지', '12회 × 2세트', '허리로 들어 올리지 말고 둔근 사용.'],
+  ['사이드 플랭크', '좌우 20초 × 2세트', '필요하면 무릎을 대고 수행.'],
+  ['턱 당기기', '5초 유지 × 10회', '턱을 아래로 숙이지 말고 뒤로 수평 이동.'],
+  ['장요근 스트레칭', '좌우 30초 × 2세트', '허리를 꺾지 말고 골반을 중립에 가깝게 유지.'],
+];
+const LOWER_BODY_REINTRODUCTION = { status: '재도입', stages: ['1단계: 맨몸 스쿼트 또는 보조 스쿼트 2세트', '2단계: 통증 및 다음 날 악화 없으면 3세트', '3단계: 이후 런지 또는 레그프레스 추가 검토'], progress: '운동 중 통증 없음, 다음 날 악화 없음', stop: '날카로운 통증, 관절 통증, 24시간 이상 뚜렷한 악화' };
+const SUITCASE_CARRY = { status: '2단계 선택 운동', activation: '팔로프프레스 2주 이상 수행 + 허리 및 오른쪽 QL 통증 증가 없음', dose: '좌우 20~30m × 2세트', stop: 'QL 불편감이 있으면 중단' };
 const CORRECTIONS = [
   {
     name: 'QL 이완',
     dur: '60초',
     detail:
-      '옆으로 누운 상태에서 오른쪽 허리 위로 폼롤러 대고 천천히 체중 실기.\n\n목적: 오른쪽 QL 과긴장 완화 — 골반 교정의 전제 조건.',
+      '옆으로 누운 상태에서 오른쪽 허리 위로 폼롤러 대고 천천히 체중 실기.\n\n목적: 오른쪽 QL 긴장 완화를 위한 기존 앱 제안.',
   },
   {
     name: '클램쉘',
@@ -348,7 +383,7 @@ const RULES = [
     num: '02',
     text: '세트 간 휴식 60~90초 — 더 짧으면 젖산 피로, 더 길면 온도 떨어짐.',
   },
-  { num: '03', text: '같은 부위 48시간 회복 — 월 헬스 후 화 헬스 절대 금지.' },
+  { num: '03', text: '같은 부위 피로·통증이 남으면 상태에 따라 48시간 회복 권장.' },
   { num: '04', text: '헬스 + 수영 같은 날 금지 — 회복 자원 충돌.' },
   {
     num: '05',
@@ -420,24 +455,28 @@ const _cache = {};
 function gls(k) {
   return _cache[k] ?? null;
 }
+function markStorageSyncPending(key, error) {
+  const status = { status: 'pending', authority: 'localStorage', key, failedAt: new Date().toISOString(), message: String(error?.message || error || 'mirror write failed') };
+  _cache.storageSyncStatus = status;
+  try { localStorage.setItem('routine:storageSyncStatus', JSON.stringify(status)); } catch {}
+}
 function sls(k, v) {
   _cache[k] = v;
-  try {
-    localStorage.setItem('routine:' + k, JSON.stringify(v));
-  } catch {}
-  if (window.storage) window.storage.set(k, JSON.stringify(v)).catch(() => {});
+  try { localStorage.setItem('routine:' + k, JSON.stringify(v)); }
+  catch (error) { markStorageSyncPending(k, error); return; }
+  if (window.storage) window.storage.set(k, JSON.stringify(v)).catch((error) => markStorageSyncPending(k, error));
 }
 function dls(k) {
   delete _cache[k];
-  try {
-    localStorage.removeItem('routine:' + k);
-  } catch {}
-  if (window.storage) window.storage.delete(k).catch(() => {});
-}
-const STORAGE_SCHEMA_VERSION = StorageMigration.CURRENT_SCHEMA_VERSION;
+  try { localStorage.removeItem('routine:' + k); }
+  catch (error) { markStorageSyncPending(k, error); return; }
+  if (window.storage) window.storage.delete(k).catch((error) => markStorageSyncPending(k, error));
+}const STORAGE_SCHEMA_VERSION = StorageMigration.CURRENT_SCHEMA_VERSION;
 const MIGRATION_BACKUP_V10 = 'migrationBackup:v10';
 const MIGRATION_CONFLICT_V10 = 'migrationConflict:v10';
 const MIGRATION_STATUS_V10 = 'migrationStatus:v10';
+const MIGRATION_BACKUP_V11 = 'migrationBackup:v11';
+const MIGRATION_STATUS_V11 = 'migrationStatus:v11';
 
 function storageSnapshot() {
   return JSON.parse(JSON.stringify(_cache));
@@ -445,13 +484,13 @@ function storageSnapshot() {
 async function persistSet(k, v) {
   const serialized = JSON.stringify(v);
   localStorage.setItem('routine:' + k, serialized);
-  if (window.storage) await window.storage.set(k, serialized);
   _cache[k] = v;
+  if (window.storage) await window.storage.set(k, serialized);
 }
 async function persistDelete(k) {
   localStorage.removeItem('routine:' + k);
-  if (window.storage) await window.storage.delete(k);
   delete _cache[k];
+  if (window.storage) await window.storage.delete(k);
 }
 async function createSafetyBackup(key, schemaVersion, source, targetKeys) {
   if (gls(key)) return true;
@@ -477,7 +516,7 @@ async function createSafetyBackup(key, schemaVersion, source, targetKeys) {
 }
 async function applySnapshotTransaction(before, after, metadata) {
   const finalState = JSON.parse(JSON.stringify(after));
-  finalState.storageSchemaVersion = STORAGE_SCHEMA_VERSION;
+  finalState.storageSchemaVersion = 10;
   finalState[MIGRATION_STATUS_V10] = metadata;
   finalState.migrV10 = true;
   try {
@@ -549,6 +588,7 @@ function migrateV9() {
 async function migrateV10() {
   const source = storageSnapshot();
   const classification = StorageMigration.classifyStorage(source);
+  if (classification.type === 'v10') return { status: 'ready-for-v11' };
   if (classification.type === 'current') {
     if (source.storageSchemaVersion !== STORAGE_SCHEMA_VERSION)
       await persistSet('storageSchemaVersion', STORAGE_SCHEMA_VERSION);
@@ -610,31 +650,71 @@ async function migrateV10() {
   });
   return { status: 'completed' };
 }
+async function migrateV11() {
+  const before = storageSnapshot();
+  if (Number(before.storageSchemaVersion) === STORAGE_SCHEMA_VERSION) {
+    if (!before[MIGRATION_STATUS_V11]) await persistSet(MIGRATION_STATUS_V11, { status: 'completed-unverified', detectedAt: new Date().toISOString(), sourceSchemaVersion: STORAGE_SCHEMA_VERSION, movedKeys: [] });
+    return { status: 'current' };
+  }
+  if (Number(before.storageSchemaVersion) !== 10) return { status: 'not-applicable' };
+  const existingBackup = before[MIGRATION_BACKUP_V11];
+  if (existingBackup && (existingBackup.sourceSchemaVersion !== 10 || !existingBackup.keys || typeof existingBackup.keys !== 'object')) {
+    const conflict = { status: 'backup-conflict', detectedAt: new Date().toISOString(), sourceSchemaVersion: 10 };
+    await persistSet(MIGRATION_STATUS_V11, conflict);
+    return conflict;
+  }
+  const backupOk = await createSafetyBackup(MIGRATION_BACKUP_V11, 10, before, Object.keys(before));
+  if (!backupOk) {
+    await persistSet(MIGRATION_STATUS_V11, { status: 'backup-failed', failedAt: new Date().toISOString() });
+    return { status: 'backup-failed' };
+  }
+  const after = JSON.parse(JSON.stringify(before));
+  after.storageSchemaVersion = STORAGE_SCHEMA_VERSION;
+  after.clinicalProfile = { ...CLINICAL_PROFILE, ...(after.clinicalProfile || {}), medicalRecommendation: { ...CLINICAL_PROFILE.medicalRecommendation, ...(after.clinicalProfile?.medicalRecommendation || {}) } };
+  after.weeklyGoals = after.weeklyGoals || WEEKLY_GOALS;
+  after[MIGRATION_STATUS_V11] = { status: 'completed', completedAt: new Date().toISOString(), sourceSchemaVersion: 10, movedKeys: [] };
+  try {
+    await StorageMigration.commitSnapshot({ set: persistSet, delete: persistDelete }, before, after, ['clinicalProfile', 'weeklyGoals', MIGRATION_STATUS_V11, 'storageSchemaVersion']);
+    return { status: 'completed' };
+  } catch (error) {
+    try { await persistSet(MIGRATION_STATUS_V11, { status: 'failed', failedAt: new Date().toISOString(), message: String(error.message || error) }); } catch {}
+    throw error;
+  }
+}
 async function initStorage() {
+  const localSnapshot = {};
+  const remoteSnapshot = {};
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('routine:')) {
-        const k = key.replace('routine:', '');
-        try {
-          _cache[k] = JSON.parse(localStorage.getItem(key));
-        } catch {}
+      if (key?.startsWith('routine:')) {
+        const k = key.slice(8);
+        try { localSnapshot[k] = JSON.parse(localStorage.getItem(key)); } catch {}
       }
     }
   } catch {}
-  if (!window.storage) return;
+  if (window.storage) {
+    try {
+      const keys = await window.storage.list('');
+      if (keys?.keys) await Promise.all(keys.keys.map(async (k) => {
+        try { const r = await window.storage.get(k); if (r) remoteSnapshot[k] = JSON.parse(r.value); } catch {}
+      }));
+    } catch (error) { markStorageSyncPending('list', error); }
+  }
+  const reconciliation = StorageMigration.reconcileStorageSnapshots(localSnapshot, remoteSnapshot);
+  Object.assign(_cache, reconciliation.merged);
   try {
-    const keys = await window.storage.list('');
-    if (keys?.keys)
-      await Promise.all(
-        keys.keys.map(async (k) => {
-          try {
-            const r = await window.storage.get(k);
-            if (r) _cache[k] = JSON.parse(r.value);
-          } catch {}
-        }),
-      );
-  } catch {}
+    for (const [k, v] of Object.entries(reconciliation.localWrites))
+      localStorage.setItem('routine:' + k, JSON.stringify(v));
+    if (window.storage) for (const [k, v] of Object.entries(reconciliation.remoteWrites))
+      await window.storage.set(k, JSON.stringify(v));
+    if (gls('storageSyncStatus')?.status === 'pending') {
+      const synced = { status: 'synced', authority: 'localStorage', completedAt: new Date().toISOString() };
+      localStorage.setItem('routine:storageSyncStatus', JSON.stringify(synced));
+      if (window.storage) await window.storage.set('storageSyncStatus', JSON.stringify(synced));
+      _cache.storageSyncStatus = synced;
+    }
+  } catch (error) { markStorageSyncPending('startup-reconcile', error); }
 }
 function getRecord(k) {
   return gls('rec:' + k) || {};
@@ -1138,6 +1218,8 @@ function toggleSetCheck(idx, s) {
   const today = todayStr();
   const rKey = `${currentRoutine}_${idx}_${today}`;
   const rec = getRecord(rKey);
+  const ex = ROUTINES[currentRoutine].exercises[idx];
+  if (ex.id) rec.exerciseId = ex.id;
   rec['checked_' + s] = isChecked;
   const kg = document.getElementById(`kg_${idx}_${s}`)?.value || '';
   const rp = document.getElementById(`rp_${idx}_${s}`)?.value || '';
@@ -1156,7 +1238,6 @@ function toggleSetCheck(idx, s) {
     toggleRest(true);
   }
 
-  const ex = ROUTINES[currentRoutine].exercises[idx];
   let allChecked = true;
   for (let i = 0; i < ex.sets; i++) {
     if (!rec['checked_' + i]) {
@@ -1186,6 +1267,7 @@ function toggleSetCheck(idx, s) {
     const oldPR = gls(prKey) || 0;
     if (maxKg > oldPR && maxKg > 0) {
       sls(prKey, maxKg);
+      if (ex.id) sls('prExerciseId:' + currentRoutine + '_' + idx, ex.id);
       showToast(`🏆 PR! ${maxKg}kg`);
     } else showToast('✅ ' + ex.name + ' 완료!');
     try {
@@ -1205,6 +1287,7 @@ function saveEx(idx, silent) {
   const today = todayStr();
   const rKey = `${currentRoutine}_${idx}_${today}`;
   const rec = getRecord(rKey);
+  if (ex.id) rec.exerciseId = ex.id;
   const parts = [];
   for (let s = 0; s < ex.sets; s++) {
     const kg = document.getElementById(`kg_${idx}_${s}`)?.value || '';
@@ -1959,6 +2042,7 @@ function toggleCorr(i) {
 }
 function buildCorrections() {
   const list = document.getElementById('corrList');
+  if (!list) return;
   const done = getCorrDone();
   CORRECTIONS.forEach((c, i) => {
     const card = document.createElement('div');
@@ -2568,14 +2652,14 @@ function localGymFeedback() {
       `통증 플래그: ${pain.map((x) => x.ex.name).join(', ')}. 다음엔 10~15% 감량 또는 대체.`,
     );
   if (next) lines.push(`다음 운동: ${next.ex.name}. ${next.smart.msg}`);
-  else lines.push('오늘 루틴 완료. 다음 48시간 회복 확보.');
+  else lines.push('오늘 루틴 완료. 같은 부위 피로·통증이 남으면 상태에 따라 48시간 회복을 권장.');
   return lines.join('\n');
 }
 function getAiFeedback() {
   const el = document.getElementById('aiResult');
   if (!el) return;
   el.className = 'ai-result visible';
-  el.textContent = localGymFeedback();
+  el.textContent = '검사상 구조적 이상이나 정렬 이상은 없어 운동 자체를 제한할 이유는 없습니다.\n현재 우선순위는 코어 힘 자체보다, 갈비뼈와 골반의 위치를 유지한 채 팔다리를 움직이는 능력입니다. 골반을 억지로 말아 넣지 마세요.\n필라테스 주 1회·8주는 재활의학과 권고입니다. 홈코어와 팔로프프레스는 앱에서 제안하는 보조 운동입니다.\n하체 운동은 기존 유지가 아니라 단계적 재도입 상태입니다.\n\n' + localGymFeedback();
 }
 function getSwimFeedback() {
   const el = document.getElementById('swimAiResult');
@@ -2585,7 +2669,7 @@ function getSwimFeedback() {
     '오늘 목표 1개만 잡자.\n1) 풀 실측 18m 기준 — 스트로크당 거리(DPS) 2.0m 이상 유지가 지표.\n2) 속도 올리지 말고 물속 호기를 끝까지 내뱉어라.\n3) 오른팔 EVF: 캐치에서 팔꿈치 높게, 전완으로 물 걸기. 손목 스냅 금지.\n4) 양측 호흡 훈련은 오른팔 상완근 회복 확인 후 도입 — 그 전엔 무리한 전환 금지.\n5) 드릴 순서: 왼팔 외팔 5 → 오른팔 외팔 3 → 캐치업 2 → 풀스트로크 확인.';
 }
 function switchTabById(id) {
-  const tabs = ['gym', 'correct', 'swim', 'history', 'rules'];
+  const tabs = ['gym', 'rehab', 'swim', 'history', 'rules'];
   document
     .querySelectorAll('.tab-panel')
     .forEach((p) => p.classList.toggle('active', p.id === 'tab-' + id));
@@ -2598,6 +2682,8 @@ function switchTabById(id) {
   updateTodaySummary();
   updateCoachNudge();
   if (id === 'history') buildHistory();
+  if (id === 'rehab') buildRehab();
+  sls('activeTab', id);
 }
 function switchTab(id) {
   switchTabById(id);
@@ -2660,6 +2746,7 @@ function importBackup(input) {
           const prepared = await prepareImportedData(payload);
           await backupBeforeImport();
           const current = storageSnapshot();
+          Object.keys(prepared).filter((k) => StorageMigration.isProtectedBackupKey(k) && Object.prototype.hasOwnProperty.call(current, k)).forEach((k) => delete prepared[k]);
           const collisions = Object.keys(prepared).filter(
             (k) =>
               Object.prototype.hasOwnProperty.call(current, k) &&
@@ -2692,8 +2779,13 @@ function importBackup(input) {
               '[backup import] replacing non-record settings',
               settingCollisions,
             );
-          for (const k of Object.keys(prepared))
-            await persistSet(k, prepared[k]);
+          const afterImport = { ...current, ...prepared };
+          await StorageMigration.commitSnapshot(
+            { set: persistSet, delete: persistDelete },
+            current,
+            afterImport,
+            ['storageSchemaVersion'],
+          );
           showToast('📥 복원 완료 — 새로고침');
           setTimeout(() => location.reload(), 800);
         } catch (error) {
@@ -2741,9 +2833,11 @@ initStorage().then(async () => {
   if (!gls('storageSchemaVersion') && !gls('migrV10')) migrateV9();
   try {
     await migrateV10();
+    await migrateV11();
   } catch (error) {
     console.error('[storage migration] initialization failed', error);
   }
+  seedClinicalData();
   initTheme();
   buildHeader();
   buildWeekStrip();
@@ -2759,6 +2853,8 @@ initStorage().then(async () => {
   updateBackupNote();
   renderGuards();
   renderSwimLogs();
+  const savedTab = gls('activeTab');
+  if (['gym', 'rehab', 'swim', 'history', 'rules'].includes(savedTab)) switchTabById(savedTab);
   const sb = document.getElementById('soundBtn');
   if (sb) sb.textContent = soundOn() ? '🔔' : '🔕';
 });

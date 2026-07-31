@@ -98,12 +98,13 @@
     <div class="ai-result" id="aiResult"></div>
   </div>
 
-  <!-- 교정 -->
-  <div class="tab-panel" id="tab-correct">
-    <div class="sec-hdr"><div class="sec-icon">🔄</div><div class="sec-title">골반 교정 루틴</div><div class="sec-badge">매일 5~7분</div></div>
-    <div class="alert-warn">⚠️ <strong>부상 회복 중</strong> — 이상근 직접 스트레칭 금지.<br><span style="opacity:.7">진료 전까지 현 루틴 유지.</span></div>
-    <div class="corr-progress" id="corrProgress"></div>
-    <div id="corrList"></div>
+  <!-- 재활 -->
+  <div class="tab-panel" id="tab-rehab">
+    <section class="clinical-card" id="clinicalSummary"></section>
+    <section class="weekly-goals" id="weeklyGoals"></section>
+    <div class="session-tabs"><button class="session-tab active" data-session="pilates" onclick="showSessionRoutine('pilates',this)">필라테스</button><button class="session-tab" data-session="home-core" onclick="showSessionRoutine('home-core',this)">홈코어</button></div>
+    <div id="sessionRoutineContent"></div>
+    <section class="reintro-card" id="lowerBodyStatus"></section>
   </div>
 
   <!-- 수영 -->
@@ -210,7 +211,7 @@
 
 <nav class="bnav">
   <button class="bnav-btn active" onclick="switchTab('gym')"><span class="bnav-icon">🏋️</span><span class="bnav-label">헬스</span></button>
-  <button class="bnav-btn" onclick="switchTab('correct')"><span class="bnav-icon">🔄</span><span class="bnav-label">교정</span></button>
+  <button class="bnav-btn" onclick="switchTab('rehab')"><span class="bnav-icon">🧘</span><span class="bnav-label">재활</span></button>
   <button class="bnav-btn" onclick="switchTab('swim')"><span class="bnav-icon">🏊</span><span class="bnav-label">수영</span></button>
   <button class="bnav-btn" onclick="switchTab('history')"><span class="bnav-icon">📊</span><span class="bnav-label">기록</span></button>
   <button class="bnav-btn" onclick="switchTab('rules')"><span class="bnav-icon">📋</span><span class="bnav-label">원칙</span></button>
@@ -248,4 +249,5 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/storage-migration.js" defer></script>
+<script src="js/rehab.js" defer></script>
 <script src="js/app.js" defer></script>

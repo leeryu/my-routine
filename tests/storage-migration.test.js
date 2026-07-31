@@ -35,12 +35,12 @@ test('version 9 records and PRs move one index and leave B_1 empty', () => {
   assert.equal(output.result['pr:B_1'], undefined);
 });
 
-test('version 10 data is never selected for migration', () => {
+test('version 10 data is selected for metadata-only v11 migration', () => {
   const input = {
     storageSchemaVersion: 10,
     'rec:B_1_2026-07-23': { name: 'lat pulldown' },
   };
-  assert.equal(migration.classifyStorage(input).type, 'current');
+  assert.equal(migration.classifyStorage(input).type, 'v10');
   assert.deepEqual(input['rec:B_1_2026-07-23'], { name: 'lat pulldown' });
 });
 
@@ -138,7 +138,7 @@ test('version 9 backup conversion ignores the current browser flags', () => {
       'rec:B_1_2026-07-10': { name: 'shoulder' },
     },
   });
-  assert.equal(result.storageSchemaVersion, 10);
+  assert.equal(result.storageSchemaVersion, migration.CURRENT_SCHEMA_VERSION);
   assert.equal(result.migrV10, true);
   assert.deepEqual(result['rec:B_2_2026-07-10'], { name: 'shoulder' });
   assert.equal(result['rec:B_1_2026-07-10'], undefined);
@@ -154,6 +154,7 @@ test('unknown backup schema version is rejected', () => {
 test('import identity keys and simple settings use different conflict policies', () => {
   assert.equal(migration.isIdentityDataKey('rec:B_1_2026-07-23'), true);
   assert.equal(migration.isIdentityDataKey('pr:B_1'), true);
+  assert.equal(migration.isIdentityDataKey('session:pilates:2026-07-31'), true);
   assert.equal(migration.isIdentityDataKey('theme'), false);
   assert.equal(migration.isIdentityDataKey('soundOn'), false);
 });
@@ -169,7 +170,7 @@ async function asyncTest(name, fn) {
 }
 
 (async () => {
-  await asyncTest('new install commit sets schema 10 without moving records', async () => {
+  await asyncTest('new install commit sets current schema without moving records', async () => {
     const state = {};
     const adapter = {
       async set(key, value) {
@@ -182,10 +183,10 @@ async function asyncTest(name, fn) {
     await migration.commitSnapshot(
       adapter,
       {},
-      { storageSchemaVersion: 10 },
+      { storageSchemaVersion: migration.CURRENT_SCHEMA_VERSION },
       ['storageSchemaVersion'],
     );
-    assert.deepEqual(state, { storageSchemaVersion: 10 });
+    assert.deepEqual(state, { storageSchemaVersion: migration.CURRENT_SCHEMA_VERSION });
   });
 
   await asyncTest('write failure rolls records and schema back', async () => {
@@ -229,4 +230,23 @@ async function asyncTest(name, fn) {
   });
 })().catch(() => {
   process.exitCode = 1;
+});
+
+test('version 10 backup upgrades metadata without changing records', () => {
+  const original = { 'rec:A_0_2026-07-31': { kg_0: 35, reps_0: 10 }, 'pr:B_1': 40 };
+  const result = migration.convertBackupPayload({ schemaVersion: 10, data: original });
+  assert.equal(result.storageSchemaVersion, migration.CURRENT_SCHEMA_VERSION);
+  assert.deepEqual(result['rec:A_0_2026-07-31'], original['rec:A_0_2026-07-31']);
+  assert.equal(result['pr:B_1'], 40);
+});
+
+test('current backup round trip preserves session and legacy records', () => {
+  const data = { storageSchemaVersion: migration.CURRENT_SCHEMA_VERSION, 'rec:A_0_2026-07-31': { kg_0: 35 }, 'rec:B_8_2026-07-31': { exerciseId: 'pallof-press', kg_0: 5 }, 'rec:C_0_2026-07-31': { kg_0: 20 }, 'prExerciseId:B_8': 'pallof-press', 'session:pilates:2026-07-31': { minutes: 50 }, 'session:home-core:2026-07-31': { completed: [true] }, clinicalProfile: { version: 1 }, 'migrationStatus:v11': { status: 'completed' }, 'migrationBackup:v11': { sourceSchemaVersion: 10, keys: { storageSchemaVersion: 10 } } };
+  assert.deepEqual(migration.convertBackupPayload({ schemaVersion: migration.CURRENT_SCHEMA_VERSION, data }), data);
+});
+
+test('internal recovery backups are protected from overwrite on import', () => {
+  assert.equal(migration.isProtectedBackupKey('migrationBackup:v11'), true);
+  assert.equal(migration.isProtectedBackupKey('importBackup:now'), true);
+  assert.equal(migration.isProtectedBackupKey('clinicalProfile'), false);
 });

@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const CURRENT_SCHEMA_VERSION = 10;
+  const CURRENT_SCHEMA_VERSION = 11;
   const B_RECORD_RE = /^rec:B_([1-6])_(\d{4}-\d{2}-\d{2})$/;
   const B_PR_RE = /^pr:B_([1-6])$/;
 
@@ -91,6 +91,7 @@
     if (version === CURRENT_SCHEMA_VERSION) {
       return { type: 'current', version, bKeys };
     }
+    if (version === 10) return { type: 'v10', version, bKeys };
     if (version === 9) return { type: 'v9', version, bKeys };
     if (
       !version &&
@@ -121,13 +122,20 @@
     };
   }
 
+
+  function isProtectedBackupKey(key) {
+    return key.startsWith('migrationBackup:') || key.startsWith('importBackup:');
+  }
   function isIdentityDataKey(key) {
     return (
       key.startsWith('rec:') ||
       key.startsWith('pr:') ||
+      key.startsWith('prExerciseId:') ||
       key.startsWith('done:') ||
       key.startsWith('corr:') ||
       key.startsWith('readiness:') ||
+      key.startsWith('session:') ||
+      key.startsWith('sessionRevision:') ||
       key === 'wh' ||
       key === 'swimLogs' ||
       key === 'streak'
@@ -138,6 +146,11 @@
     if (!payload || !payload.data || typeof payload.data !== 'object')
       throw new Error('invalid backup payload');
     if (payload.schemaVersion === CURRENT_SCHEMA_VERSION) return clone(payload.data);
+    if (payload.schemaVersion === 10) {
+      const result = clone(payload.data);
+      result.storageSchemaVersion = CURRENT_SCHEMA_VERSION;
+      return result;
+    }
     if (payload.schemaVersion !== 9)
       throw new Error(`unsupported backup schema version: ${payload.schemaVersion}`);
     const converted = transformV9ToV10(payload.data);
@@ -151,6 +164,21 @@
     return converted.result;
   }
 
+
+  function reconcileStorageSnapshots(localSource, remoteSource) {
+    const local = clone(localSource || {});
+    const remote = clone(remoteSource || {});
+    const merged = { ...remote, ...local };
+    const localWrites = {};
+    const remoteWrites = {};
+    Object.keys(merged).forEach((key) => {
+      if (JSON.stringify(local[key]) !== JSON.stringify(merged[key]))
+        localWrites[key] = clone(merged[key]);
+      if (JSON.stringify(remote[key]) !== JSON.stringify(merged[key]))
+        remoteWrites[key] = clone(merged[key]);
+    });
+    return { merged, localWrites, remoteWrites, authority: 'localStorage' };
+  }
   async function commitSnapshot(adapter, before, after, finalKeys) {
     const keys = [...new Set([...Object.keys(before), ...Object.keys(after)])];
     let changed = keys.filter(
@@ -169,7 +197,7 @@
       }
     } catch (error) {
       try {
-        for (const key of changed) {
+        for (const key of [...changed].reverse()) {
           if (Object.prototype.hasOwnProperty.call(before, key))
             await adapter.set(key, clone(before[key]));
           else await adapter.delete(key);
@@ -191,6 +219,8 @@
     getV10Target,
     isBExerciseKey,
     isIdentityDataKey,
+    isProtectedBackupKey,
+    reconcileStorageSnapshots,
     transformV9ToV10,
   };
 });

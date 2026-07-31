@@ -1,10 +1,11 @@
 /* 배포 시 앱 파일 변경이 있으면 CACHE 버전을 올릴 것 (v1 → v2 …) */
-const CACHE = 'routine-v3';
+const CACHE = 'routine-v5';
 const CORE = [
   './',
   './index.html',
   './css/style.css',
   './js/storage-migration.js',
+  './js/rehab.js',
   './js/app.js',
   './manifest.json',
   './icons/icon-192.png',
@@ -38,14 +39,16 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     fetch(e.request)
       .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy));
+        if (res.ok) {
+          const copy = res.clone();
+          e.waitUntil(caches.open(CACHE).then((c) => c.put(e.request, copy)));
+        }
         return res;
       })
       .catch(() =>
         caches
           .match(e.request)
-          .then((r) => r || caches.match('./index.html')),
+          .then((r) => r || (e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error())),
       ),
   );
 });
