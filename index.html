@@ -13,7 +13,7 @@
 
 </head>
 <body class="gym-active">
-<button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+<button class="theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="다크모드 전환">🌙</button>
 
 <div class="hdr">
   <div class="hdr-top">
@@ -69,9 +69,9 @@
     <div class="coach-grid">
       <div class="coach-card" id="readinessCard">
         <div class="coach-title">🧭 오늘 컨디션 체크</div>
-        <div class="readiness-row"><label>수면</label><input id="readySleep" type="range" min="1" max="5" value="3" oninput="saveReadiness()"><span class="readiness-score" id="readySleepVal">3</span></div>
-        <div class="readiness-row"><label>피로</label><input id="readyFatigue" type="range" min="1" max="5" value="3" oninput="saveReadiness()"><span class="readiness-score" id="readyFatigueVal">3</span></div>
-        <div class="readiness-row"><label>통증</label><input id="readyPain" type="range" min="1" max="5" value="1" oninput="saveReadiness()"><span class="readiness-score" id="readyPainVal">1</span></div>
+        <div class="readiness-row"><label for="readySleep">수면</label><input id="readySleep" type="range" min="1" max="5" value="3" oninput="saveReadiness()" aria-label="수면 점수, 1에서 5까지"><span class="readiness-score" id="readySleepVal">3</span></div>
+        <div class="readiness-row"><label for="readyFatigue">피로</label><input id="readyFatigue" type="range" min="1" max="5" value="3" oninput="saveReadiness()" aria-label="피로 점수, 1에서 5까지"><span class="readiness-score" id="readyFatigueVal">3</span></div>
+        <div class="readiness-row"><label for="readyPain">통증</label><input id="readyPain" type="range" min="1" max="5" value="1" oninput="saveReadiness()" aria-label="통증 점수, 1에서 5까지"><span class="readiness-score" id="readyPainVal">1</span></div>
         <div class="coach-text" id="readinessText">오늘 운동 강도 판단 대기.</div>
       </div>
       <div class="coach-card" id="coachPanel">
@@ -102,7 +102,7 @@
   <div class="tab-panel" id="tab-rehab">
     <section class="clinical-card" id="clinicalSummary"></section>
     <section class="weekly-goals" id="weeklyGoals"></section>
-    <div class="session-tabs"><button class="session-tab active" data-session="pilates" onclick="showSessionRoutine('pilates',this)">필라테스</button><button class="session-tab" data-session="home-core" onclick="showSessionRoutine('home-core',this)">홈코어</button></div>
+    <div class="session-tabs"><button class="session-tab active" data-session="pilates" onclick="showSessionRoutine('pilates',this)" aria-current="page">필라테스</button><button class="session-tab" data-session="home-core" onclick="showSessionRoutine('home-core',this)">홈코어</button></div>
     <div id="sessionRoutineContent"></div>
     <section class="reintro-card" id="lowerBodyStatus"></section>
   </div>
@@ -196,6 +196,9 @@
     <div class="sec-hdr"><div class="sec-icon">⚡</div><div class="sec-title">통증 구분</div></div>
     <div id="painGuide"></div>
     <div class="divider"></div>
+    <div class="sec-hdr"><div class="sec-icon">🛠️</div><div class="sec-title">루틴 편집</div></div>
+    <div id="routineEditor"></div>
+    <div class="divider"></div>
     <div class="sec-hdr"><div class="sec-icon">💾</div><div class="sec-title">데이터 관리</div></div>
     <div class="backup-box">
       <div class="backup-note" id="backupNote">마지막 백업: 확인 중…</div>
@@ -205,12 +208,14 @@
       </div>
       <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
       <div class="backup-hint">기록은 이 브라우저에만 저장된다. 폰 교체·브라우저 데이터 삭제 전 반드시 백업.</div>
+      <div class="autobk-hdr">자동 백업 (기기 내 매일 1회 자동 저장, 최근 5개 보관)</div>
+      <div id="autoBackupBox"></div>
     </div>
   </div>
 </div>
 
 <nav class="bnav">
-  <button class="bnav-btn active" onclick="switchTab('gym')"><span class="bnav-icon">🏋️</span><span class="bnav-label">헬스</span></button>
+  <button class="bnav-btn active" onclick="switchTab('gym')" aria-current="page"><span class="bnav-icon">🏋️</span><span class="bnav-label">헬스</span></button>
   <button class="bnav-btn" onclick="switchTab('rehab')"><span class="bnav-icon">🧘</span><span class="bnav-label">재활</span></button>
   <button class="bnav-btn" onclick="switchTab('swim')"><span class="bnav-icon">🏊</span><span class="bnav-label">수영</span></button>
   <button class="bnav-btn" onclick="switchTab('history')"><span class="bnav-icon">📊</span><span class="bnav-label">기록</span></button>

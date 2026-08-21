@@ -124,7 +124,7 @@
 
 
   function isProtectedBackupKey(key) {
-    return key.startsWith('migrationBackup:') || key.startsWith('importBackup:');
+    return key.startsWith('migrationBackup:') || key.startsWith('importBackup:') || key.startsWith('autoBackup:');
   }
   function isIdentityDataKey(key) {
     return (
