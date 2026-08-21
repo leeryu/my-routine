@@ -67,7 +67,11 @@ function renderWeeklyGoals() {
 }
 function changeSessionDate(id, date) { sessionDates[id] = date; showSessionRoutine(id, document.querySelector(`.session-tab[data-session="${id}"]`), date); }
 function showSessionRoutine(id, button, requestedDate) {
-  document.querySelectorAll('.session-tab').forEach(b => b.classList.toggle('active', b === button));
+  document.querySelectorAll('.session-tab').forEach(b => {
+    const active = b === button;
+    b.classList.toggle('active', active);
+    if (active) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
   const date = requestedDate || sessionDates[id] || todayStr(); sessionDates[id] = date;
   const el = document.getElementById('sessionRoutineContent'); if (!el) return; const rec = sessionRecord(id, date);
   const mode = rec.savedAt ? `<div class="session-mode edit">기존 기록 수정 · 저장 전 자동 백업</div>` : `<div class="session-mode">신규 기록 · 하루 1세션</div>`;

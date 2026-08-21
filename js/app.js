@@ -1025,7 +1025,9 @@ function buildSelector() {
   ['A', 'B', 'C'].forEach((k) => {
     const c = document.createElement('button');
     c.className = 'routine-chip' + (k === currentRoutine ? ' active' : '');
+    c.type = 'button';
     c.dataset.rk = k;
+    c.setAttribute('aria-pressed', String(k === currentRoutine));
     c.onclick = () => showRoutine(k);
     c.innerHTML = `<strong>${ROUTINES[k].label}</strong> ${ROUTINES[k].day}`;
     sel.appendChild(c);
@@ -1034,9 +1036,11 @@ function buildSelector() {
 function showRoutine(key) {
   renderGuards();
   currentRoutine = key;
-  document
-    .querySelectorAll('.routine-chip')
-    .forEach((c) => c.classList.toggle('active', c.dataset.rk === key));
+  document.querySelectorAll('.routine-chip').forEach((c) => {
+    const active = c.dataset.rk === key;
+    c.classList.toggle('active', active);
+    c.setAttribute('aria-pressed', String(active));
+  });
   const r = ROUTINES[key];
   const today = todayStr();
   const content = document.getElementById('routineContent');
@@ -1082,17 +1086,17 @@ function showRoutine(key) {
     <div class="rec-fw">
       <div class="rec-flbl">중량 KG</div>
       <div class="adj-wrap">
-        <button class="adj-s" onclick="adj('kg',${idx},${s},-2.5)" type="button">−</button>
-        <input class="rec-inp${isPrefilled ? ' prefilled' : ''}" type="number" inputmode="decimal" placeholder="—" id="kg_${idx}_${s}" value="${kgVal}" onchange="onInpChange(${idx},${s})">
-        <button class="adj-s" onclick="adj('kg',${idx},${s},2.5)" type="button">+</button>
+        <button class="adj-s" onclick="adj('kg',${idx},${s},-2.5)" type="button" aria-label="${s + 1}세트 중량 2.5kg 감소">−</button>
+        <input class="rec-inp${isPrefilled ? ' prefilled' : ''}" type="number" inputmode="decimal" placeholder="—" id="kg_${idx}_${s}" value="${kgVal}" onchange="onInpChange(${idx},${s})" aria-label="${s + 1}세트 중량 kg">
+        <button class="adj-s" onclick="adj('kg',${idx},${s},2.5)" type="button" aria-label="${s + 1}세트 중량 2.5kg 증가">+</button>
       </div>${e1}
     </div>
     <div class="rec-fw">
       <div class="rec-flbl">횟수 REP</div>
       <div class="adj-wrap">
-        <button class="adj-s" onclick="adj('rp',${idx},${s},-1)" type="button">−</button>
-        <input class="rec-inp${isPrefilled ? ' prefilled' : ''}" type="number" inputmode="numeric" placeholder="—" id="rp_${idx}_${s}" value="${rpVal}" onchange="onInpChange(${idx},${s})">
-        <button class="adj-s" onclick="adj('rp',${idx},${s},1)" type="button">+</button>
+        <button class="adj-s" onclick="adj('rp',${idx},${s},-1)" type="button" aria-label="${s + 1}세트 횟수 1회 감소">−</button>
+        <input class="rec-inp${isPrefilled ? ' prefilled' : ''}" type="number" inputmode="numeric" placeholder="—" id="rp_${idx}_${s}" value="${rpVal}" onchange="onInpChange(${idx},${s})" aria-label="${s + 1}세트 반복 횟수">
+        <button class="adj-s" onclick="adj('rp',${idx},${s},1)" type="button" aria-label="${s + 1}세트 횟수 1회 증가">+</button>
       </div>
     </div>
   </div>
@@ -1141,7 +1145,7 @@ function showRoutine(key) {
       'ex-card' + (isDone ? ' done' : '') + (plateau ? ' plateau' : '');
     card.id = 'ex-' + idx;
     card.innerHTML = `
-<div class="ex-head" onclick="toggleCard(${idx})">
+<div class="ex-head" onclick="toggleCard(${idx})" role="button" tabindex="0" aria-label="${ex.name} 펼치기/접기">
   <div class="ex-num">${String(idx + 1).padStart(2, '0')}</div>
   <div class="ex-name-wrap"><span class="ex-name">${ex.name}</span><span class="ex-target">${ex.target}</span></div>
   <div class="ex-right">${volHtml}${prHtml}${plateauBadgeHtml}<div class="done-check">✓</div><span class="ex-chev">▾</span></div>
@@ -1157,7 +1161,7 @@ function showRoutine(key) {
   ${ex.tip ? `<div class="tip-box">💡 ${ex.tip}</div>` : ''}
   ${ex.warn ? `<div class="warn-box">⚠️ ${ex.warn}</div>` : ''}
 </div>
-<div class="rec-toggle" onclick="toggleRecord(this)">
+<div class="rec-toggle" onclick="toggleRecord(this)" role="button" tabindex="0" aria-label="오늘 기록 펼치기/접기">
   <span class="rec-toggle-lbl">📝 오늘 기록</span>
   <span style="font-size:12px;color:var(--text-3)">▾</span>
 </div>
@@ -2047,7 +2051,7 @@ function buildCorrections() {
   CORRECTIONS.forEach((c, i) => {
     const card = document.createElement('div');
     card.className = 'list-card';
-    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')"><button class="corr-chk${done[i] ? ' checked' : ''}" id="corrChk_${i}" onclick="event.stopPropagation();toggleCorr(${i})" aria-label="${c.name} 완료 체크">✓</button><div class="list-name">${c.name}</div><div class="list-dur">${c.dur}</div><span class="ex-chev">▾</span></div><div class="list-detail">${c.detail.replace(/\n/g, '<br>')}</div>`;
+    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')" role="button" tabindex="0" aria-label="${c.name} 상세 펼치기/접기"><button class="corr-chk${done[i] ? ' checked' : ''}" id="corrChk_${i}" onclick="event.stopPropagation();toggleCorr(${i})" aria-label="${c.name} 완료 체크">✓</button><div class="list-name">${c.name}</div><div class="list-dur">${c.dur}</div><span class="ex-chev">▾</span></div><div class="list-detail">${c.detail.replace(/\n/g, '<br>')}</div>`;
     list.appendChild(card);
   });
   renderCorrProgress();
@@ -2097,14 +2101,14 @@ function buildSwim() {
   SWIM_DRILLS.forEach((d) => {
     const card = document.createElement('div');
     card.className = 'list-card';
-    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')"><div class="list-dot" style="background:var(--accent)"></div><div class="list-name">${d.name}</div><div class="list-dur">${d.ratio}</div><span class="ex-chev">▾</span></div><div class="list-detail">${d.detail.replace(/\n/g, '<br>')}</div>`;
+    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')" role="button" tabindex="0" aria-label="${d.name} 상세 펼치기/접기"><div class="list-dot" style="background:var(--accent)"></div><div class="list-name">${d.name}</div><div class="list-dur">${d.ratio}</div><span class="ex-chev">▾</span></div><div class="list-detail">${d.detail.replace(/\n/g, '<br>')}</div>`;
     list.appendChild(card);
   });
   const concepts = document.getElementById('swimConcepts');
   SWIM_CONCEPTS.forEach((c) => {
     const card = document.createElement('div');
     card.className = 'list-card';
-    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')"><div class="list-dot" style="background:var(--accent-mid)"></div><div class="list-name">${c.name}</div><span class="ex-chev">▾</span></div><div class="list-detail">${c.detail}</div>`;
+    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')" role="button" tabindex="0" aria-label="${c.name} 상세 펼치기/접기"><div class="list-dot" style="background:var(--accent-mid)"></div><div class="list-name">${c.name}</div><span class="ex-chev">▾</span></div><div class="list-detail">${c.detail}</div>`;
     concepts.appendChild(card);
   });
 }
@@ -2130,6 +2134,127 @@ function buildRules() {
     d.innerHTML = `<div class="pain-dot" style="background:${p.color}"></div><div><div class="pain-type" style="color:${p.color}">${p.type}</div><div class="pain-desc">${p.desc}</div></div>`;
     pain.appendChild(d);
   });
+  renderRoutineEditor();
+}
+/* ═══ ROUTINE EDITOR (A/B 루틴에 종목 추가 · 목표 중량 수정) ═══
+   기존 종목은 idx로 기록이 저장되므로 순서 변경/삭제는 지원하지 않는다.
+   새 종목은 항상 배열 끝에 추가되어 기존 기록의 idx를 건드리지 않는다. */
+function applyRoutineOverrides() {
+  ['A', 'B'].forEach((rk) => {
+    (gls('customExercises:' + rk) || []).forEach((ex) => ROUTINES[rk].exercises.push({ ...ex }));
+    const overrides = gls('weightOverrides:' + rk) || {};
+    Object.keys(overrides).forEach((idxStr) => {
+      const idx = Number(idxStr);
+      if (ROUTINES[rk].exercises[idx]) ROUTINES[rk].exercises[idx].defKg = overrides[idxStr];
+    });
+  });
+}
+function renderRoutineEditor() {
+  const el = document.getElementById('routineEditor');
+  if (!el) return;
+  el.innerHTML = ['A', 'B']
+    .map((rk) => {
+      const r = ROUTINES[rk];
+      const rows = r.exercises
+        .map(
+          (ex, i) => `
+      <div class="rex-row">
+        <div class="rex-name">${ex.name}${ex.custom ? ' <span class="rex-tag">커스텀</span>' : ''}</div>
+        <div class="rex-kg-wrap"><input class="rex-kg" type="number" inputmode="decimal" step="0.5" min="0" value="${ex.defKg || ''}" placeholder="kg" onchange="setWeightOverride('${rk}',${i},this.value)" aria-label="${ex.name} 목표 중량 kg"></div>
+      </div>`,
+        )
+        .join('');
+      const last = r.exercises[r.exercises.length - 1];
+      const removeBtn = last?.custom
+        ? `<button class="quick-btn danger" type="button" onclick="removeLastCustomExercise('${rk}')">마지막 커스텀 종목 삭제</button>`
+        : '';
+      return `
+      <div class="rex-routine">
+        <div class="rex-head"><strong>${r.label}</strong><span class="sec-badge">${r.exercises.length}종목</span></div>
+        ${rows}
+        <div class="rex-add">
+          <input id="rxName_${rk}" placeholder="새 종목 이름" aria-label="${rk}루틴 새 종목 이름">
+          <input id="rxTarget_${rk}" placeholder="타깃 부위" aria-label="${rk}루틴 새 종목 타깃 부위">
+          <input id="rxSets_${rk}" type="number" inputmode="numeric" min="1" placeholder="세트 수" value="3" aria-label="${rk}루틴 새 종목 세트 수">
+          <input id="rxReps_${rk}" placeholder="반복 (예: 10/10/10)" aria-label="${rk}루틴 새 종목 반복 횟수">
+          <input id="rxKg_${rk}" type="number" inputmode="decimal" step="0.5" min="0" placeholder="목표 kg" aria-label="${rk}루틴 새 종목 목표 중량">
+        </div>
+        <div class="rex-btns">
+          <button class="quick-btn primary" type="button" onclick="addCustomExercise('${rk}')">+ 종목 추가</button>
+          ${removeBtn}
+        </div>
+      </div>`;
+    })
+    .join('');
+}
+function addCustomExercise(rk) {
+  const nameEl = document.getElementById('rxName_' + rk);
+  const name = (nameEl?.value || '').trim();
+  if (!name) {
+    showToast('⚠️ 종목 이름을 입력해라');
+    return;
+  }
+  const target = (document.getElementById('rxTarget_' + rk)?.value || '').trim() || '직접 추가';
+  const sets = Math.max(1, parseInt(document.getElementById('rxSets_' + rk)?.value, 10) || 3);
+  const reps = (document.getElementById('rxReps_' + rk)?.value || '').trim() || Array(sets).fill('10').join('/');
+  const defKg = Math.max(0, parseFloat(document.getElementById('rxKg_' + rk)?.value) || 0);
+  const ex = {
+    name,
+    target,
+    sets,
+    reps,
+    weight: defKg > 0 ? `${defKg}kg 시도` : '가볍게',
+    defKg,
+    con: '개인 추가 종목 — 폼 큐는 직접 기록해라.',
+    ecc: '천천히 컨트롤하며.',
+    tip: '',
+    warn: null,
+    custom: true,
+  };
+  const list = gls('customExercises:' + rk) || [];
+  list.push(ex);
+  sls('customExercises:' + rk, list);
+  ROUTINES[rk].exercises.push({ ...ex });
+  showToast(`✅ ${rk}루틴에 '${name}' 추가됨`);
+  renderRoutineEditor();
+  if (currentRoutine === rk) showRoutine(rk);
+}
+function removeLastCustomExercise(rk) {
+  const list = gls('customExercises:' + rk) || [];
+  const idx = ROUTINES[rk].exercises.length - 1;
+  const last = ROUTINES[rk].exercises[idx];
+  if (!list.length || !last?.custom) return;
+  const hasHistory = getExHistory(rk, idx).length > 0 || !!gls(`pr:${rk}_${idx}`);
+  if (hasHistory) {
+    showToast('⚠️ 이미 기록이 있어 삭제할 수 없다');
+    return;
+  }
+  if (!confirm(`'${last.name}'을(를) ${ROUTINES[rk].label}에서 삭제할까?`)) return;
+  list.pop();
+  sls('customExercises:' + rk, list);
+  ROUTINES[rk].exercises.pop();
+  const wKey = 'weightOverrides:' + rk;
+  const overrides = gls(wKey) || {};
+  if (Object.prototype.hasOwnProperty.call(overrides, idx)) {
+    delete overrides[idx];
+    sls(wKey, overrides);
+  }
+  showToast(`🗑️ '${last.name}' 삭제됨`);
+  renderRoutineEditor();
+  if (currentRoutine === rk) showRoutine(rk);
+}
+function setWeightOverride(rk, idx, val) {
+  const kg = parseFloat(val);
+  const wKey = 'weightOverrides:' + rk;
+  const overrides = gls(wKey) || {};
+  if (!isNaN(kg) && kg >= 0) {
+    overrides[idx] = kg;
+    ROUTINES[rk].exercises[idx].defKg = kg;
+  } else {
+    delete overrides[idx];
+  }
+  sls(wKey, overrides);
+  showToast('✅ 목표 중량 저장됨');
 }
 function buildHistory() {
   buildStats();
@@ -2401,7 +2526,7 @@ function buildChartSelector() {
   document.getElementById('chartSel').innerHTML = names
     .map(
       (n) =>
-        `<div class="cchip${n === selectedChartEx ? ' act' : ''}" onclick="selectChart('${n}')">${n}</div>`,
+        `<div class="cchip${n === selectedChartEx ? ' act' : ''}" onclick="selectChart('${n}')" role="button" tabindex="0" aria-pressed="${n === selectedChartEx}">${n}</div>`,
     )
     .join('');
 }
@@ -2673,9 +2798,12 @@ function switchTabById(id) {
   document
     .querySelectorAll('.tab-panel')
     .forEach((p) => p.classList.toggle('active', p.id === 'tab-' + id));
-  document
-    .querySelectorAll('.bnav-btn')
-    .forEach((b, i) => b.classList.toggle('active', tabs[i] === id));
+  document.querySelectorAll('.bnav-btn').forEach((b, i) => {
+    const active = tabs[i] === id;
+    b.classList.toggle('active', active);
+    if (active) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
   if (id !== 'gym') closeFocusMode(false);
   syncFocusVisibility();
   updateStickyProgress();
@@ -2801,6 +2929,81 @@ function importBackup(input) {
   reader.readAsText(file);
   input.value = '';
 }
+/* ═══ AUTO BACKUP (rolling local snapshots, no user action needed) ═══ */
+const AUTO_BACKUP_SLOTS = 5;
+function autoBackupSnapshotData() {
+  const data = storageSnapshot();
+  Object.keys(data).forEach((k) => {
+    if (StorageMigration.isProtectedBackupKey(k)) delete data[k];
+  });
+  return data;
+}
+async function runAutoBackupIfNeeded() {
+  if (gls('lastAutoBackup') === todayStr()) return;
+  const slot = (Number(gls('autoBackupSlot')) || 0) % AUTO_BACKUP_SLOTS;
+  try {
+    await persistSet('autoBackup:' + slot, {
+      createdAt: new Date().toISOString(),
+      data: autoBackupSnapshotData(),
+    });
+    await persistSet('lastAutoBackup', todayStr());
+    await persistSet('autoBackupSlot', (slot + 1) % AUTO_BACKUP_SLOTS);
+  } catch (error) {
+    console.error('[auto backup] failed', error);
+  }
+}
+function listAutoBackups() {
+  const items = [];
+  for (let i = 0; i < AUTO_BACKUP_SLOTS; i++) {
+    const b = gls('autoBackup:' + i);
+    if (b?.createdAt) items.push({ slot: i, createdAt: b.createdAt, count: Object.keys(b.data || {}).length });
+  }
+  return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+function renderAutoBackupList() {
+  const el = document.getElementById('autoBackupBox');
+  if (!el) return;
+  const items = listAutoBackups();
+  if (!items.length) {
+    el.innerHTML = '<div class="pc-empty">아직 자동 백업 없음 · 오늘 앱을 쓰면 자동으로 1개 생성됨</div>';
+    return;
+  }
+  el.innerHTML = items
+    .map((it) => {
+      const d = new Date(it.createdAt);
+      const label = `${fmtDate(d)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return `<div class="autobk-row"><div><div class="autobk-date">${label}</div><div class="autobk-count">${it.count}개 항목</div></div><button class="quick-btn" type="button" onclick="restoreAutoBackup(${it.slot})">복원</button></div>`;
+    })
+    .join('');
+}
+async function restoreAutoBackup(slot) {
+  const backup = gls('autoBackup:' + slot);
+  if (!backup) return;
+  const d = new Date(backup.createdAt);
+  const label = `${fmtDate(d)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  if (!confirm(`${label} 자동 백업으로 복원할까?\n현재 데이터 위에 덮어쓴다. (복원 직전 상태는 안전 백업으로 남는다)`))
+    return;
+  try {
+    await backupBeforeImport();
+    const current = storageSnapshot();
+    const restored = { ...backup.data };
+    Object.keys(restored).forEach((k) => {
+      if (StorageMigration.isProtectedBackupKey(k)) delete restored[k];
+    });
+    const afterImport = { ...current, ...restored };
+    await StorageMigration.commitSnapshot(
+      { set: persistSet, delete: persistDelete },
+      current,
+      afterImport,
+      ['storageSchemaVersion'],
+    );
+    showToast('♻️ 자동 백업 복원 완료 — 새로고침');
+    setTimeout(() => location.reload(), 800);
+  } catch (error) {
+    console.error('[auto backup restore] failed', error);
+    showToast('⚠️ 복원 실패');
+  }
+}
 function daysSinceBackup() {
   const d = gls('lastBackup');
   if (!d) return null;
@@ -2817,6 +3020,15 @@ function updateBackupNote() {
         ? '마지막 백업: 오늘 ✅'
         : `마지막 백업: ${bd}일 전${bd >= 14 ? ' — 백업 권장 ⚠️' : ''}`;
 }
+
+/* ═══ ACCESSIBILITY: keyboard support for role="button" divs ═══ */
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const el = e.target.closest('[role="button"]');
+  if (!el || el.tagName === 'BUTTON') return;
+  e.preventDefault();
+  el.click();
+});
 
 let toastTimer = null;
 function showToast(msg) {
@@ -2838,6 +3050,8 @@ initStorage().then(async () => {
     console.error('[storage migration] initialization failed', error);
   }
   seedClinicalData();
+  applyRoutineOverrides();
+  await runAutoBackupIfNeeded();
   initTheme();
   buildHeader();
   buildWeekStrip();
@@ -2851,6 +3065,7 @@ initStorage().then(async () => {
   syncFocusVisibility();
   renderRestTimer();
   updateBackupNote();
+  renderAutoBackupList();
   renderGuards();
   renderSwimLogs();
   const savedTab = gls('activeTab');
