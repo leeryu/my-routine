@@ -792,7 +792,7 @@ function buildWeekStrip() {
     if (d.rk)
       pill.onclick = () => {
         switchTabById('gym');
-        showRoutine(d.rk);
+        selectRoutine(d.rk);
       };
     pill.innerHTML = `<span class="dp-label">${d.label}</span><span class="dp-type">${d.type}</span>${isDone ? '<span class="dp-check">✓</span>' : ''}`;
     strip.appendChild(pill);
@@ -1028,10 +1028,15 @@ function buildSelector() {
     c.type = 'button';
     c.dataset.rk = k;
     c.setAttribute('aria-pressed', String(k === currentRoutine));
-    c.onclick = () => showRoutine(k);
+    c.onclick = () => selectRoutine(k);
     c.innerHTML = `<strong>${ROUTINES[k].label}</strong> ${ROUTINES[k].day}`;
     sel.appendChild(c);
   });
+}
+/* 루틴 선택 = 집중모드 진입 (남은 운동이 있을 때만). 전체 목록은 집중모드의 "전체보기"로 */
+function selectRoutine(key) {
+  showRoutine(key);
+  if (getDoneCount(key) < ROUTINES[key].exercises.length) openFocusMode();
 }
 function showRoutine(key) {
   renderGuards();
@@ -1417,10 +1422,10 @@ function getCurrentExerciseIdx() {
   return Math.max(0, r.exercises.length - 1);
 }
 function updateStickyProgress() {
-  const sp = document.getElementById('stickyProgress');
-  if (!sp) return;
+  const bar = document.getElementById('actionBar');
+  if (!bar) return;
   if (!isGymTabActive()) {
-    sp.style.display = 'none';
+    bar.style.display = 'none';
     return;
   }
   const r = ROUTINES[currentRoutine],
@@ -1433,11 +1438,11 @@ function updateStickyProgress() {
   const pct = r.exercises.length
     ? Math.round((done / r.exercises.length) * 100)
     : 0;
-  document.getElementById('spTitle').textContent =
+  document.getElementById('abTitle').textContent =
     `${r.label} ${done}/${r.exercises.length} · ${ex?.name || '완료'}`;
-  document.getElementById('spSub').textContent =
+  document.getElementById('abSub').textContent =
     `볼륨 ${computeVolume(currentRoutine)}kg · 회복 ${readinessScore()}점`;
-  document.getElementById('spFill').style.width = pct + '%';
+  document.getElementById('abFill').style.width = pct + '%';
 }
 let focusIdx = null;
 function isGymTabActive() {
@@ -1450,24 +1455,12 @@ function syncFocusVisibility() {
   const gym = isGymTabActive();
   document.body.classList.toggle('gym-active', gym);
   const overlay = document.getElementById('focusOverlay');
-  const btn = document.getElementById('focusToggleBtn');
-  const sticky = document.getElementById('stickyProgress');
-  if (sticky) {
-    sticky.style.display = gym ? 'flex' : 'none';
-    sticky.setAttribute('aria-hidden', gym ? 'false' : 'true');
+  const bar = document.getElementById('actionBar');
+  if (bar) {
+    bar.style.display = gym ? 'flex' : 'none';
+    bar.setAttribute('aria-hidden', gym ? 'false' : 'true');
   }
   if (!gym && overlay) overlay.classList.remove('show');
-  if (btn) {
-    btn.classList.toggle('is-hidden', !gym);
-    btn.classList.toggle('is-open', gym && isFocusOpen());
-    btn.setAttribute('aria-hidden', gym ? 'false' : 'true');
-    btn.disabled = !gym;
-    btn.textContent = gym
-      ? isFocusOpen()
-        ? '집중모드 닫기'
-        : '집중모드 열기'
-      : '집중모드';
-  }
   if (overlay) {
     overlay.setAttribute(
       'aria-hidden',
@@ -1475,17 +1468,6 @@ function syncFocusVisibility() {
     );
     overlay.style.pointerEvents = gym && isFocusOpen() ? 'auto' : 'none';
   }
-}
-function updateFocusToggle() {
-  syncFocusVisibility();
-}
-function toggleFocusMode() {
-  if (!isGymTabActive()) {
-    closeFocusMode(false);
-    showToast('집중모드는 헬스 탭에서만 가능');
-    return;
-  }
-  isFocusOpen() ? closeFocusMode() : openFocusMode();
 }
 function openFocusMode(idx) {
   if (!isGymTabActive()) {
@@ -1669,8 +1651,6 @@ function updateTodaySummary() {
   if (a) a.textContent = remain + '개';
   if (b) b.textContent = estimateRemainingMinutes() + '분';
   if (c) c.textContent = formatKg(computeVolume(currentRoutine));
-  const f = document.getElementById('floatingNextBtn');
-  if (f) f.textContent = remain ? '▶ 다음 운동' : '🎉 완료';
 }
 function getNextCoachNudge() {
   const r = ROUTINES[currentRoutine];
@@ -1706,19 +1686,6 @@ function updateCoachNudge() {
   if (!el) return;
   el.textContent = getNextCoachNudge();
   el.classList.add('show');
-}
-function jumpNextExercise() {
-  if (!isGymTabActive()) return;
-  const idx = getCurrentExerciseIdx();
-  const card = document.getElementById('ex-' + idx);
-  if (card) {
-    document
-      .querySelectorAll('.ex-card.open')
-      .forEach((c) => c.classList.remove('open'));
-    card.classList.add('open');
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    showToast('다음 운동으로 이동');
-  }
 }
 function enhancedCompletionAdvice() {
   const vol = computeVolume(currentRoutine),
@@ -1765,27 +1732,35 @@ function formatRestTime(secs) {
 function renderRestTimer(state = '') {
   const display = restLeft <= 0 ? 'GO! 💪' : formatRestTime(restLeft);
   const mainDisplay = document.getElementById('restDisplay');
-  const floatDisplay = document.getElementById('floatingRestDisplay');
-  const float = document.getElementById('floatingRest');
-  const floatLabel = document.getElementById('floatingRestLabel');
   const btn = document.getElementById('restBtn');
   const fill = document.getElementById('restFill');
+  const abDisplay = document.getElementById('abRestDisplay');
+  const abRest = document.getElementById('abRest');
+  const focusDisplay = document.getElementById('focusRestDisplay');
+  const focusBtn = document.getElementById('focusRestBtn');
+  const focusBox = document.getElementById('focusRestBox');
 
   if (mainDisplay) {
     mainDisplay.textContent = display;
     mainDisplay.className = 'rest-timer' + (state ? ` ${state}` : '');
   }
-  if (floatDisplay) floatDisplay.textContent = display;
-  if (floatLabel) floatLabel.textContent = restRunning ? '휴식 중 · 누르면 초기화' : restLeft <= 0 ? '완료 · 누르면 재시작' : '휴식 · 누르면 시작';
-  if (float) {
-    float.classList.remove('running', 'warn', 'danger', 'done');
-    if (restRunning) float.classList.add('running');
-    if (state) float.classList.add(state === 'danger' || state === 'warn' ? state : 'done');
-  }
   if (btn) btn.textContent = restRunning ? '초기화' : '시작';
   if (fill) {
     fill.style.width = restLeft <= 0 ? '100%' : `${Math.max(0, (restLeft / restTotal) * 100)}%`;
     fill.style.background = state === 'danger' ? 'var(--red)' : state === 'warn' ? 'var(--yellow)' : state === 'done' ? 'var(--green)' : 'var(--accent)';
+  }
+  if (abDisplay) abDisplay.textContent = display;
+  if (abRest) {
+    abRest.classList.remove('running', 'warn', 'danger');
+    if (restRunning) abRest.classList.add('running');
+    if (state === 'danger' || state === 'warn') abRest.classList.add(state);
+  }
+  if (focusDisplay) focusDisplay.textContent = display;
+  if (focusBtn) focusBtn.textContent = restRunning ? '초기화' : '시작';
+  if (focusBox) {
+    focusBox.classList.remove('running', 'warn', 'danger');
+    if (restRunning) focusBox.classList.add('running');
+    if (state === 'danger' || state === 'warn') focusBox.classList.add(state);
   }
 }
 
@@ -2285,6 +2260,21 @@ function buildHistory() {
   buildHistChart();
   buildPlateCalcUI();
   buildHistLog();
+  const savedPanel = gls('histSubtab') || 'summary';
+  const savedBtn = document.querySelector(`.hist-subtab[data-panel="${savedPanel}"]`);
+  if (savedBtn) showHistSubtab(savedPanel, savedBtn);
+}
+function showHistSubtab(name, btn) {
+  document.querySelectorAll('.hist-subtab').forEach((b) => {
+    const active = b === btn;
+    b.classList.toggle('active', active);
+    if (active) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
+  document
+    .querySelectorAll('.hist-subpanel')
+    .forEach((p) => p.classList.toggle('active', p.id === 'histPanel-' + name));
+  sls('histSubtab', name);
 }
 function buildStats() {
   const allDates = new Set();

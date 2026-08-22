@@ -311,18 +311,35 @@ body:not(.gym-active) .main{padding-bottom:calc(110px + env(safe-area-inset-bott
 .quick-btn.primary{background:var(--accent-soft);border-color:var(--accent-mid);color:var(--accent)}
 .quick-btn.danger{background:var(--red-soft);border-color:rgba(224,49,49,.25);color:var(--red)}
 .quick-btn:active{transform:translateY(1px);opacity:.85}
-.sticky-progress{position:fixed;left:10px;right:10px;bottom:62px;background:rgba(24,22,58,.94);color:#fff;border-radius:16px;padding:10px 12px;z-index:90;display:flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.18);backdrop-filter:blur(8px)}
-.sp-main{flex:1;min-width:0}.sp-btn.is-open{background:var(--accent);border-color:var(--accent)}.sp-btn.is-hidden{display:none}.sp-title{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sp-sub{font-size:10px;opacity:.68;margin-top:1px}.sp-btn{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);color:#fff;border-radius:11px;font-size:11px;font-weight:900;font-family:var(--sans);padding:8px 10px;cursor:pointer;white-space:nowrap}.sp-bar{height:4px;background:rgba(255,255,255,.16);border-radius:99px;overflow:hidden;margin-top:6px}.sp-fill{height:100%;background:#fff;border-radius:99px;width:0%;transition:width .25s}
+/* 하단 통합 액션 바: 진행률+휴식타이머+다음운동을 하나로 (구 stickyProgress/floatingNext/floatingRest 통합) */
+.action-bar{position:fixed;left:10px;right:10px;bottom:62px;background:rgba(24,22,58,.94);color:#fff;border-radius:16px;padding:10px 12px;z-index:90;display:flex;align-items:center;gap:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);backdrop-filter:blur(8px);cursor:pointer;border:0;text-align:left;font-family:var(--sans);width:calc(100% - 20px)}
+.ab-main{flex:1;min-width:0}
+.ab-title{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.ab-sub{font-size:10px;opacity:.68;margin-top:1px}
+.ab-bar{height:4px;background:rgba(255,255,255,.16);border-radius:99px;overflow:hidden;margin-top:6px}
+.ab-fill{height:100%;background:#fff;border-radius:99px;width:0%;transition:width .25s}
+.ab-rest{flex-shrink:0;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);color:#fff;border-radius:11px;padding:8px 10px;font-family:var(--mono);font-weight:900;font-size:13px;cursor:pointer;white-space:nowrap}
+.ab-rest.running{color:#7cffc4}
+.ab-rest.warn{color:var(--yellow)}
+.ab-rest.danger{color:#ff8484}
+.ab-rest-add{flex-shrink:0;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);color:#fff;border-radius:11px;padding:8px 9px;font-family:var(--mono);font-weight:900;font-size:11px;cursor:pointer}
 .focus-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;padding:18px 18px calc(36px + env(safe-area-inset-bottom));overflow:auto}.focus-overlay.show{display:block}.focus-card{background:var(--surface);border:1.5px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shm);max-width:540px;margin:0 auto}.focus-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.focus-title{font-size:20px;font-weight:900}.focus-close{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:8px 12px;font-weight:900;color:var(--text-2);font-family:var(--sans);cursor:pointer}.focus-target{font-family:var(--mono);font-size:32px;font-weight:900;color:var(--accent);line-height:1.1;margin:12px 0}.focus-meta{font-size:12px;color:var(--text-2);line-height:1.7;white-space:pre-line}.focus-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.focus-actions button{padding:14px;border-radius:14px;border:1.5px solid var(--border);font-weight:900;font-family:var(--sans);background:var(--bg);color:var(--text-2);cursor:pointer}.focus-actions .primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.focus-rest{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:10px 12px;margin:12px 0}
+.focus-rest-info{flex:1;min-width:0}
+.focus-rest-lbl{display:block;font-size:10px;font-weight:900;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px}
+.focus-rest-time{font-family:var(--mono);font-size:22px;font-weight:900;color:var(--text)}
+.focus-rest.running .focus-rest-time{color:var(--green)}
+.focus-rest.warn .focus-rest-time{color:var(--yellow)}
+.focus-rest.danger .focus-rest-time{color:var(--red)}
+.focus-rest button{flex-shrink:0;border:1.5px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:10px;padding:9px 12px;font-weight:900;font-family:var(--sans);font-size:12px;cursor:pointer}
 .theme-btn{position:fixed;right:12px;top:12px;z-index:110;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;font-size:13px;font-weight:900;padding:7px 10px;cursor:pointer;backdrop-filter:blur(8px)}
 .swim-log-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:var(--sh)}.swim-log-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.swim-log-grid input,.swim-log-grid select,.swim-log-grid textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;font-family:var(--sans);color:var(--text)}.swim-log-grid textarea{grid-column:1/-1;min-height:56px;resize:vertical}.swim-save{width:100%;margin-top:10px;background:var(--accent);color:#fff;border:0;border-radius:12px;padding:12px;font-weight:900;font-family:var(--sans)}
 body.dark{--bg:#111124;--surface:#1b1b33;--card:#1b1b33;--border:#323052;--accent-soft:#27244c;--green-soft:#123629;--yellow-soft:#3a2b12;--red-soft:#3b181f;--text:#f4f1ff;--text-2:#c6c0e6;--text-3:#918bb8;color-scheme:dark}body.dark .rec-inp,body.dark .pc-inp{background:#141429;color:#fff}body.dark .hdr{background:linear-gradient(145deg,#26215f 0%,#4d3fd3 70%,#6857e8 100%)}body.dark .theme-btn{background:rgba(0,0,0,.25)}
 
 /* 집중모드는 헬스 탭에서만 노출 */
 body:not(.gym-active) #focusOverlay{display:none!important;visibility:hidden!important;pointer-events:none!important}
-body:not(.gym-active) #stickyProgress{display:none!important;visibility:hidden!important;pointer-events:none!important}
-body:not(.gym-active) #focusToggleBtn{display:none!important}
-@media (min-width:700px){.quick-row{grid-template-columns:repeat(4,1fr)}.coach-grid{grid-template-columns:1fr 1fr}.muscle-grid{grid-template-columns:repeat(4,1fr)}.sticky-progress{left:50%;right:auto;transform:translateX(-50%);width:min(680px,calc(100% - 20px))}}
+body:not(.gym-active) #actionBar{display:none!important;visibility:hidden!important;pointer-events:none!important}
+@media (min-width:700px){.quick-row{grid-template-columns:repeat(4,1fr)}.coach-grid{grid-template-columns:1fr 1fr}.muscle-grid{grid-template-columns:repeat(4,1fr)}.action-bar{left:50%;right:auto;transform:translateX(-50%);width:min(680px,calc(100% - 20px))}}
 
 
 
@@ -333,9 +350,6 @@ body:not(.gym-active) #focusToggleBtn{display:none!important}
 .ts-lbl{font-size:10px;color:var(--text-3);font-weight:800;margin-top:3px}
 .coach-nudge{display:none;background:linear-gradient(135deg,var(--accent-soft),#fff);border:1.5px solid var(--accent-mid);border-radius:14px;padding:11px 13px;margin-bottom:14px;box-shadow:var(--sh);font-size:12px;color:var(--text-2);line-height:1.6;white-space:pre-line}
 .coach-nudge.show{display:block}
-.floating-next{position:fixed;right:14px;bottom:142px;z-index:95;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:12px 15px;font-size:12px;font-weight:900;font-family:var(--sans);box-shadow:0 8px 26px rgba(60,45,150,.26);cursor:pointer;display:none}
-body.gym-active .floating-next{display:block}
-body:not(.gym-active) .floating-next{display:none!important;visibility:hidden!important;pointer-events:none!important}
 .rec-set-row{align-items:center}
 .set-check-btn{position:relative;width:42px!important;height:42px!important;border-radius:14px!important;font-size:18px!important;align-self:center!important;margin-bottom:0!important;color:var(--text-3);font-weight:900}
 .set-check-btn.checked{color:#fff}
@@ -349,7 +363,7 @@ body:not(.gym-active) .floating-next{display:none!important;visibility:hidden!im
 .focus-actions .primary{font-size:15px;min-height:54px}
 .done-card{background:linear-gradient(135deg,#0ea571,#00cc88);border-radius:20px;padding:18px;color:#fff;margin-bottom:16px;text-align:left;box-shadow:var(--shm)}
 .done-title{font-size:22px;font-weight:900;margin-bottom:10px;text-align:center}.done-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.done-mini{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:13px;padding:9px;text-align:center}.done-val{font-family:var(--mono);font-size:20px;font-weight:900}.done-lbl{font-size:10px;opacity:.75}.done-advice{font-size:12px;line-height:1.65;background:rgba(0,0,0,.12);border-radius:12px;padding:10px;margin-top:10px;white-space:pre-line}
-@media (max-width:430px){.today-summary{grid-template-columns:repeat(3,1fr)}.floating-next{bottom:136px;right:10px}.ts-val{font-size:16px}.set-check-btn{width:40px!important;height:40px!important}}
+@media (max-width:430px){.today-summary{grid-template-columns:repeat(3,1fr)}.ts-val{font-size:16px}.set-check-btn{width:40px!important;height:40px!important}}
 
 
 /* fixed bottom nav overlap guard */
@@ -400,22 +414,6 @@ body.dark .report-coach{background:rgba(0,0,0,.12)}
 @media (max-width:380px){.report-metrics{grid-template-columns:1fr}.report-metric{display:grid;grid-template-columns:1fr 1fr;align-items:center;text-align:left}.report-metric strong{grid-row:1/3}.report-metric small{margin-top:0}}
 
 
-/* ── FLOATING REST TIMER ── */
-.floating-rest{position:fixed;left:12px;bottom:142px;z-index:520;display:none;align-items:stretch;background:var(--surface);border:1.5px solid var(--accent-mid);border-radius:17px;box-shadow:0 10px 30px rgba(55,42,140,.25);overflow:hidden;max-width:calc(100vw - 150px)}
-body.gym-active .floating-rest{display:flex}
-body:not(.gym-active) .floating-rest{display:none!important;visibility:hidden!important;pointer-events:none!important}
-.floating-rest-main{display:flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--text);padding:9px 11px;cursor:pointer;font-family:var(--sans);min-width:100px}
-.floating-rest-icon{font-size:18px;line-height:1}
-.floating-rest-copy{display:flex;flex-direction:column;align-items:flex-start;line-height:1}
-.floating-rest-copy small{font-size:9px;font-weight:900;color:var(--text-3);margin-bottom:3px}
-.floating-rest-copy strong{font-family:var(--mono);font-size:19px;font-weight:900;color:var(--accent);letter-spacing:.2px}
-.floating-rest.running .floating-rest-copy strong{color:var(--green)}
-.floating-rest.warn .floating-rest-copy strong{color:var(--yellow)}
-.floating-rest.danger .floating-rest-copy strong{color:var(--red)}
-.floating-rest.done{border-color:var(--green)}
-.floating-rest-add{border:0;border-left:1px solid var(--border);background:var(--accent-soft);color:var(--accent);padding:0 10px;font-size:11px;font-weight:900;font-family:var(--mono);cursor:pointer}
-.focus-overlay.show~.floating-rest{display:flex}
-@media (max-width:430px){.floating-rest{left:10px;bottom:136px;max-width:calc(100vw - 132px)}.floating-rest-main{min-width:94px;padding:8px 9px}.floating-rest-copy strong{font-size:18px}.floating-rest-add{padding:0 8px}}
 
 /* ═══ BACKUP BOX ═══ */
 .backup-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
@@ -444,6 +442,13 @@ body:not(.gym-active) .floating-rest{display:none!important;visibility:hidden!im
 
 /* ═══ 사운드 토글 ═══ */
 .sound-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-size:15px;padding:9px 12px;cursor:pointer;margin-right:8px}
+
+/* ═══ 기록 탭 서브탭 ═══ */
+.hist-subtabs{display:flex;gap:8px;margin-bottom:14px}
+.hist-subtab{flex:1;min-height:44px;text-align:center;padding:10px;border-radius:11px;background:var(--surface);border:1.5px solid var(--border);font-weight:800;font-size:12px;color:var(--text-2);cursor:pointer;font-family:var(--sans)}
+.hist-subtab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.hist-subpanel{display:none}
+.hist-subpanel.active{display:block}
 
 /* ═══ 기록 탭 접이식 ═══ */
 .hist-sec{margin-bottom:4px}
