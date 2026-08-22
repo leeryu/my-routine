@@ -14,6 +14,7 @@
 </head>
 <body class="gym-active">
 <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="다크모드 전환">🌙</button>
+<button class="text-scale-btn" onclick="toggleTextScale()" id="textScaleBtn" aria-label="큰 글씨 모드 켜기/끄기" aria-pressed="false">가+</button>
 
 <div class="hdr">
   <div class="hdr-top">
@@ -69,9 +70,9 @@
     <div class="coach-grid">
       <div class="coach-card" id="readinessCard">
         <div class="coach-title">🧭 오늘 컨디션 체크</div>
-        <div class="readiness-row"><label for="readySleep">수면</label><input id="readySleep" type="range" min="1" max="5" value="3" oninput="saveReadiness()" aria-label="수면 점수, 1에서 5까지"><span class="readiness-score" id="readySleepVal">3</span></div>
-        <div class="readiness-row"><label for="readyFatigue">피로</label><input id="readyFatigue" type="range" min="1" max="5" value="3" oninput="saveReadiness()" aria-label="피로 점수, 1에서 5까지"><span class="readiness-score" id="readyFatigueVal">3</span></div>
-        <div class="readiness-row"><label for="readyPain">통증</label><input id="readyPain" type="range" min="1" max="5" value="1" oninput="saveReadiness()" aria-label="통증 점수, 1에서 5까지"><span class="readiness-score" id="readyPainVal">1</span></div>
+        <div class="readiness-row"><label>수면</label><div class="rd-scale" id="rdSleep" role="group" aria-label="수면 점수"></div></div>
+        <div class="readiness-row"><label>피로</label><div class="rd-scale" id="rdFatigue" role="group" aria-label="피로 점수"></div></div>
+        <div class="readiness-row"><label>통증</label><div class="rd-scale" id="rdPain" role="group" aria-label="통증 점수"></div></div>
         <div class="coach-text" id="readinessText">오늘 운동 강도 판단 대기.</div>
       </div>
       <div class="coach-card" id="coachPanel">
@@ -140,49 +141,63 @@
       <div class="stat-card"><div class="stat-val" id="statMonVol">—</div><div class="stat-lbl">이번달 볼륨</div></div>
       <div class="stat-card"><div class="stat-val" id="statPRs">—</div><div class="stat-lbl">PR 기록</div></div>
     </div>
-    <details class="hist-sec" open>
-      <summary><div class="sec-hdr"><div class="sec-icon">🏆</div><div class="sec-title">개인 기록 (PR)</div><span class="sec-chev">▾</span></div></summary>
-      <div class="pr-board" id="prBoard"><div style="padding:16px;text-align:center;font-size:13px;color:var(--text-3)">기록 없음</div></div>
-    </details>
-    <details class="hist-sec" open>
-      <summary><div class="sec-hdr"><div class="sec-icon">📈</div><div class="sec-title">진행도 차트</div><div class="sec-badge">추정 1RM</div><span class="sec-chev">▾</span></div></summary>
-      <div class="chart-box">
-        <div class="chart-sel-row" id="chartSel"></div>
-        <div id="chartArea"><div class="chart-empty">운동을 선택하세요</div></div>
-      </div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">주간 코치 리포트</div><span class="sec-chev">▾</span></div></summary>
-      <div class="weekly-report" id="weeklyReport">기록 누적 후 분석 가능</div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">💪</div><div class="sec-title">근육별 이번달 볼륨</div><span class="sec-chev">▾</span></div></summary>
-      <div class="muscle-grid" id="muscleGrid"></div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">이번달 출석</div><span class="sec-chev">▾</span></div></summary>
-      <div class="cal-box" id="calBox"></div>
-      <div class="cal-legend">● 운동일 · <span class="cal-legend-corr">•</span> 교정 전체 수행일</div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">📊</div><div class="sec-title">주간 볼륨</div><span class="sec-chev">▾</span></div></summary>
-      <div id="histChart"></div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">🧮</div><div class="sec-title">플레이트 계산기</div><span class="sec-chev">▾</span></div></summary>
-      <div class="plate-box">
-        <div class="pc-row">
-          <input class="pc-inp" type="number" inputmode="decimal" id="pcKg" placeholder="목표 중량" oninput="calcPlates()">
-          <span class="pc-unit">kg</span>
+    <div class="hist-subtabs">
+      <button class="hist-subtab active" data-panel="summary" onclick="showHistSubtab('summary',this)" aria-current="page">요약</button>
+      <button class="hist-subtab" data-panel="charts" onclick="showHistSubtab('charts',this)">차트</button>
+      <button class="hist-subtab" data-panel="log" onclick="showHistSubtab('log',this)">기록</button>
+    </div>
+
+    <div class="hist-subpanel active" id="histPanel-summary">
+      <details class="hist-sec" open>
+        <summary><div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">주간 코치 리포트</div><span class="sec-chev">▾</span></div></summary>
+        <div class="weekly-report" id="weeklyReport">기록 누적 후 분석 가능</div>
+      </details>
+      <details class="hist-sec" open>
+        <summary><div class="sec-hdr"><div class="sec-icon">🏆</div><div class="sec-title">개인 기록 (PR)</div><span class="sec-chev">▾</span></div></summary>
+        <div class="pr-board" id="prBoard"><div style="padding:16px;text-align:center;font-size:13px;color:var(--text-3)">기록 없음</div></div>
+      </details>
+      <details class="hist-sec">
+        <summary><div class="sec-hdr"><div class="sec-icon">💪</div><div class="sec-title">근육별 이번달 볼륨</div><span class="sec-chev">▾</span></div></summary>
+        <div class="muscle-grid" id="muscleGrid"></div>
+      </details>
+    </div>
+
+    <div class="hist-subpanel" id="histPanel-charts">
+      <details class="hist-sec" open>
+        <summary><div class="sec-hdr"><div class="sec-icon">📈</div><div class="sec-title">진행도 차트</div><div class="sec-badge">추정 1RM</div><span class="sec-chev">▾</span></div></summary>
+        <div class="chart-box">
+          <div class="chart-sel-row" id="chartSel"></div>
+          <div id="chartArea"><div class="chart-empty">운동을 선택하세요</div></div>
         </div>
-        <div class="pc-bar-sel" id="pcBarSel"></div>
-        <div class="pc-result" id="pcResult"><div class="pc-empty">중량을 입력하세요</div></div>
-      </div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">최근 운동</div><span class="sec-chev">▾</span></div></summary>
-      <div id="histLog"></div>
-    </details>
+      </details>
+      <details class="hist-sec" open>
+        <summary><div class="sec-hdr"><div class="sec-icon">📊</div><div class="sec-title">주간 볼륨</div><span class="sec-chev">▾</span></div></summary>
+        <div id="histChart"></div>
+      </details>
+    </div>
+
+    <div class="hist-subpanel" id="histPanel-log">
+      <details class="hist-sec" open>
+        <summary><div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">이번달 출석</div><span class="sec-chev">▾</span></div></summary>
+        <div class="cal-box" id="calBox"></div>
+        <div class="cal-legend">● 운동일 · <span class="cal-legend-corr">•</span> 교정 전체 수행일</div>
+      </details>
+      <details class="hist-sec">
+        <summary><div class="sec-hdr"><div class="sec-icon">🧮</div><div class="sec-title">플레이트 계산기</div><span class="sec-chev">▾</span></div></summary>
+        <div class="plate-box">
+          <div class="pc-row">
+            <input class="pc-inp" type="number" inputmode="decimal" id="pcKg" placeholder="목표 중량" oninput="calcPlates()">
+            <span class="pc-unit">kg</span>
+          </div>
+          <div class="pc-bar-sel" id="pcBarSel"></div>
+          <div class="pc-result" id="pcResult"><div class="pc-empty">중량을 입력하세요</div></div>
+        </div>
+      </details>
+      <details class="hist-sec">
+        <summary><div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">최근 운동</div><span class="sec-chev">▾</span></div></summary>
+        <div id="histLog"></div>
+      </details>
+    </div>
   </div>
 
   <!-- 원칙 -->
@@ -222,17 +237,26 @@
   <button class="bnav-btn" onclick="switchTab('rules')"><span class="bnav-icon">📋</span><span class="bnav-label">원칙</span></button>
 </nav>
 
-<div class="sticky-progress" id="stickyProgress">
-  <div class="sp-main"><div class="sp-title" id="spTitle">운동 대기</div><div class="sp-sub" id="spSub">기록을 시작하면 진행률이 표시됨</div><div class="sp-bar"><div class="sp-fill" id="spFill"></div></div></div>
-  <button class="sp-btn" id="focusToggleBtn" onclick="toggleFocusMode()">집중모드 열기</button>
+<div class="action-bar" id="actionBar" role="button" tabindex="0" onclick="openFocusMode()" aria-label="집중모드로 이어서 운동하기">
+  <div class="ab-main">
+    <div class="ab-title" id="abTitle">운동 대기</div>
+    <div class="ab-sub" id="abSub">기록을 시작하면 진행률이 표시됨</div>
+    <div class="ab-bar"><div class="ab-fill" id="abFill"></div></div>
+  </div>
+  <button class="ab-rest" id="abRest" type="button" onclick="event.stopPropagation();toggleRest()" aria-label="휴식 타이머 시작 또는 초기화">⏱ <span id="abRestDisplay">1:30</span></button>
+  <button class="ab-rest-add" type="button" onclick="event.stopPropagation();adjustRestTime(15,event)" aria-label="휴식시간 15초 추가">+15</button>
 </div>
-<button class="floating-next" id="floatingNextBtn" onclick="jumpNextExercise()">▶ 다음 운동</button>
 <div class="focus-overlay" id="focusOverlay" onclick="focusBackdropClose(event)">
   <div class="focus-card" onclick="event.stopPropagation()">
-    <div class="focus-top"><div class="focus-title" id="focusName">운동</div><button class="focus-close" onclick="closeFocusMode()">집중모드 닫기</button></div>
+    <div class="focus-top"><div class="focus-title" id="focusName">운동</div><button class="focus-close" onclick="closeFocusMode()">전체보기</button></div>
     <div class="focus-mini"><span id="focusRoutineMini">A루틴</span><span id="focusProgressMini">0/0</span></div>
     <div class="focus-target" id="focusTarget">—</div>
     <div class="focus-setbox"><div class="focus-set-title" id="focusSetTitle">현재 세트</div><div class="focus-set-main" id="focusSetMain">—</div></div>
+    <div class="focus-rest" id="focusRestBox">
+      <div class="focus-rest-info"><span class="focus-rest-lbl">세트 간 휴식</span><span class="focus-rest-time" id="focusRestDisplay">1:30</span></div>
+      <button type="button" id="focusRestBtn" onclick="toggleRest()">시작</button>
+      <button type="button" onclick="adjustRestTime(15,event)">+15</button>
+    </div>
     <div class="focus-meta" id="focusMeta">오늘 할 운동을 선택해라.</div>
     <div class="focus-actions">
       <button class="primary" onclick="focusCompleteSet()">현재 세트 완료</button>
@@ -241,14 +265,6 @@
       <button onclick="focusNext()">다음</button>
     </div>
   </div>
-</div>
-
-<div class="floating-rest" id="floatingRest" role="timer" aria-live="polite">
-  <button class="floating-rest-main" id="floatingRestMain" type="button" onclick="toggleRest()" aria-label="휴식 타이머 시작 또는 초기화">
-    <span class="floating-rest-icon">⏱</span>
-    <span class="floating-rest-copy"><small id="floatingRestLabel">휴식</small><strong id="floatingRestDisplay">1:30</strong></span>
-  </button>
-  <button class="floating-rest-add" type="button" onclick="adjustRestTime(15,event)" aria-label="휴식시간 15초 추가">+15</button>
 </div>
 
 <div class="toast" id="toast"></div>

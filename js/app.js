@@ -792,7 +792,7 @@ function buildWeekStrip() {
     if (d.rk)
       pill.onclick = () => {
         switchTabById('gym');
-        showRoutine(d.rk);
+        selectRoutine(d.rk);
       };
     pill.innerHTML = `<span class="dp-label">${d.label}</span><span class="dp-type">${d.type}</span>${isDone ? '<span class="dp-check">✓</span>' : ''}`;
     strip.appendChild(pill);
@@ -1028,10 +1028,15 @@ function buildSelector() {
     c.type = 'button';
     c.dataset.rk = k;
     c.setAttribute('aria-pressed', String(k === currentRoutine));
-    c.onclick = () => showRoutine(k);
+    c.onclick = () => selectRoutine(k);
     c.innerHTML = `<strong>${ROUTINES[k].label}</strong> ${ROUTINES[k].day}`;
     sel.appendChild(c);
   });
+}
+/* 루틴 선택 = 집중모드 진입 (남은 운동이 있을 때만). 전체 목록은 집중모드의 "전체보기"로 */
+function selectRoutine(key) {
+  showRoutine(key);
+  if (getDoneCount(key) < ROUTINES[key].exercises.length) openFocusMode();
 }
 function showRoutine(key) {
   renderGuards();
@@ -1086,17 +1091,17 @@ function showRoutine(key) {
     <div class="rec-fw">
       <div class="rec-flbl">중량 KG</div>
       <div class="adj-wrap">
-        <button class="adj-s" onclick="adj('kg',${idx},${s},-2.5)" type="button" aria-label="${s + 1}세트 중량 2.5kg 감소">−</button>
+        <button class="adj-s" onclick="adj('kg',${idx},${s},-2.5)" data-idx="${idx}" data-s="${s}" data-type="kg" data-delta="-2.5" type="button" aria-label="${s + 1}세트 중량 2.5kg 감소, 길게 누르면 가속">−</button>
         <input class="rec-inp${isPrefilled ? ' prefilled' : ''}" type="number" inputmode="decimal" placeholder="—" id="kg_${idx}_${s}" value="${kgVal}" onchange="onInpChange(${idx},${s})" aria-label="${s + 1}세트 중량 kg">
-        <button class="adj-s" onclick="adj('kg',${idx},${s},2.5)" type="button" aria-label="${s + 1}세트 중량 2.5kg 증가">+</button>
+        <button class="adj-s" onclick="adj('kg',${idx},${s},2.5)" data-idx="${idx}" data-s="${s}" data-type="kg" data-delta="2.5" type="button" aria-label="${s + 1}세트 중량 2.5kg 증가, 길게 누르면 가속">+</button>
       </div>${e1}
     </div>
     <div class="rec-fw">
       <div class="rec-flbl">횟수 REP</div>
       <div class="adj-wrap">
-        <button class="adj-s" onclick="adj('rp',${idx},${s},-1)" type="button" aria-label="${s + 1}세트 횟수 1회 감소">−</button>
+        <button class="adj-s" onclick="adj('rp',${idx},${s},-1)" data-idx="${idx}" data-s="${s}" data-type="rp" data-delta="-1" type="button" aria-label="${s + 1}세트 횟수 1회 감소, 길게 누르면 가속">−</button>
         <input class="rec-inp${isPrefilled ? ' prefilled' : ''}" type="number" inputmode="numeric" placeholder="—" id="rp_${idx}_${s}" value="${rpVal}" onchange="onInpChange(${idx},${s})" aria-label="${s + 1}세트 반복 횟수">
-        <button class="adj-s" onclick="adj('rp',${idx},${s},1)" type="button" aria-label="${s + 1}세트 횟수 1회 증가">+</button>
+        <button class="adj-s" onclick="adj('rp',${idx},${s},1)" data-idx="${idx}" data-s="${s}" data-type="rp" data-delta="1" type="button" aria-label="${s + 1}세트 횟수 1회 증가, 길게 누르면 가속">+</button>
       </div>
     </div>
   </div>
@@ -1108,15 +1113,24 @@ function showRoutine(key) {
         ? `<div class="rec-prev">참고 (${hist[0]?.date || '?'}): <strong>${prevRec.summary}</strong></div>`
         : '';
 
-    /* Coach rec bar (NEW) */
+    /* ── TOP INSIGHT (정보 위계): 정체 경고 > 코치 추천, 한 번에 하나만 ── */
     const applyKg =
       smartRec.kg > 0
         ? `<button class="crb-apply-btn" onclick="applyRec(${idx},${smartRec.kg})">✓ ${smartRec.kg}kg 적용</button>`
         : '';
-    const recBar = `<div class="coach-rec-bar"><span class="crb-icon">${smartRec.action === 'INCREASE' ? '📈' : smartRec.action === 'REDUCE' ? '📉' : smartRec.action === 'MAINTAIN' ? '⚖️' : '🎯'}</span><span class="crb-text">${smartRec.msg}</span>${applyKg}</div>`;
-    const plateauWarn = plateau
-      ? `<div class="plateau-warning">📊 ${plateau}</div>`
-      : '';
+    const recIcon =
+      smartRec.action === 'INCREASE'
+        ? '📈'
+        : smartRec.action === 'REDUCE'
+          ? '📉'
+          : smartRec.action === 'MAINTAIN'
+            ? '⚖️'
+            : '🎯';
+    const topInsight = plateau
+      ? `<div class="top-insight plateau">📊 ${plateau}</div>`
+      : smartRec.msg
+        ? `<div class="top-insight rec"><span class="ti-icon">${recIcon}</span><span class="ti-text">${smartRec.msg}</span>${applyKg}</div>`
+        : '';
 
     const rpeVal = rec.rpe || '';
     const painVal = rec.pain || '';
@@ -1140,6 +1154,15 @@ function showRoutine(key) {
       ? `<span class="plateau-badge" style="display:inline-flex">📊 정체</span>`
       : '';
 
+    /* ── 참고용 정보(이전 기록·PR·볼륨)는 한 줄로 접어둔다 ── */
+    const moreParts = [];
+    if (prevHtml) moreParts.push(prevHtml);
+    if (pr) moreParts.push(`<div class="rec-more-line">🏆 PR ${pr}kg</div>`);
+    if (vol > 0) moreParts.push(`<div class="rec-more-line">📦 이번 세션 볼륨 ${vol}kg</div>`);
+    const moreHtml = moreParts.length
+      ? `<div class="rec-more" onclick="toggleRecMore(${idx})" role="button" tabindex="0" aria-label="지난 기록·PR·볼륨 펼치기/접기"><span class="rec-more-lbl">지난 기록 · PR · 볼륨</span><span class="rec-more-badge">${moreParts.length}</span><span class="rec-more-chev">▾</span></div><div class="rec-more-body" id="recMore_${idx}">${moreParts.join('')}</div>`
+      : '';
+
     const card = document.createElement('div');
     card.className =
       'ex-card' + (isDone ? ' done' : '') + (plateau ? ' plateau' : '');
@@ -1147,7 +1170,7 @@ function showRoutine(key) {
     card.innerHTML = `
 <div class="ex-head" onclick="toggleCard(${idx})" role="button" tabindex="0" aria-label="${ex.name} 펼치기/접기">
   <div class="ex-num">${String(idx + 1).padStart(2, '0')}</div>
-  <div class="ex-name-wrap"><span class="ex-name">${ex.name}</span><span class="ex-target">${ex.target}</span></div>
+  <div class="ex-name-wrap"><span class="ex-name">${ex.name}<button class="ex-info-btn" onclick="event.stopPropagation();toggleExInfo(${idx})" type="button" aria-label="${ex.name} 폼 가이드 보기">ⓘ</button></span><span class="ex-target">${ex.target}</span></div>
   <div class="ex-right">${volHtml}${prHtml}${plateauBadgeHtml}<div class="done-check">✓</div><span class="ex-chev">▾</span></div>
 </div>
 <div class="ex-sets-row">
@@ -1155,17 +1178,13 @@ function showRoutine(key) {
   <div class="set-chip">🔁 ${ex.reps}</div>
   <div class="set-chip">⚖️ ${ex.weight}</div>
 </div>
-<div class="ex-detail">
+<div class="ex-detail" id="exInfo_${idx}">
   <div class="dl"><div class="dl-label">⬆ 수축</div><div class="dl-text">${ex.con}</div></div>
   <div class="dl"><div class="dl-label">⬇ 이완</div><div class="dl-text">${ex.ecc}</div></div>
   ${ex.tip ? `<div class="tip-box">💡 ${ex.tip}</div>` : ''}
   ${ex.warn ? `<div class="warn-box">⚠️ ${ex.warn}</div>` : ''}
 </div>
-<div class="rec-toggle" onclick="toggleRecord(this)" role="button" tabindex="0" aria-label="오늘 기록 펼치기/접기">
-  <span class="rec-toggle-lbl">📝 오늘 기록</span>
-  <span style="font-size:12px;color:var(--text-3)">▾</span>
-</div>
-<div class="rec-body">${prevHtml}${recBar}${plateauWarn}<div class="quick-row"><button class="quick-btn primary" onclick="copyPrevious(${idx})" type="button">지난 기록 복사</button><button class="quick-btn" onclick="sameAsFirst(${idx})" type="button">1세트로 통일</button><button class="quick-btn" onclick="bumpExercise(${idx},2.5)" type="button">전체 +2.5kg</button><button class="quick-btn danger" onclick="stopForPain(${idx})" type="button">통증 중단</button></div>${setRowsHtml}${extraHtml}<button class="rec-save-btn" onclick="saveEx(${idx})" type="button">저장</button></div>`;
+<div class="rec-body">${topInsight}${moreHtml}<div class="quick-row"><button class="quick-btn primary" onclick="copyPrevious(${idx})" type="button">지난 기록 복사</button><button class="quick-btn" onclick="sameAsFirst(${idx})" type="button">1세트로 통일</button><button class="quick-btn" onclick="bumpExercise(${idx},2.5)" type="button">전체 +2.5kg</button><button class="quick-btn danger" onclick="stopForPain(${idx})" type="button">통증 중단</button></div>${setRowsHtml}${extraHtml}<button class="rec-save-btn" onclick="saveEx(${idx})" type="button">저장</button></div>`;
     content.appendChild(card);
   });
   updateProgress();
@@ -1188,9 +1207,59 @@ function applyRec(idx, kg) {
 function toggleCard(idx) {
   document.getElementById('ex-' + idx)?.classList.toggle('open');
 }
-function toggleRecord(el) {
-  el.parentElement.classList.toggle('rec-open');
+function toggleExInfo(idx) {
+  document.getElementById('exInfo_' + idx)?.classList.toggle('show');
 }
+function toggleRecMore(idx) {
+  document.getElementById('recMore_' + idx)?.classList.toggle('show');
+  document.getElementById('recMore_' + idx)?.previousElementSibling?.classList.toggle('open');
+}
+
+/* ── 길게 누르면 가속되는 ± 조정 (20kg 차이를 8번 누르지 않도록) ── */
+let adjHoldTimer = null,
+  adjHoldInterval = null,
+  adjHoldBtn = null,
+  adjHoldFired = false;
+function clearAdjHold() {
+  clearTimeout(adjHoldTimer);
+  clearInterval(adjHoldInterval);
+  adjHoldTimer = null;
+  adjHoldInterval = null;
+}
+document.addEventListener('pointerdown', (e) => {
+  const btn = e.target.closest('.adj-s');
+  if (!btn) return;
+  adjHoldBtn = btn;
+  adjHoldFired = false;
+  const idx = +btn.dataset.idx,
+    s = +btn.dataset.s,
+    type = btn.dataset.type,
+    baseDelta = +btn.dataset.delta;
+  let step = 0;
+  adjHoldTimer = setTimeout(() => {
+    adjHoldInterval = setInterval(() => {
+      step++;
+      adjHoldFired = true;
+      const mult = step > 14 ? 4 : step > 7 ? 2 : 1;
+      adj(type, idx, s, baseDelta * mult);
+    }, 110);
+  }, 420);
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach((evt) =>
+  document.addEventListener(evt, clearAdjHold),
+);
+document.addEventListener(
+  'click',
+  (e) => {
+    const btn = e.target.closest('.adj-s');
+    if (btn && btn === adjHoldBtn && adjHoldFired) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      adjHoldFired = false;
+    }
+  },
+  true,
+);
 
 function adj(type, idx, s, d) {
   const id = type === 'kg' ? `kg_${idx}_${s}` : `rp_${idx}_${s}`;
@@ -1277,6 +1346,8 @@ function toggleSetCheck(idx, s) {
     try {
       navigator.vibrate?.(60);
     } catch {}
+  } else if (!isChecked) {
+    showToast('↩️ 되돌림 — 다시 누르면 완료 처리');
   }
   rec.rpe = document.getElementById(`rpe_${idx}`)?.value || rec.rpe || '';
   rec.pain = document.getElementById(`pain_${idx}`)?.value || rec.pain || '';
@@ -1311,13 +1382,13 @@ function saveEx(idx, silent) {
 function openNextExercise(idx) {
   const next = document.getElementById('ex-' + (idx + 1));
   document
-    .querySelectorAll('.ex-card.open,.ex-card.rec-open')
-    .forEach((c) => c.classList.remove('open', 'rec-open'));
+    .querySelectorAll('.ex-card.open')
+    .forEach((c) => c.classList.remove('open'));
   if (!next) {
     updateCoachNudge();
     return;
   }
-  next.classList.add('open', 'rec-open');
+  next.classList.add('open');
   next.scrollIntoView({ behavior: 'smooth', block: 'center' });
   updateCoachNudge();
 }
@@ -1399,10 +1470,10 @@ function getCurrentExerciseIdx() {
   return Math.max(0, r.exercises.length - 1);
 }
 function updateStickyProgress() {
-  const sp = document.getElementById('stickyProgress');
-  if (!sp) return;
+  const bar = document.getElementById('actionBar');
+  if (!bar) return;
   if (!isGymTabActive()) {
-    sp.style.display = 'none';
+    bar.style.display = 'none';
     return;
   }
   const r = ROUTINES[currentRoutine],
@@ -1415,11 +1486,11 @@ function updateStickyProgress() {
   const pct = r.exercises.length
     ? Math.round((done / r.exercises.length) * 100)
     : 0;
-  document.getElementById('spTitle').textContent =
+  document.getElementById('abTitle').textContent =
     `${r.label} ${done}/${r.exercises.length} · ${ex?.name || '완료'}`;
-  document.getElementById('spSub').textContent =
+  document.getElementById('abSub').textContent =
     `볼륨 ${computeVolume(currentRoutine)}kg · 회복 ${readinessScore()}점`;
-  document.getElementById('spFill').style.width = pct + '%';
+  document.getElementById('abFill').style.width = pct + '%';
 }
 let focusIdx = null;
 function isGymTabActive() {
@@ -1432,24 +1503,12 @@ function syncFocusVisibility() {
   const gym = isGymTabActive();
   document.body.classList.toggle('gym-active', gym);
   const overlay = document.getElementById('focusOverlay');
-  const btn = document.getElementById('focusToggleBtn');
-  const sticky = document.getElementById('stickyProgress');
-  if (sticky) {
-    sticky.style.display = gym ? 'flex' : 'none';
-    sticky.setAttribute('aria-hidden', gym ? 'false' : 'true');
+  const bar = document.getElementById('actionBar');
+  if (bar) {
+    bar.style.display = gym ? 'flex' : 'none';
+    bar.setAttribute('aria-hidden', gym ? 'false' : 'true');
   }
   if (!gym && overlay) overlay.classList.remove('show');
-  if (btn) {
-    btn.classList.toggle('is-hidden', !gym);
-    btn.classList.toggle('is-open', gym && isFocusOpen());
-    btn.setAttribute('aria-hidden', gym ? 'false' : 'true');
-    btn.disabled = !gym;
-    btn.textContent = gym
-      ? isFocusOpen()
-        ? '집중모드 닫기'
-        : '집중모드 열기'
-      : '집중모드';
-  }
   if (overlay) {
     overlay.setAttribute(
       'aria-hidden',
@@ -1457,17 +1516,6 @@ function syncFocusVisibility() {
     );
     overlay.style.pointerEvents = gym && isFocusOpen() ? 'auto' : 'none';
   }
-}
-function updateFocusToggle() {
-  syncFocusVisibility();
-}
-function toggleFocusMode() {
-  if (!isGymTabActive()) {
-    closeFocusMode(false);
-    showToast('집중모드는 헬스 탭에서만 가능');
-    return;
-  }
-  isFocusOpen() ? closeFocusMode() : openFocusMode();
 }
 function openFocusMode(idx) {
   if (!isGymTabActive()) {
@@ -1510,7 +1558,7 @@ function focusOpenCurrent() {
   closeFocusMode();
   const card = document.getElementById('ex-' + focusIdx);
   if (card) {
-    card.classList.add('open', 'rec-open');
+    card.classList.add('open');
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
@@ -1553,6 +1601,19 @@ function initTheme() {
     const b = document.getElementById('themeBtn');
     if (b) b.textContent = '☀️';
   }
+}
+/* ═══ 큰 글씨 모드 (피로한 눈으로도 읽히도록) ═══ */
+function initTextScale() {
+  if (gls('largeText')) {
+    document.body.classList.add('large-text');
+    document.getElementById('textScaleBtn')?.setAttribute('aria-pressed', 'true');
+  }
+}
+function toggleTextScale() {
+  const on = document.body.classList.toggle('large-text');
+  sls('largeText', on);
+  document.getElementById('textScaleBtn')?.setAttribute('aria-pressed', String(on));
+  showToast(on ? '🔤 큰 글씨 모드 켜짐' : '🔤 큰 글씨 모드 꺼짐');
 }
 /* ═══ 원칙 가드: 헬스+수영 같은 날 / 48시간 회복 ═══ */
 function swamToday() {
@@ -1651,8 +1712,6 @@ function updateTodaySummary() {
   if (a) a.textContent = remain + '개';
   if (b) b.textContent = estimateRemainingMinutes() + '분';
   if (c) c.textContent = formatKg(computeVolume(currentRoutine));
-  const f = document.getElementById('floatingNextBtn');
-  if (f) f.textContent = remain ? '▶ 다음 운동' : '🎉 완료';
 }
 function getNextCoachNudge() {
   const r = ROUTINES[currentRoutine];
@@ -1688,19 +1747,6 @@ function updateCoachNudge() {
   if (!el) return;
   el.textContent = getNextCoachNudge();
   el.classList.add('show');
-}
-function jumpNextExercise() {
-  if (!isGymTabActive()) return;
-  const idx = getCurrentExerciseIdx();
-  const card = document.getElementById('ex-' + idx);
-  if (card) {
-    document
-      .querySelectorAll('.ex-card.open')
-      .forEach((c) => c.classList.remove('open'));
-    card.classList.add('open', 'rec-open');
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    showToast('다음 운동으로 이동');
-  }
 }
 function enhancedCompletionAdvice() {
   const vol = computeVolume(currentRoutine),
@@ -1747,27 +1793,35 @@ function formatRestTime(secs) {
 function renderRestTimer(state = '') {
   const display = restLeft <= 0 ? 'GO! 💪' : formatRestTime(restLeft);
   const mainDisplay = document.getElementById('restDisplay');
-  const floatDisplay = document.getElementById('floatingRestDisplay');
-  const float = document.getElementById('floatingRest');
-  const floatLabel = document.getElementById('floatingRestLabel');
   const btn = document.getElementById('restBtn');
   const fill = document.getElementById('restFill');
+  const abDisplay = document.getElementById('abRestDisplay');
+  const abRest = document.getElementById('abRest');
+  const focusDisplay = document.getElementById('focusRestDisplay');
+  const focusBtn = document.getElementById('focusRestBtn');
+  const focusBox = document.getElementById('focusRestBox');
 
   if (mainDisplay) {
     mainDisplay.textContent = display;
     mainDisplay.className = 'rest-timer' + (state ? ` ${state}` : '');
   }
-  if (floatDisplay) floatDisplay.textContent = display;
-  if (floatLabel) floatLabel.textContent = restRunning ? '휴식 중 · 누르면 초기화' : restLeft <= 0 ? '완료 · 누르면 재시작' : '휴식 · 누르면 시작';
-  if (float) {
-    float.classList.remove('running', 'warn', 'danger', 'done');
-    if (restRunning) float.classList.add('running');
-    if (state) float.classList.add(state === 'danger' || state === 'warn' ? state : 'done');
-  }
   if (btn) btn.textContent = restRunning ? '초기화' : '시작';
   if (fill) {
     fill.style.width = restLeft <= 0 ? '100%' : `${Math.max(0, (restLeft / restTotal) * 100)}%`;
     fill.style.background = state === 'danger' ? 'var(--red)' : state === 'warn' ? 'var(--yellow)' : state === 'done' ? 'var(--green)' : 'var(--accent)';
+  }
+  if (abDisplay) abDisplay.textContent = display;
+  if (abRest) {
+    abRest.classList.remove('running', 'warn', 'danger');
+    if (restRunning) abRest.classList.add('running');
+    if (state === 'danger' || state === 'warn') abRest.classList.add(state);
+  }
+  if (focusDisplay) focusDisplay.textContent = display;
+  if (focusBtn) focusBtn.textContent = restRunning ? '초기화' : '시작';
+  if (focusBox) {
+    focusBox.classList.remove('running', 'warn', 'danger');
+    if (restRunning) focusBox.classList.add('running');
+    if (state === 'danger' || state === 'warn') focusBox.classList.add(state);
   }
 }
 
@@ -1890,28 +1944,29 @@ function hasReadinessToday() {
 function getReadiness() {
   return gls('readiness:' + todayStr()) || { sleep: 3, fatigue: 3, pain: 1 };
 }
-function saveReadiness() {
-  const r = {
-    sleep: +document.getElementById('readySleep').value,
-    fatigue: +document.getElementById('readyFatigue').value,
-    pain: +document.getElementById('readyPain').value,
-  };
+function setReadiness(kind, val) {
+  const r = getReadiness();
+  r[kind] = val;
   sls('readiness:' + todayStr(), r);
   renderReadiness();
   updateCoachPanel();
 }
+const READINESS_SCALES = [
+  ['rdSleep', 'sleep', '수면'],
+  ['rdFatigue', 'fatigue', '피로'],
+  ['rdPain', 'pain', '통증'],
+];
 function renderReadiness() {
   const r = getReadiness();
-  [
-    ['readySleep', 'sleep'],
-    ['readyFatigue', 'fatigue'],
-    ['readyPain', 'pain'],
-  ].forEach(([id, k]) => {
+  READINESS_SCALES.forEach(([id, k, label]) => {
     const el = document.getElementById(id);
-    if (el) {
-      el.value = r[k];
-      document.getElementById(id + 'Val').textContent = r[k];
-    }
+    if (!el) return;
+    el.innerHTML = [1, 2, 3, 4, 5]
+      .map(
+        (v) =>
+          `<button type="button" class="${v === r[k] ? 'pick' : ''}" onclick="setReadiness('${k}',${v})" aria-label="${label} ${v}점" aria-pressed="${v === r[k]}">${v}</button>`,
+      )
+      .join('');
   });
   const score = Math.round(
     r.sleep * 20 + (6 - r.fatigue) * 12 + (6 - r.pain) * 8,
@@ -2266,6 +2321,21 @@ function buildHistory() {
   buildHistChart();
   buildPlateCalcUI();
   buildHistLog();
+  const savedPanel = gls('histSubtab') || 'summary';
+  const savedBtn = document.querySelector(`.hist-subtab[data-panel="${savedPanel}"]`);
+  if (savedBtn) showHistSubtab(savedPanel, savedBtn);
+}
+function showHistSubtab(name, btn) {
+  document.querySelectorAll('.hist-subtab').forEach((b) => {
+    const active = b === btn;
+    b.classList.toggle('active', active);
+    if (active) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
+  document
+    .querySelectorAll('.hist-subpanel')
+    .forEach((p) => p.classList.toggle('active', p.id === 'histPanel-' + name));
+  sls('histSubtab', name);
 }
 function buildStats() {
   const allDates = new Set();
@@ -3053,6 +3123,7 @@ initStorage().then(async () => {
   applyRoutineOverrides();
   await runAutoBackupIfNeeded();
   initTheme();
+  initTextScale();
   buildHeader();
   buildWeekStrip();
   buildSelector();
