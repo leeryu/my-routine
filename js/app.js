@@ -1108,15 +1108,24 @@ function showRoutine(key) {
         ? `<div class="rec-prev">참고 (${hist[0]?.date || '?'}): <strong>${prevRec.summary}</strong></div>`
         : '';
 
-    /* Coach rec bar (NEW) */
+    /* ── TOP INSIGHT (정보 위계): 정체 경고 > 코치 추천, 한 번에 하나만 ── */
     const applyKg =
       smartRec.kg > 0
         ? `<button class="crb-apply-btn" onclick="applyRec(${idx},${smartRec.kg})">✓ ${smartRec.kg}kg 적용</button>`
         : '';
-    const recBar = `<div class="coach-rec-bar"><span class="crb-icon">${smartRec.action === 'INCREASE' ? '📈' : smartRec.action === 'REDUCE' ? '📉' : smartRec.action === 'MAINTAIN' ? '⚖️' : '🎯'}</span><span class="crb-text">${smartRec.msg}</span>${applyKg}</div>`;
-    const plateauWarn = plateau
-      ? `<div class="plateau-warning">📊 ${plateau}</div>`
-      : '';
+    const recIcon =
+      smartRec.action === 'INCREASE'
+        ? '📈'
+        : smartRec.action === 'REDUCE'
+          ? '📉'
+          : smartRec.action === 'MAINTAIN'
+            ? '⚖️'
+            : '🎯';
+    const topInsight = plateau
+      ? `<div class="top-insight plateau">📊 ${plateau}</div>`
+      : smartRec.msg
+        ? `<div class="top-insight rec"><span class="ti-icon">${recIcon}</span><span class="ti-text">${smartRec.msg}</span>${applyKg}</div>`
+        : '';
 
     const rpeVal = rec.rpe || '';
     const painVal = rec.pain || '';
@@ -1140,6 +1149,15 @@ function showRoutine(key) {
       ? `<span class="plateau-badge" style="display:inline-flex">📊 정체</span>`
       : '';
 
+    /* ── 참고용 정보(이전 기록·PR·볼륨)는 한 줄로 접어둔다 ── */
+    const moreParts = [];
+    if (prevHtml) moreParts.push(prevHtml);
+    if (pr) moreParts.push(`<div class="rec-more-line">🏆 PR ${pr}kg</div>`);
+    if (vol > 0) moreParts.push(`<div class="rec-more-line">📦 이번 세션 볼륨 ${vol}kg</div>`);
+    const moreHtml = moreParts.length
+      ? `<div class="rec-more" onclick="toggleRecMore(${idx})" role="button" tabindex="0" aria-label="지난 기록·PR·볼륨 펼치기/접기"><span class="rec-more-lbl">지난 기록 · PR · 볼륨</span><span class="rec-more-badge">${moreParts.length}</span><span class="rec-more-chev">▾</span></div><div class="rec-more-body" id="recMore_${idx}">${moreParts.join('')}</div>`
+      : '';
+
     const card = document.createElement('div');
     card.className =
       'ex-card' + (isDone ? ' done' : '') + (plateau ? ' plateau' : '');
@@ -1147,7 +1165,7 @@ function showRoutine(key) {
     card.innerHTML = `
 <div class="ex-head" onclick="toggleCard(${idx})" role="button" tabindex="0" aria-label="${ex.name} 펼치기/접기">
   <div class="ex-num">${String(idx + 1).padStart(2, '0')}</div>
-  <div class="ex-name-wrap"><span class="ex-name">${ex.name}</span><span class="ex-target">${ex.target}</span></div>
+  <div class="ex-name-wrap"><span class="ex-name">${ex.name}<button class="ex-info-btn" onclick="event.stopPropagation();toggleExInfo(${idx})" type="button" aria-label="${ex.name} 폼 가이드 보기">ⓘ</button></span><span class="ex-target">${ex.target}</span></div>
   <div class="ex-right">${volHtml}${prHtml}${plateauBadgeHtml}<div class="done-check">✓</div><span class="ex-chev">▾</span></div>
 </div>
 <div class="ex-sets-row">
@@ -1155,17 +1173,13 @@ function showRoutine(key) {
   <div class="set-chip">🔁 ${ex.reps}</div>
   <div class="set-chip">⚖️ ${ex.weight}</div>
 </div>
-<div class="ex-detail">
+<div class="ex-detail" id="exInfo_${idx}">
   <div class="dl"><div class="dl-label">⬆ 수축</div><div class="dl-text">${ex.con}</div></div>
   <div class="dl"><div class="dl-label">⬇ 이완</div><div class="dl-text">${ex.ecc}</div></div>
   ${ex.tip ? `<div class="tip-box">💡 ${ex.tip}</div>` : ''}
   ${ex.warn ? `<div class="warn-box">⚠️ ${ex.warn}</div>` : ''}
 </div>
-<div class="rec-toggle" onclick="toggleRecord(this)" role="button" tabindex="0" aria-label="오늘 기록 펼치기/접기">
-  <span class="rec-toggle-lbl">📝 오늘 기록</span>
-  <span style="font-size:12px;color:var(--text-3)">▾</span>
-</div>
-<div class="rec-body">${prevHtml}${recBar}${plateauWarn}<div class="quick-row"><button class="quick-btn primary" onclick="copyPrevious(${idx})" type="button">지난 기록 복사</button><button class="quick-btn" onclick="sameAsFirst(${idx})" type="button">1세트로 통일</button><button class="quick-btn" onclick="bumpExercise(${idx},2.5)" type="button">전체 +2.5kg</button><button class="quick-btn danger" onclick="stopForPain(${idx})" type="button">통증 중단</button></div>${setRowsHtml}${extraHtml}<button class="rec-save-btn" onclick="saveEx(${idx})" type="button">저장</button></div>`;
+<div class="rec-body">${topInsight}${moreHtml}<div class="quick-row"><button class="quick-btn primary" onclick="copyPrevious(${idx})" type="button">지난 기록 복사</button><button class="quick-btn" onclick="sameAsFirst(${idx})" type="button">1세트로 통일</button><button class="quick-btn" onclick="bumpExercise(${idx},2.5)" type="button">전체 +2.5kg</button><button class="quick-btn danger" onclick="stopForPain(${idx})" type="button">통증 중단</button></div>${setRowsHtml}${extraHtml}<button class="rec-save-btn" onclick="saveEx(${idx})" type="button">저장</button></div>`;
     content.appendChild(card);
   });
   updateProgress();
@@ -1188,8 +1202,12 @@ function applyRec(idx, kg) {
 function toggleCard(idx) {
   document.getElementById('ex-' + idx)?.classList.toggle('open');
 }
-function toggleRecord(el) {
-  el.parentElement.classList.toggle('rec-open');
+function toggleExInfo(idx) {
+  document.getElementById('exInfo_' + idx)?.classList.toggle('show');
+}
+function toggleRecMore(idx) {
+  document.getElementById('recMore_' + idx)?.classList.toggle('show');
+  document.getElementById('recMore_' + idx)?.previousElementSibling?.classList.toggle('open');
 }
 
 function adj(type, idx, s, d) {
@@ -1311,13 +1329,13 @@ function saveEx(idx, silent) {
 function openNextExercise(idx) {
   const next = document.getElementById('ex-' + (idx + 1));
   document
-    .querySelectorAll('.ex-card.open,.ex-card.rec-open')
-    .forEach((c) => c.classList.remove('open', 'rec-open'));
+    .querySelectorAll('.ex-card.open')
+    .forEach((c) => c.classList.remove('open'));
   if (!next) {
     updateCoachNudge();
     return;
   }
-  next.classList.add('open', 'rec-open');
+  next.classList.add('open');
   next.scrollIntoView({ behavior: 'smooth', block: 'center' });
   updateCoachNudge();
 }
@@ -1510,7 +1528,7 @@ function focusOpenCurrent() {
   closeFocusMode();
   const card = document.getElementById('ex-' + focusIdx);
   if (card) {
-    card.classList.add('open', 'rec-open');
+    card.classList.add('open');
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
@@ -1697,7 +1715,7 @@ function jumpNextExercise() {
     document
       .querySelectorAll('.ex-card.open')
       .forEach((c) => c.classList.remove('open'));
-    card.classList.add('open', 'rec-open');
+    card.classList.add('open');
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     showToast('다음 운동으로 이동');
   }
@@ -1890,28 +1908,29 @@ function hasReadinessToday() {
 function getReadiness() {
   return gls('readiness:' + todayStr()) || { sleep: 3, fatigue: 3, pain: 1 };
 }
-function saveReadiness() {
-  const r = {
-    sleep: +document.getElementById('readySleep').value,
-    fatigue: +document.getElementById('readyFatigue').value,
-    pain: +document.getElementById('readyPain').value,
-  };
+function setReadiness(kind, val) {
+  const r = getReadiness();
+  r[kind] = val;
   sls('readiness:' + todayStr(), r);
   renderReadiness();
   updateCoachPanel();
 }
+const READINESS_SCALES = [
+  ['rdSleep', 'sleep', '수면'],
+  ['rdFatigue', 'fatigue', '피로'],
+  ['rdPain', 'pain', '통증'],
+];
 function renderReadiness() {
   const r = getReadiness();
-  [
-    ['readySleep', 'sleep'],
-    ['readyFatigue', 'fatigue'],
-    ['readyPain', 'pain'],
-  ].forEach(([id, k]) => {
+  READINESS_SCALES.forEach(([id, k, label]) => {
     const el = document.getElementById(id);
-    if (el) {
-      el.value = r[k];
-      document.getElementById(id + 'Val').textContent = r[k];
-    }
+    if (!el) return;
+    el.innerHTML = [1, 2, 3, 4, 5]
+      .map(
+        (v) =>
+          `<button type="button" class="${v === r[k] ? 'pick' : ''}" onclick="setReadiness('${k}',${v})" aria-label="${label} ${v}점" aria-pressed="${v === r[k]}">${v}</button>`,
+      )
+      .join('');
   });
   const score = Math.round(
     r.sleep * 20 + (6 - r.fatigue) * 12 + (6 - r.pain) * 8,
