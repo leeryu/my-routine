@@ -448,6 +448,7 @@ const MUSCLE_MAP = {
   '사이드 플랭크': ['코어'],
   '레그 익스텐션': ['하체'],
 };
+const MUSCLE_GROUP_OPTIONS = ['등', '광배', '가슴', '어깨', '측면어깨', '후면어깨', '삼두', '이두', '코어', '하체', '전신/기타'];
 let selectedBar = 0;
 
 /* ═══ STORAGE ═══ */
@@ -832,11 +833,20 @@ function bestE1RM(rec, sets) {
 function roundHalf(v) {
   return Math.round(v * 2) / 2;
 }
+/* 사용자가 직접 입력한 텍스트(메모·커스텀 종목명 등)를 innerHTML에 꽂을 때 반드시 통과시킨다.
+   HTML 콘텐츠·속성·인라인 onclick 문자열 인자 세 자리 모두에서 안전하도록 5종을 전부 이스케이프한다. */
+function escapeHtml(str) {
+  return String(str ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+  );
+}
 
 /* ── PLATEAU DETECTION ── */
-function detectPlateau(rk, idx) {
+/* preHist: showRoutine()이 같은 종목에 대해 이미 조회해둔 이력을 넘기면 재조회를 건너뛴다 */
+function detectPlateau(rk, idx, preHist) {
   const ex = ROUTINES[rk].exercises[idx];
-  const hist = getExHistory(rk, idx).slice(0, 4);
+  const hist = (preHist || getExHistory(rk, idx)).slice(0, 4);
   if (hist.length < 3) return null;
   const kgs = hist.map((h) => maxKgRec(h.rec, ex.sets)).filter((v) => v > 0);
   if (kgs.length < 3) return null;
@@ -848,9 +858,10 @@ function detectPlateau(rk, idx) {
 }
 
 /* ── SMART RECOMMENDATION (NEW) ── */
-function getSmartRec(rk, idx) {
+/* preHist: showRoutine()이 같은 종목에 대해 이미 조회해둔 이력을 넘기면 재조회를 건너뛴다 */
+function getSmartRec(rk, idx, preHist) {
   const ex = ROUTINES[rk].exercises[idx];
-  const hist = getExHistory(rk, idx);
+  const hist = preHist || getExHistory(rk, idx);
   if (!hist.length)
     return {
       action: 'START',
@@ -1056,12 +1067,12 @@ function showRoutine(key) {
     const prKey = `pr:${key}_${idx}`;
     const pr = gls(prKey) || 0;
 
-    /* ── SMART REC (NEW) ── */
-    const smartRec = getSmartRec(key, idx);
-    const plateau = detectPlateau(key, idx);
+    /* 종목당 이력 조회를 한 번만 하고 코치 추천·정체 감지에 재사용 (중복 스캔 제거) */
+    const hist = getExHistory(key, idx);
+    const smartRec = getSmartRec(key, idx, hist);
+    const plateau = detectPlateau(key, idx, hist);
 
     /* Previous session data for pre-fill */
-    const hist = getExHistory(key, idx);
     const prevRec = hist[0]?.rec || {};
 
     let setRowsHtml = '';
@@ -1134,7 +1145,7 @@ function showRoutine(key) {
 
     const rpeVal = rec.rpe || '';
     const painVal = rec.pain || '';
-    const noteVal = (rec.note || '').replace(/"/g, '&quot;');
+    const noteVal = escapeHtml(rec.note || '');
     const extraHtml = `<div class="rec-extra"><select id="rpe_${idx}"><option value="">RPE 선택</option>${[6, 7, 8, 9, 10].map((v) => `<option value="${v}"${String(rpeVal) === String(v) ? ' selected' : ''}>RPE ${v} ${v <= 6 ? '쉬움' : v === 7 ? '여유' : v === 8 ? '적정' : v === 9 ? '힘듦' : '한계'}</option>`).join('')}</select><select id="pain_${idx}"><option value="">통증 없음</option><option value="muscle"${painVal === 'muscle' ? ' selected' : ''}>근육 자극</option><option value="joint"${painVal === 'joint' ? ' selected' : ''}>관절 시큰</option><option value="nerve"${painVal === 'nerve' ? ' selected' : ''}>저림/방사통</option></select><textarea class="rec-note" id="note_${idx}" placeholder="오늘 느낌 메모: 광배 느낌, 허리 당김 등">${noteVal}</textarea></div>`;
 
     const prHtml = pr
@@ -1168,9 +1179,9 @@ function showRoutine(key) {
       'ex-card' + (isDone ? ' done' : '') + (plateau ? ' plateau' : '');
     card.id = 'ex-' + idx;
     card.innerHTML = `
-<div class="ex-head" onclick="toggleCard(${idx})" role="button" tabindex="0" aria-label="${ex.name} 펼치기/접기">
+<div class="ex-head" onclick="toggleCard(${idx})" role="button" tabindex="0" aria-label="${escapeHtml(ex.name)} 펼치기/접기">
   <div class="ex-num">${String(idx + 1).padStart(2, '0')}</div>
-  <div class="ex-name-wrap"><span class="ex-name">${ex.name}<button class="ex-info-btn" onclick="event.stopPropagation();toggleExInfo(${idx})" type="button" aria-label="${ex.name} 폼 가이드 보기">ⓘ</button></span><span class="ex-target">${ex.target}</span></div>
+  <div class="ex-name-wrap"><span class="ex-name">${escapeHtml(ex.name)}<button class="ex-info-btn" onclick="event.stopPropagation();toggleExInfo(${idx})" type="button" aria-label="${escapeHtml(ex.name)} 폼 가이드 보기">ⓘ</button></span><span class="ex-target">${escapeHtml(ex.target)}</span></div>
   <div class="ex-right">${volHtml}${prHtml}${plateauBadgeHtml}<div class="done-check">✓</div><span class="ex-chev">▾</span></div>
 </div>
 <div class="ex-sets-row">
@@ -2214,8 +2225,8 @@ function renderRoutineEditor() {
         .map(
           (ex, i) => `
       <div class="rex-row">
-        <div class="rex-name">${ex.name}${ex.custom ? ' <span class="rex-tag">커스텀</span>' : ''}</div>
-        <div class="rex-kg-wrap"><input class="rex-kg" type="number" inputmode="decimal" step="0.5" min="0" value="${ex.defKg || ''}" placeholder="kg" onchange="setWeightOverride('${rk}',${i},this.value)" aria-label="${ex.name} 목표 중량 kg"></div>
+        <div class="rex-name">${escapeHtml(ex.name)}${ex.custom ? ` <span class="rex-tag">커스텀${ex.muscles ? ' · ' + escapeHtml(ex.muscles.join('/')) : ''}</span>` : ''}</div>
+        <div class="rex-kg-wrap"><input class="rex-kg" type="number" inputmode="decimal" step="0.5" min="0" value="${ex.defKg || ''}" placeholder="kg" onchange="setWeightOverride('${rk}',${i},this.value)" aria-label="${escapeHtml(ex.name)} 목표 중량 kg"></div>
       </div>`,
         )
         .join('');
@@ -2233,6 +2244,7 @@ function renderRoutineEditor() {
           <input id="rxSets_${rk}" type="number" inputmode="numeric" min="1" placeholder="세트 수" value="3" aria-label="${rk}루틴 새 종목 세트 수">
           <input id="rxReps_${rk}" placeholder="반복 (예: 10/10/10)" aria-label="${rk}루틴 새 종목 반복 횟수">
           <input id="rxKg_${rk}" type="number" inputmode="decimal" step="0.5" min="0" placeholder="목표 kg" aria-label="${rk}루틴 새 종목 목표 중량">
+          <select id="rxMuscle_${rk}" aria-label="${rk}루틴 새 종목 근육 그룹 (근육별 볼륨 집계용)">${MUSCLE_GROUP_OPTIONS.map((m) => `<option value="${m}">${m}</option>`).join('')}</select>
         </div>
         <div class="rex-btns">
           <button class="quick-btn primary" type="button" onclick="addCustomExercise('${rk}')">+ 종목 추가</button>
@@ -2253,6 +2265,7 @@ function addCustomExercise(rk) {
   const sets = Math.max(1, parseInt(document.getElementById('rxSets_' + rk)?.value, 10) || 3);
   const reps = (document.getElementById('rxReps_' + rk)?.value || '').trim() || Array(sets).fill('10').join('/');
   const defKg = Math.max(0, parseFloat(document.getElementById('rxKg_' + rk)?.value) || 0);
+  const muscle = document.getElementById('rxMuscle_' + rk)?.value || '전신/기타';
   const ex = {
     name,
     target,
@@ -2265,6 +2278,7 @@ function addCustomExercise(rk) {
     tip: '',
     warn: null,
     custom: true,
+    muscles: [muscle],
   };
   const list = gls('customExercises:' + rk) || [];
   list.push(ex);
@@ -2377,7 +2391,7 @@ function getMonthMuscleVolume(monthKey) {
           let vol = 0;
           for (let s = 0; s < ex.sets; s++)
             vol += (+rec['kg_' + s] || 0) * (+rec['reps_' + s] || 0);
-          (MUSCLE_MAP[ex.name] || ['기타']).forEach(
+          (ex.muscles || MUSCLE_MAP[ex.name] || ['기타']).forEach(
             (name) => (result[name] = (result[name] || 0) + vol),
           );
         });
@@ -2596,10 +2610,15 @@ function buildChartSelector() {
   document.getElementById('chartSel').innerHTML = names
     .map(
       (n) =>
-        `<div class="cchip${n === selectedChartEx ? ' act' : ''}" onclick="selectChart('${n}')" role="button" tabindex="0" aria-pressed="${n === selectedChartEx}">${n}</div>`,
+        `<div class="cchip${n === selectedChartEx ? ' act' : ''}" data-name="${escapeHtml(n)}" role="button" tabindex="0" aria-pressed="${n === selectedChartEx}">${escapeHtml(n)}</div>`,
     )
     .join('');
 }
+/* 종목명에 따옴표가 섞여도 인라인 onclick 문자열이 깨지지 않도록 data-name + 위임 클릭으로 처리 */
+document.addEventListener('click', (e) => {
+  const chip = e.target.closest('.cchip');
+  if (chip) selectChart(chip.dataset.name);
+});
 function selectChart(exName) {
   selectedChartEx = exName;
   document
