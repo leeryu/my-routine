@@ -75,13 +75,49 @@ function showSessionRoutine(id, button, requestedDate) {
   const date = requestedDate || sessionDates[id] || todayStr(); sessionDates[id] = date;
   const el = document.getElementById('sessionRoutineContent'); if (!el) return; const rec = sessionRecord(id, date);
   const mode = rec.savedAt ? `<div class="session-mode edit">기존 기록 수정 · 저장 전 자동 백업</div>` : `<div class="session-mode">신규 기록 · 하루 1세션</div>`;
+  const prefillBtn = !rec.savedAt && lastSessionRecord(id, date)
+    ? `<button type="button" class="quick-btn primary" style="width:100%;margin:2px 0 10px" onclick="fillFromLastSession('${id}')">지난 세션과 동일</button>`
+    : '';
   const dateField = `<label class="full">세션 날짜<input id="${id}Date" type="date" value="${date}" onchange="changeSessionDate('${id}',this.value)"></label>`;
   if (id === 'pilates') {
     const discomforts = [['Neck','neck','목 불편감'],['Back','back','허리 불편감'],['Ql','rightQl','오른쪽 QL 불편감'],['Hip','hip','고관절 불편감'],['Core','coreFeel','코어 사용감'],['NextDay','nextDay','다음 날 통증 또는 피로']];
-    el.innerHTML = `<div class="session-card"><div class="session-head"><div><span class="source-badge doctor">의사 권고</span><h3>필라테스</h3></div><b>주 1회 · 8주 · 기본 50분</b></div>${mode}<p>저강도~중강도 세션</p><div class="session-form">${dateField}<label>수업 시간<input id="pilatesMinutes" type="number" inputmode="numeric" value="${rec.minutes || 50}"></label><label>운동 강도<select id="pilatesIntensity"><option value="">선택</option>${['낮음','중간','높음'].map(v => `<option${rec.intensity === v ? ' selected' : ''}>${v}</option>`).join('')}</select></label>${discomforts.map(([id2,key,label]) => `<label>${label}<input id="pilates${id2}" value="${rec[key] || ''}" placeholder="없음 / 0~10 / 메모"></label>`).join('')}<label class="full">메모<textarea id="pilatesNote">${rec.note || ''}</textarea></label></div><button class="session-save" onclick="saveSessionRoutine('pilates')">${rec.savedAt ? '기존 기록 수정 저장' : '새 세션 기록 저장'}</button></div>`;
+    el.innerHTML = `<div class="session-card"><div class="session-head"><div><span class="source-badge doctor">의사 권고</span><h3>필라테스</h3></div><b>주 1회 · 8주 · 기본 50분</b></div>${mode}${prefillBtn}<p>저강도~중강도 세션</p><div class="session-form">${dateField}<label>수업 시간<input id="pilatesMinutes" type="number" inputmode="numeric" value="${rec.minutes || 50}"></label><label>운동 강도<select id="pilatesIntensity"><option value="">선택</option>${['낮음','중간','높음'].map(v => `<option${rec.intensity === v ? ' selected' : ''}>${v}</option>`).join('')}</select></label>${discomforts.map(([id2,key,label]) => `<label>${label}<input id="pilates${id2}" value="${rec[key] || ''}" placeholder="없음 / 0~10 / 메모"></label>`).join('')}<label class="full">메모<textarea id="pilatesNote">${rec.note || ''}</textarea></label></div><button class="session-save" onclick="saveSessionRoutine('pilates')">${rec.savedAt ? '기존 기록 수정 저장' : '새 세션 기록 저장'}</button></div>`;
   } else {
-    el.innerHTML = `<div class="session-card"><div class="session-head"><div><span class="source-badge app">앱 제안</span><h3>홈코어</h3></div><b>주 2회 · 8~10분</b></div>${mode}<div class="session-form">${dateField}</div>${HOME_CORE_EXERCISES.map((x,i) => `<label class="home-core-item"><input id="hc_${i}" type="checkbox" ${rec.completed?.[i] ? 'checked' : ''}><span><strong>${i+1}. ${x[0]}</strong><b>${x[1]}</b><small>${x[2]}</small></span></label>`).join('')}<div class="session-form"><label>현재 불편감<input id="homeCorePain" value="${rec.pain || ''}"></label><label>다음 날 통증·피로<input id="homeCoreNextDay" value="${rec.nextDay || ''}"></label><label class="full">메모<textarea id="homeCoreNote">${rec.note || ''}</textarea></label></div><button class="session-save" onclick="saveSessionRoutine('home-core')">${rec.savedAt ? '기존 기록 수정 저장' : '새 세션 기록 저장'}</button></div>`;
+    el.innerHTML = `<div class="session-card"><div class="session-head"><div><span class="source-badge app">앱 제안</span><h3>홈코어</h3></div><b>주 2회 · 8~10분</b></div>${mode}${prefillBtn}<div class="session-form">${dateField}</div>${HOME_CORE_EXERCISES.map((x,i) => `<label class="home-core-item"><input id="hc_${i}" type="checkbox" ${rec.completed?.[i] ? 'checked' : ''}><span><strong>${i+1}. ${x[0]}</strong><b>${x[1]}</b><small>${x[2]}</small></span></label>`).join('')}<div class="session-form"><label>현재 불편감<input id="homeCorePain" value="${rec.pain || ''}"></label><label>다음 날 통증·피로<input id="homeCoreNextDay" value="${rec.nextDay || ''}"></label><label class="full">메모<textarea id="homeCoreNote">${rec.note || ''}</textarea></label></div><button class="session-save" onclick="saveSessionRoutine('home-core')">${rec.savedAt ? '기존 기록 수정 저장' : '새 세션 기록 저장'}</button></div>`;
   }
+}
+function lastSessionRecord(id, excludeDate) {
+  return Object.keys(_cache)
+    .filter((k) => k.startsWith(`session:${id}:`) && /^\d{4}-\d{2}-\d{2}$/.test(k.slice(-10)))
+    .map((k) => ({ date: k.slice(-10), rec: gls(k) }))
+    .filter((x) => x.date !== excludeDate && x.rec?.savedAt)
+    .sort((a, b) => b.date.localeCompare(a.date))[0];
+}
+function fillFromLastSession(id) {
+  const last = lastSessionRecord(id, selectedSessionDate(id));
+  if (!last) { showToast('지난 세션 기록 없음'); return; }
+  const rec = last.rec;
+  const setVal = (elId, v) => { const el = document.getElementById(elId); if (el) el.value = v || ''; };
+  if (id === 'pilates') {
+    setVal('pilatesMinutes', rec.minutes || 50);
+    setVal('pilatesIntensity', rec.intensity || '');
+    setVal('pilatesNeck', rec.neck || '');
+    setVal('pilatesBack', rec.back || '');
+    setVal('pilatesQl', rec.rightQl || '');
+    setVal('pilatesHip', rec.hip || '');
+    setVal('pilatesCore', rec.coreFeel || '');
+    setVal('pilatesNextDay', rec.nextDay || '');
+    setVal('pilatesNote', rec.note || '');
+  } else {
+    HOME_CORE_EXERCISES.forEach((_, i) => {
+      const cb = document.getElementById(`hc_${i}`);
+      if (cb) cb.checked = !!rec.completed?.[i];
+    });
+    setVal('homeCorePain', rec.pain || '');
+    setVal('homeCoreNextDay', rec.nextDay || '');
+    setVal('homeCoreNote', rec.note || '');
+  }
+  showToast(`✅ ${last.date} 세션 값으로 채움 — 확인 후 저장해라`);
 }
 function renderLowerBodyStatus() {
   const el = document.getElementById('lowerBodyStatus'); if (!el) return;

@@ -1091,17 +1091,17 @@ function showRoutine(key) {
     <div class="rec-fw">
       <div class="rec-flbl">중량 KG</div>
       <div class="adj-wrap">
-        <button class="adj-s" onclick="adj('kg',${idx},${s},-2.5)" type="button" aria-label="${s + 1}세트 중량 2.5kg 감소">−</button>
+        <button class="adj-s" onclick="adj('kg',${idx},${s},-2.5)" data-idx="${idx}" data-s="${s}" data-type="kg" data-delta="-2.5" type="button" aria-label="${s + 1}세트 중량 2.5kg 감소, 길게 누르면 가속">−</button>
         <input class="rec-inp${isPrefilled ? ' prefilled' : ''}" type="number" inputmode="decimal" placeholder="—" id="kg_${idx}_${s}" value="${kgVal}" onchange="onInpChange(${idx},${s})" aria-label="${s + 1}세트 중량 kg">
-        <button class="adj-s" onclick="adj('kg',${idx},${s},2.5)" type="button" aria-label="${s + 1}세트 중량 2.5kg 증가">+</button>
+        <button class="adj-s" onclick="adj('kg',${idx},${s},2.5)" data-idx="${idx}" data-s="${s}" data-type="kg" data-delta="2.5" type="button" aria-label="${s + 1}세트 중량 2.5kg 증가, 길게 누르면 가속">+</button>
       </div>${e1}
     </div>
     <div class="rec-fw">
       <div class="rec-flbl">횟수 REP</div>
       <div class="adj-wrap">
-        <button class="adj-s" onclick="adj('rp',${idx},${s},-1)" type="button" aria-label="${s + 1}세트 횟수 1회 감소">−</button>
+        <button class="adj-s" onclick="adj('rp',${idx},${s},-1)" data-idx="${idx}" data-s="${s}" data-type="rp" data-delta="-1" type="button" aria-label="${s + 1}세트 횟수 1회 감소, 길게 누르면 가속">−</button>
         <input class="rec-inp${isPrefilled ? ' prefilled' : ''}" type="number" inputmode="numeric" placeholder="—" id="rp_${idx}_${s}" value="${rpVal}" onchange="onInpChange(${idx},${s})" aria-label="${s + 1}세트 반복 횟수">
-        <button class="adj-s" onclick="adj('rp',${idx},${s},1)" type="button" aria-label="${s + 1}세트 횟수 1회 증가">+</button>
+        <button class="adj-s" onclick="adj('rp',${idx},${s},1)" data-idx="${idx}" data-s="${s}" data-type="rp" data-delta="1" type="button" aria-label="${s + 1}세트 횟수 1회 증가, 길게 누르면 가속">+</button>
       </div>
     </div>
   </div>
@@ -1215,6 +1215,52 @@ function toggleRecMore(idx) {
   document.getElementById('recMore_' + idx)?.previousElementSibling?.classList.toggle('open');
 }
 
+/* ── 길게 누르면 가속되는 ± 조정 (20kg 차이를 8번 누르지 않도록) ── */
+let adjHoldTimer = null,
+  adjHoldInterval = null,
+  adjHoldBtn = null,
+  adjHoldFired = false;
+function clearAdjHold() {
+  clearTimeout(adjHoldTimer);
+  clearInterval(adjHoldInterval);
+  adjHoldTimer = null;
+  adjHoldInterval = null;
+}
+document.addEventListener('pointerdown', (e) => {
+  const btn = e.target.closest('.adj-s');
+  if (!btn) return;
+  adjHoldBtn = btn;
+  adjHoldFired = false;
+  const idx = +btn.dataset.idx,
+    s = +btn.dataset.s,
+    type = btn.dataset.type,
+    baseDelta = +btn.dataset.delta;
+  let step = 0;
+  adjHoldTimer = setTimeout(() => {
+    adjHoldInterval = setInterval(() => {
+      step++;
+      adjHoldFired = true;
+      const mult = step > 14 ? 4 : step > 7 ? 2 : 1;
+      adj(type, idx, s, baseDelta * mult);
+    }, 110);
+  }, 420);
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach((evt) =>
+  document.addEventListener(evt, clearAdjHold),
+);
+document.addEventListener(
+  'click',
+  (e) => {
+    const btn = e.target.closest('.adj-s');
+    if (btn && btn === adjHoldBtn && adjHoldFired) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      adjHoldFired = false;
+    }
+  },
+  true,
+);
+
 function adj(type, idx, s, d) {
   const id = type === 'kg' ? `kg_${idx}_${s}` : `rp_${idx}_${s}`;
   const el = document.getElementById(id);
@@ -1300,6 +1346,8 @@ function toggleSetCheck(idx, s) {
     try {
       navigator.vibrate?.(60);
     } catch {}
+  } else if (!isChecked) {
+    showToast('↩️ 되돌림 — 다시 누르면 완료 처리');
   }
   rec.rpe = document.getElementById(`rpe_${idx}`)?.value || rec.rpe || '';
   rec.pain = document.getElementById(`pain_${idx}`)?.value || rec.pain || '';
@@ -1553,6 +1601,19 @@ function initTheme() {
     const b = document.getElementById('themeBtn');
     if (b) b.textContent = '☀️';
   }
+}
+/* ═══ 큰 글씨 모드 (피로한 눈으로도 읽히도록) ═══ */
+function initTextScale() {
+  if (gls('largeText')) {
+    document.body.classList.add('large-text');
+    document.getElementById('textScaleBtn')?.setAttribute('aria-pressed', 'true');
+  }
+}
+function toggleTextScale() {
+  const on = document.body.classList.toggle('large-text');
+  sls('largeText', on);
+  document.getElementById('textScaleBtn')?.setAttribute('aria-pressed', String(on));
+  showToast(on ? '🔤 큰 글씨 모드 켜짐' : '🔤 큰 글씨 모드 꺼짐');
 }
 /* ═══ 원칙 가드: 헬스+수영 같은 날 / 48시간 회복 ═══ */
 function swamToday() {
@@ -3062,6 +3123,7 @@ initStorage().then(async () => {
   applyRoutineOverrides();
   await runAutoBackupIfNeeded();
   initTheme();
+  initTextScale();
   buildHeader();
   buildWeekStrip();
   buildSelector();
