@@ -226,6 +226,21 @@
       <div class="autobk-hdr">자동 백업 (기기 내 매일 1회 자동 저장, 최근 5개 보관)</div>
       <div id="autoBackupBox"></div>
     </div>
+    <div class="divider"></div>
+    <div class="sec-hdr"><div class="sec-icon">🔗</div><div class="sec-title">외부 저장소 연동</div></div>
+    <div class="webhook-box">
+      <div class="webhook-hint">노션 API는 브라우저에서 직접 부를 수 없어(CORS), Zapier·Make·Pipedream·구글 Apps Script 중 하나로 웹훅 주소를 만들고 그 자동화가 노션(또는 원하는 곳)에 저장하도록 연결해라. 여기엔 그 웹훅 주소만 입력하면 된다.</div>
+      <label class="webhook-toggle"><input type="checkbox" id="webhookEnabled" onchange="toggleWebhookEnabled(this.checked)"> 웹훅 전송 사용</label>
+      <input type="url" id="webhookUrl" class="webhook-url" placeholder="https://hooks.zapier.com/... 또는 Apps Script 웹앱 URL" onchange="saveWebhookUrl(this.value)" aria-label="웹훅 주소">
+      <div class="webhook-events">
+        <label><input type="checkbox" id="webhookEvent_gym_set_complete" onchange="toggleWebhookEvent('gym_set_complete',this.checked)"> 헬스 세트 완료 시</label>
+        <label><input type="checkbox" id="webhookEvent_gym_routine_complete" onchange="toggleWebhookEvent('gym_routine_complete',this.checked)"> 헬스 루틴 전체 완료 시</label>
+        <label><input type="checkbox" id="webhookEvent_swim_log" onchange="toggleWebhookEvent('swim_log',this.checked)"> 수영 기록 저장 시</label>
+        <label><input type="checkbox" id="webhookEvent_rehab_session" onchange="toggleWebhookEvent('rehab_session',this.checked)"> 재활 세션 저장 시</label>
+      </div>
+      <button class="ai-btn" type="button" onclick="testWebhook()">🧪 테스트 전송</button>
+      <div class="webhook-status" id="webhookStatus">아직 전송 기록 없음</div>
+    </div>
   </div>
 </div>
 

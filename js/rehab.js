@@ -52,6 +52,7 @@ async function saveSessionRoutine(id) {
     markStorageSyncPending(key, error);
     showToast('⚠️ 로컬 저장됨 · 보조 저장소 동기화 대기');
   }
+  sendWebhook('rehab_session', { sessionType: id, sessionName: SESSION_ROUTINES[id].name, summary, ...record });
   renderWeeklyGoals();
   showSessionRoutine(id, document.querySelector(`.session-tab[data-session="${id}"]`), date);
 }
