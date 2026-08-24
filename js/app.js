@@ -1009,6 +1009,14 @@ function updateProgress() {
         routine: r.label,
         summary: `${computeVolume(currentRoutine)}kg · ${ts}세트`,
       });
+      sendWebhook('gym_routine_complete', {
+        routine: r.label,
+        day: r.day,
+        exerciseCount: total,
+        totalSets: ts,
+        totalVolumeKg: computeVolume(currentRoutine),
+        readinessScore: readinessScore(),
+      });
       renderEnhancedDone();
     }
   } else banner.classList.remove('show');
@@ -1365,6 +1373,20 @@ function toggleSetCheck(idx, s) {
   rec.note = document.getElementById(`note_${idx}`)?.value || rec.note || '';
   saveRecord(rKey, rec);
   document.getElementById('ex-' + idx)?.classList.toggle('done', allChecked);
+  if (isChecked) {
+    sendWebhook('gym_set_complete', {
+      routine: ROUTINES[currentRoutine].label,
+      exercise: ex.name,
+      setNumber: s + 1,
+      totalSets: ex.sets,
+      kg: rec['kg_' + s] ?? null,
+      reps: rec['reps_' + s] ?? null,
+      rpe: rec.rpe || null,
+      pain: rec.pain || null,
+      note: rec.note || '',
+      exerciseDone: allChecked,
+    });
+  }
   if (allChecked) openNextExercise(idx);
   updateProgress();
 }
@@ -1683,6 +1705,15 @@ function saveSwimLog() {
     date: log.date,
     routine: '수영',
     summary: `${poolLen}m ${log.strokes || '?'}스트로크${dps ? ` · DPS ${dps}m` : ''} · 호흡 ${log.breath || '-'}`,
+  });
+  sendWebhook('swim_log', {
+    poolLenM: poolLen,
+    strokes: log.strokes,
+    distancePerStrokeM: dps,
+    breath: log.breath,
+    leftArm: log.left,
+    rightArm: log.right,
+    memo: log.memo,
   });
   showToast(dps ? `🏊 저장됨 — 스트로크당 ${dps}m` : '🏊 수영 기록 저장됨');
   if (gymActivityToday())
@@ -3093,6 +3124,119 @@ async function restoreAutoBackup(slot) {
     showToast('⚠️ 복원 실패');
   }
 }
+/* ═══ 외부 저장소 연동 (웹훅) ═══
+   노션 REST API는 CORS를 허용하지 않아 브라우저에서 직접 부를 수 없다.
+   대신 Zapier/Make/Pipedream/구글 Apps Script 등에서 만든 웹훅 주소로
+   저장/완료 이벤트를 POST하고, 노션 연결은 그 자동화 쪽에서 처리한다. */
+const DEFAULT_WEBHOOK_EVENTS = {
+  gym_set_complete: true,
+  gym_routine_complete: true,
+  swim_log: true,
+  rehab_session: true,
+};
+function getWebhookEvents() {
+  return { ...DEFAULT_WEBHOOK_EVENTS, ...(gls('webhookEvents') || {}) };
+}
+function saveWebhookUrl(url) {
+  sls('webhookUrl', (url || '').trim());
+  showToast('🔗 웹훅 주소 저장됨');
+}
+function toggleWebhookEnabled(on) {
+  sls('webhookEnabled', on);
+  showToast(on ? '🔗 웹훅 전송 켜짐' : '🔗 웹훅 전송 꺼짐');
+}
+function toggleWebhookEvent(key, on) {
+  const events = getWebhookEvents();
+  events[key] = on;
+  sls('webhookEvents', events);
+}
+/* 실제 네트워크 전송. 우선 정상 CORS 요청을 시도하고, 그게 막히는 도구(구글 Apps Script 등)를
+   위해 no-cors 요청으로 한 번 더 시도한다 — 응답은 못 읽지만 요청 자체는 서버에 도달한다. */
+async function postWebhookPayload(payload) {
+  const url = (gls('webhookUrl') || '').trim();
+  if (!url) return { ok: false, error: '웹훅 주소 없음' };
+  const body = JSON.stringify(payload);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    });
+    return { ok: res.ok, status: res.status };
+  } catch (error) {
+    try {
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body,
+      });
+      return { ok: null, note: '요청은 보냈으나 응답 확인 불가 (no-cors)' };
+    } catch (error2) {
+      return { ok: false, error: String(error2?.message || error2) };
+    }
+  }
+}
+async function sendWebhook(event, data) {
+  if (!gls('webhookEnabled')) return;
+  if (getWebhookEvents()[event] === false) return;
+  if (!(gls('webhookUrl') || '').trim()) return;
+  const payload = {
+    app: 'my-routine',
+    event,
+    date: todayStr(),
+    sentAt: new Date().toISOString(),
+    ...data,
+  };
+  const result = await postWebhookPayload(payload);
+  sls('webhookLastResult', { ...result, at: new Date().toISOString(), event });
+  renderWebhookStatus();
+}
+async function testWebhook() {
+  if (!(gls('webhookUrl') || '').trim()) {
+    showToast('⚠️ 웹훅 주소를 먼저 입력해라');
+    return;
+  }
+  showToast('🧪 테스트 전송 중…');
+  const payload = {
+    app: 'my-routine',
+    event: 'test',
+    date: todayStr(),
+    sentAt: new Date().toISOString(),
+    message: '내 루틴 앱에서 보낸 테스트 전송입니다.',
+  };
+  const result = await postWebhookPayload(payload);
+  sls('webhookLastResult', { ...result, at: new Date().toISOString(), event: 'test' });
+  renderWebhookStatus();
+  showToast('전송 요청 완료 — 아래 상태와 자동화 도구 로그를 확인해라');
+}
+function renderWebhookStatus() {
+  const el = document.getElementById('webhookStatus');
+  if (!el) return;
+  const last = gls('webhookLastResult');
+  if (!last) {
+    el.textContent = '아직 전송 기록 없음';
+    return;
+  }
+  const t = new Date(last.at);
+  const time = `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+  const label = last.event === 'test' ? '테스트 전송' : last.event;
+  if (last.ok === true) el.textContent = `✅ 마지막 전송 성공 · ${label} (${time})`;
+  else if (last.ok === false) el.textContent = `⚠️ 마지막 전송 실패 · ${label} (${time}) — 주소를 확인해라`;
+  else el.textContent = `📡 마지막 전송 요청 보냄 · ${label} (${time}) — 응답 확인 불가, 자동화 도구 로그에서 확인해라`;
+}
+function renderWebhookSettings() {
+  const urlEl = document.getElementById('webhookUrl');
+  const enabledEl = document.getElementById('webhookEnabled');
+  if (urlEl) urlEl.value = gls('webhookUrl') || '';
+  if (enabledEl) enabledEl.checked = !!gls('webhookEnabled');
+  const events = getWebhookEvents();
+  Object.keys(DEFAULT_WEBHOOK_EVENTS).forEach((k) => {
+    const el = document.getElementById('webhookEvent_' + k);
+    if (el) el.checked = events[k] !== false;
+  });
+  renderWebhookStatus();
+}
 function daysSinceBackup() {
   const d = gls('lastBackup');
   if (!d) return null;
@@ -3156,6 +3300,7 @@ initStorage().then(async () => {
   renderRestTimer();
   updateBackupNote();
   renderAutoBackupList();
+  renderWebhookSettings();
   renderGuards();
   renderSwimLogs();
   const savedTab = gls('activeTab');
