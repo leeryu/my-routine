@@ -3153,7 +3153,7 @@ function toggleWebhookEvent(key, on) {
 /* 실제 네트워크 전송. 우선 정상 CORS 요청을 시도하고, 그게 막히는 도구(구글 Apps Script 등)를
    위해 no-cors 요청으로 한 번 더 시도한다 — 응답은 못 읽지만 요청 자체는 서버에 도달한다. */
 async function postWebhookPayload(payload) {
-  const url = (gls('webhookUrl') || '').trim();
+  const url = currentWebhookUrl();
   if (!url) return { ok: false, error: '웹훅 주소 없음' };
   const body = JSON.stringify(payload);
   try {
@@ -3177,10 +3177,20 @@ async function postWebhookPayload(payload) {
     }
   }
 }
+/* 입력창에 방금 붙여넣고 바로 버튼을 누르면 blur(change 이벤트)가 아직 안 일어나
+   저장소엔 반영이 안 됐을 수 있다 — 화면에 보이는 입력값을 우선으로 보고, 그 김에 저장까지 한다. */
+function currentWebhookUrl() {
+  const live = (document.getElementById('webhookUrl')?.value || '').trim();
+  if (live) {
+    if (live !== (gls('webhookUrl') || '')) sls('webhookUrl', live);
+    return live;
+  }
+  return (gls('webhookUrl') || '').trim();
+}
 async function sendWebhook(event, data) {
   if (!gls('webhookEnabled')) return;
   if (getWebhookEvents()[event] === false) return;
-  if (!(gls('webhookUrl') || '').trim()) return;
+  if (!currentWebhookUrl()) return;
   const payload = {
     app: 'my-routine',
     event,
@@ -3193,7 +3203,7 @@ async function sendWebhook(event, data) {
   renderWebhookStatus();
 }
 async function testWebhook() {
-  if (!(gls('webhookUrl') || '').trim()) {
+  if (!currentWebhookUrl()) {
     showToast('⚠️ 웹훅 주소를 먼저 입력해라');
     return;
   }
