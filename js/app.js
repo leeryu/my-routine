@@ -94,7 +94,7 @@ const ROUTINES = {
   B: {
     label: 'B루틴',
     day: '목요일',
-    tag: 'Push · 등 보조 · 9종목',
+    tag: 'Push · 등 보조 · 7종목',
     exercises: [
       {
         // 정책: 기존 B_0 덤벨 벤치프레스 기록을 체스트 프레스 기록으로
@@ -158,30 +158,6 @@ const ROUTINES = {
         ecc: '천천히 3초.',
         tip: '어깨 높이 이상 금지.',
         warn: null,
-      },
-      {
-        name: '크런치',
-        target: '복직근',
-        sets: 3,
-        reps: '15/15/15',
-        weight: '자중',
-        defKg: 0,
-        con: '복근으로 일어나기.',
-        ecc: '긴장 유지 2초.',
-        tip: '앱 운영용 보조 운동. 무릎 90도.',
-        warn: null,
-      },
-      {
-        name: '사이드 플랭크',
-        target: '복사근 · 중둔근 · 왼쪽만',
-        sets: 3,
-        reps: '30초×3',
-        weight: '자중',
-        defKg: 0,
-        con: '왼쪽 아래. 골반 일직선.',
-        ecc: '30초 유지.',
-        tip: '앱 운영용 보조 운동.',
-        warn: '⚠️ 오른쪽 절대 금지.',
       },
       {
         name: '레그 익스텐션',
@@ -478,6 +454,8 @@ const MIGRATION_CONFLICT_V10 = 'migrationConflict:v10';
 const MIGRATION_STATUS_V10 = 'migrationStatus:v10';
 const MIGRATION_BACKUP_V11 = 'migrationBackup:v11';
 const MIGRATION_STATUS_V11 = 'migrationStatus:v11';
+const MIGRATION_BACKUP_V12 = 'migrationBackup:v12';
+const MIGRATION_STATUS_V12 = 'migrationStatus:v12';
 
 function storageSnapshot() {
   return JSON.parse(JSON.stringify(_cache));
@@ -679,6 +657,42 @@ async function migrateV11() {
     return { status: 'completed' };
   } catch (error) {
     try { await persistSet(MIGRATION_STATUS_V11, { status: 'failed', failedAt: new Date().toISOString(), message: String(error.message || error) }); } catch {}
+    throw error;
+  }
+}
+async function migrateV12() {
+  const before = storageSnapshot();
+  if (Number(before.storageSchemaVersion) === STORAGE_SCHEMA_VERSION) {
+    if (!before[MIGRATION_STATUS_V12]) await persistSet(MIGRATION_STATUS_V12, { status: 'completed-unverified', detectedAt: new Date().toISOString(), sourceSchemaVersion: STORAGE_SCHEMA_VERSION, movedKeys: [] });
+    return { status: 'current' };
+  }
+  if (Number(before.storageSchemaVersion) !== 11) return { status: 'not-applicable' };
+  const existingBackup = before[MIGRATION_BACKUP_V12];
+  if (existingBackup && existingBackup.sourceSchemaVersion !== 11) {
+    const conflict = { status: 'backup-conflict', detectedAt: new Date().toISOString(), sourceSchemaVersion: 11 };
+    await persistSet(MIGRATION_STATUS_V12, conflict);
+    return conflict;
+  }
+  const backupOk = await createSafetyBackup(MIGRATION_BACKUP_V12, 11, before, Object.keys(before));
+  if (!backupOk) {
+    await persistSet(MIGRATION_STATUS_V12, { status: 'backup-failed', failedAt: new Date().toISOString() });
+    return { status: 'backup-failed' };
+  }
+  const transformed = StorageMigration.transformV11ToV12(before);
+  if (!transformed.ok) {
+    const conflict = { status: 'conflict', detectedAt: new Date().toISOString(), sourceSchemaVersion: 11, conflicts: transformed.conflicts };
+    await persistSet(MIGRATION_STATUS_V12, conflict);
+    console.warn('[storage migration] v12 migration blocked by key conflicts', conflict);
+    return conflict;
+  }
+  const after = transformed.result;
+  after.storageSchemaVersion = STORAGE_SCHEMA_VERSION;
+  after[MIGRATION_STATUS_V12] = { status: 'completed', completedAt: new Date().toISOString(), sourceSchemaVersion: 11, movedKeys: transformed.moves.map(({ from, to }) => ({ from, to })) };
+  try {
+    await StorageMigration.commitSnapshot({ set: persistSet, delete: persistDelete }, before, after, [MIGRATION_STATUS_V12, 'storageSchemaVersion']);
+    return { status: 'completed' };
+  } catch (error) {
+    try { await persistSet(MIGRATION_STATUS_V12, { status: 'failed', failedAt: new Date().toISOString(), message: String(error.message || error) }); } catch {}
     throw error;
   }
 }
@@ -3289,6 +3303,7 @@ initStorage().then(async () => {
   try {
     await migrateV10();
     await migrateV11();
+    await migrateV12();
   } catch (error) {
     console.error('[storage migration] initialization failed', error);
   }

@@ -241,8 +241,60 @@ test('version 10 backup upgrades metadata without changing records', () => {
 });
 
 test('current backup round trip preserves session and legacy records', () => {
-  const data = { storageSchemaVersion: migration.CURRENT_SCHEMA_VERSION, 'rec:A_0_2026-07-31': { kg_0: 35 }, 'rec:B_8_2026-07-31': { exerciseId: 'pallof-press', kg_0: 5 }, 'rec:C_0_2026-07-31': { kg_0: 20 }, 'prExerciseId:B_8': 'pallof-press', 'session:pilates:2026-07-31': { minutes: 50 }, 'session:home-core:2026-07-31': { completed: [true] }, clinicalProfile: { version: 1 }, 'migrationStatus:v11': { status: 'completed' }, 'migrationBackup:v11': { sourceSchemaVersion: 10, keys: { storageSchemaVersion: 10 } } };
+  const data = { storageSchemaVersion: migration.CURRENT_SCHEMA_VERSION, 'rec:A_0_2026-07-31': { kg_0: 35 }, 'rec:B_6_2026-07-31': { exerciseId: 'pallof-press', kg_0: 5 }, 'rec:C_0_2026-07-31': { kg_0: 20 }, 'prExerciseId:B_6': 'pallof-press', 'session:pilates:2026-07-31': { minutes: 50 }, 'session:home-core:2026-07-31': { completed: [true] }, clinicalProfile: { version: 1 }, 'migrationStatus:v12': { status: 'completed' }, 'migrationBackup:v12': { sourceSchemaVersion: 11, keys: { storageSchemaVersion: 11 } } };
   assert.deepEqual(migration.convertBackupPayload({ schemaVersion: migration.CURRENT_SCHEMA_VERSION, data }), data);
+});
+
+test('v11 -> v12: leg extension and pallof shift down while crunch/side-plank are archived, not deleted', () => {
+  const input = {
+    storageSchemaVersion: 11,
+    'rec:B_5_2026-08-01': { name: 'crunch' },
+    'pr:B_5': 0,
+    'rec:B_6_2026-08-01': { name: 'side plank' },
+    'pr:B_6': 0,
+    'rec:B_7_2026-08-01': { name: 'leg extension' },
+    'pr:B_7': 15,
+    'rec:B_8_2026-08-01': { exerciseId: 'pallof-press', kg_0: 5 },
+    'pr:B_8': 5,
+    'prExerciseId:B_8': 'pallof-press',
+  };
+  const output = migration.transformV11ToV12(input);
+  assert.equal(output.ok, true);
+  // leg extension and pallof keep tracking history under their new indexes
+  assert.deepEqual(output.result['rec:B_5_2026-08-01'], { name: 'leg extension' });
+  assert.equal(output.result['pr:B_5'], 15);
+  assert.deepEqual(output.result['rec:B_6_2026-08-01'], { exerciseId: 'pallof-press', kg_0: 5 });
+  assert.equal(output.result['pr:B_6'], 5);
+  assert.equal(output.result['prExerciseId:B_6'], 'pallof-press');
+  // crunch/side-plank history is preserved, not deleted, but off the live index space
+  assert.deepEqual(output.result['archivedRec:B_crunch_2026-08-01'], { name: 'crunch' });
+  assert.equal(output.result['archivedPr:B_crunch'], 0);
+  assert.deepEqual(output.result['archivedRec:B_sideplank_2026-08-01'], { name: 'side plank' });
+  assert.equal(output.result['archivedPr:B_sideplank'], 0);
+  // nothing is readable at the old B_7/B_8 keys or the live B_5/B_6 rec:/pr: prefixes for the removed exercises
+  assert.equal(output.result['rec:B_7_2026-08-01'], undefined);
+  assert.equal(output.result['pr:B_8'], undefined);
+  assert.equal(output.result['prExerciseId:B_8'], undefined);
+});
+
+test('v11 -> v12: exercises before the removed pair are untouched', () => {
+  const output = migration.transformV11ToV12({
+    storageSchemaVersion: 11,
+    'rec:B_0_2026-08-01': { name: 'chest press' },
+    'pr:B_4_2026-08-01': 12,
+  });
+  assert.equal(output.ok, true);
+  assert.deepEqual(output.result['rec:B_0_2026-08-01'], { name: 'chest press' });
+  assert.equal(output.result['pr:B_4_2026-08-01'], 12);
+});
+
+test('v11 -> v12: weightOverrides:B keeps overrides for shifted exercises and drops removed ones', () => {
+  const output = migration.transformV11ToV12({
+    storageSchemaVersion: 11,
+    'weightOverrides:B': { 0: 10, 5: 0, 6: 0, 7: 20, 8: 2 },
+  });
+  assert.equal(output.ok, true);
+  assert.deepEqual(output.result['weightOverrides:B'], { 0: 10, 5: 20, 6: 2 });
 });
 
 test('internal recovery backups are protected from overwrite on import', () => {
