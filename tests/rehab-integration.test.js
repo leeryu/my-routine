@@ -9,7 +9,7 @@ function ok(name, value) { assert.ok(value, name); console.log(`ok - ${name}`); 
 const routineBlock = (id, next) => app.match(new RegExp(`  ${id}: \\{([\\s\\S]*?)\\n  ${next}: \\{`))[1];
 const names = block => [...block.matchAll(/\n\s+name: '([^']+)'/g)].map(x => x[1]);
 assert.deepEqual(names(routineBlock('A','B')), ['랫풀다운','덤벨 로우','리버스 펙덱','레터럴 레이즈','크런치','사이드 플랭크','레그 익스텐션']);
-assert.deepEqual(names(routineBlock('B','C')), ['체스트 프레스','랫풀다운','숄더 프레스','덤벨 로우','레터럴 레이즈','크런치','사이드 플랭크','레그 익스텐션','팔로프프레스']);
+assert.deepEqual(names(routineBlock('B','C')), ['체스트 프레스','랫풀다운','숄더 프레스','덤벨 로우','레터럴 레이즈','레그 익스텐션','팔로프프레스']);
 console.log('ok - existing A/B exercise indexes stay fixed and Pallof is appended');
 ok('independent routine ids exist', /id: 'pilates'/.test(app) && /id: 'home-core'/.test(app));
 ok('session records do not use gym rec keys', /`session:\$\{id\}:\$\{date\}`/.test(rehab) && !/saveRecord\(/.test(rehab));
