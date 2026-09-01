@@ -3141,7 +3141,15 @@ async function restoreAutoBackup(slot) {
 /* ═══ 외부 저장소 연동 (웹훅) ═══
    노션 REST API는 CORS를 허용하지 않아 브라우저에서 직접 부를 수 없다.
    대신 Zapier/Make/Pipedream/구글 Apps Script 등에서 만든 웹훅 주소로
-   저장/완료 이벤트를 POST하고, 노션 연결은 그 자동화 쪽에서 처리한다. */
+   저장/완료 이벤트를 POST하고, 노션 연결은 그 자동화 쪽에서 처리한다.
+   기기마다 매번 설정하지 않도록 기본 웹훅 주소를 코드에 박아두고,
+   최초 방문(= 저장된 설정이 아직 없을 때)에만 자동으로 채워 넣는다.
+   이후 사용자가 직접 바꾸거나 끄면 그 선택이 항상 우선한다. */
+const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwCr7_TgbOX3rPYl3aQX_DR7DEgB8NMP8Wgor1YE2YCdm9xNTTeMk5Wp9TFVjI2QQKKDA/exec';
+function ensureDefaultWebhook() {
+  if (gls('webhookUrl') === null) sls('webhookUrl', DEFAULT_WEBHOOK_URL);
+  if (gls('webhookEnabled') === null) sls('webhookEnabled', true);
+}
 const DEFAULT_WEBHOOK_EVENTS = {
   gym_set_complete: true,
   gym_routine_complete: true,
@@ -3325,6 +3333,7 @@ initStorage().then(async () => {
   renderRestTimer();
   updateBackupNote();
   renderAutoBackupList();
+  ensureDefaultWebhook();
   renderWebhookSettings();
   renderGuards();
   renderSwimLogs();
