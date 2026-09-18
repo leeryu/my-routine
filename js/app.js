@@ -293,6 +293,34 @@ const MUSCLE_MAP = {
 const MUSCLE_GROUP_OPTIONS = ['등', '광배', '가슴', '어깨', '측면어깨', '후면어깨', '삼두', '이두', '코어', '하체', '전신/기타'];
 let selectedBar = 0;
 
+/* ═══ ROUTINE OVERRIDES (호환용) ═══
+   customExercises:A/B — [{idx, ...필드}] 형태로 저장된 커스텀 종목 필드 덮어쓰기
+   weightOverrides:A/B — {idx: defKg} 형태로 저장된 목표 중량 덮어쓰기
+   두 저장소 모두 비어 있으면 아무 것도 하지 않는다(no-op). */
+function applyRoutineOverrides() {
+  ['A', 'B'].forEach((rk) => {
+    const customExercises = gls('customExercises:' + rk);
+    if (Array.isArray(customExercises)) {
+      customExercises.forEach((custom) => {
+        if (!custom || typeof custom.idx !== 'number') return;
+        const ex = ROUTINES[rk].exercises[custom.idx];
+        if (!ex) return;
+        Object.keys(custom).forEach((field) => {
+          if (field === 'idx') return;
+          ex[field] = custom[field];
+        });
+      });
+    }
+    const weightOverrides = gls('weightOverrides:' + rk);
+    if (weightOverrides && typeof weightOverrides === 'object') {
+      Object.keys(weightOverrides).forEach((idxKey) => {
+        const ex = ROUTINES[rk].exercises[+idxKey];
+        if (ex) ex.defKg = weightOverrides[idxKey];
+      });
+    }
+  });
+}
+
 /* ═══ STORAGE ═══ */
 const _cache = {};
 function gls(k) {
@@ -1083,7 +1111,7 @@ function updateProgress() {
   } else banner.classList.remove('show');
   updateCoachPanel();
   updateTodaySummary();
-  updateStickyProgress();
+  renderRoutineOverview();
   updateCoachNudge();
   updateBeginnerGuide();
 }
@@ -1117,8 +1145,10 @@ function startTodayWorkout() {
   switchTabById('gym');
   const idx = getCurrentExerciseIdx();
   const card = document.getElementById('ex-' + idx);
-  if (card) card.classList.add('open', 'rec-open');
-  openFocusMode(idx);
+  if (card) {
+    card.classList.add('open', 'rec-open');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 function computeVolume(rk) {
@@ -1147,10 +1177,8 @@ function buildSelector() {
     sel.appendChild(c);
   });
 }
-/* 루틴 선택 = 집중모드 진입 (남은 운동이 있을 때만). 전체 목록은 집중모드의 "전체보기"로 */
 function selectRoutine(key) {
   showRoutine(key);
-  if (getDoneCount(key) < ROUTINES[key].exercises.length) openFocusMode();
 }
 function showRoutine(key) {
   currentRoutine = key;
@@ -1198,7 +1226,7 @@ function showRoutine(key) {
 <div class="rec-set-row">
   <div class="set-card-head">
     <span class="set-title">SET ${s + 1}</span>
-    <button class="set-check-btn${checked ? ' checked' : ''}" id="chk_${idx}_${s}" onclick="toggleSetCheck(${idx},${s})" type="button">✓ 완료</button>
+    <button class="set-check-btn${checked ? ' checked' : ''}" id="chk_${idx}_${s}" onclick="toggleSetCheck(${idx},${s})" type="button" aria-pressed="${checked}">${checked ? '✓ 완료됨' : '✓ 완료'}</button>
   </div>
   <div class="rec-inputs">
     <div class="rec-fw">
@@ -1303,6 +1331,34 @@ function showRoutine(key) {
   updateProgress();
 }
 
+/* ═══ 오늘 루틴 요약 (한눈에 보기) ═══ */
+function renderRoutineOverview() {
+  const el = document.getElementById('routineOverview');
+  if (!el) return;
+  const r = ROUTINES[currentRoutine];
+  const today = todayStr();
+  const itemsHtml = r.exercises
+    .map((ex, idx) => {
+      const rec = getRecord(`${currentRoutine}_${idx}_${today}`);
+      let doneSets = 0;
+      for (let s = 0; s < ex.sets; s++) if (rec['checked_' + s]) doneSets++;
+      const isDone = !!rec.allDone;
+      return `<button type="button" class="ro-item${isDone ? ' done' : ''}" id="roItem_${idx}" onclick="openExerciseFromOverview(${idx})" aria-label="${escapeHtml(ex.name)} 카드 열기">
+  <span class="ro-name">${escapeHtml(ex.name)}</span>
+  <span class="ro-progress" id="roProgress_${idx}">${doneSets}/${ex.sets}세트</span>
+</button>`;
+    })
+    .join('');
+  el.innerHTML = `<div class="ro-title">${r.label} 오늘 루틴 · ${r.exercises.length}종목</div><div class="ro-grid">${itemsHtml}</div>`;
+}
+function openExerciseFromOverview(idx) {
+  document.querySelectorAll('.ex-card.open').forEach((c) => c.classList.remove('open'));
+  const card = document.getElementById('ex-' + idx);
+  if (!card) return;
+  card.classList.add('open');
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 /* ── APPLY RECOMMENDATION (NEW) ── */
 function applyRec(idx, kg) {
   const ex = ROUTINES[currentRoutine].exercises[idx];
@@ -1401,6 +1457,8 @@ function onInpChange(idx, s) {
 function toggleSetCheck(idx, s) {
   const btn = document.getElementById(`chk_${idx}_${s}`);
   const isChecked = btn.classList.toggle('checked');
+  btn.textContent = isChecked ? '✓ 완료됨' : '✓ 완료';
+  btn.setAttribute('aria-pressed', String(isChecked));
   const today = todayStr();
   const rKey = `${currentRoutine}_${idx}_${today}`;
   const rec = getRecord(rKey);
@@ -1418,6 +1476,7 @@ function toggleSetCheck(idx, s) {
     const restSecs = rpe >= 9 ? 120 : rpe >= 1 && rpe <= 7 ? 75 : 90;
     setRestDuration(restSecs);
     toggleRest(true);
+    showToast(`✅ ${ex.name} ${s + 1}세트 완료 · 휴식 ${formatRestTime(restSecs)} 시작`);
   }
 
   let allChecked = true;
@@ -1577,146 +1636,6 @@ function getCurrentExerciseIdx() {
     if (!getRecord(`${currentRoutine}_${i}_${todayStr()}`).allDone) return i;
   }
   return Math.max(0, r.exercises.length - 1);
-}
-function updateStickyProgress() {
-  const bar = document.getElementById('actionBar');
-  if (!bar) return;
-  if (!isGymTabActive()) {
-    bar.style.display = 'none';
-    return;
-  }
-  const r = ROUTINES[currentRoutine],
-    idx = getCurrentExerciseIdx(),
-    ex = r.exercises[idx];
-  let done = 0;
-  r.exercises.forEach((_, i) => {
-    if (getRecord(`${currentRoutine}_${i}_${todayStr()}`).allDone) done++;
-  });
-  const pct = r.exercises.length
-    ? Math.round((done / r.exercises.length) * 100)
-    : 0;
-  document.getElementById('abTitle').textContent =
-    `${r.label} ${done}/${r.exercises.length} · ${ex?.name || '완료'}`;
-  document.getElementById('abSub').textContent =
-    `볼륨 ${computeVolume(currentRoutine)}kg · 회복 ${readinessScore()}점`;
-  document.getElementById('abFill').style.width = pct + '%';
-}
-let focusIdx = null;
-function isGymTabActive() {
-  return document.getElementById('tab-gym')?.classList.contains('active');
-}
-function isFocusOpen() {
-  return document.getElementById('focusOverlay')?.classList.contains('show');
-}
-function syncFocusVisibility() {
-  const gym = isGymTabActive();
-  document.body.classList.toggle('gym-active', gym);
-  const overlay = document.getElementById('focusOverlay');
-  const bar = document.getElementById('actionBar');
-  if (bar) {
-    bar.style.display = gym ? 'flex' : 'none';
-    bar.setAttribute('aria-hidden', gym ? 'false' : 'true');
-  }
-  if (!gym && overlay) overlay.classList.remove('show');
-  if (overlay) {
-    overlay.setAttribute(
-      'aria-hidden',
-      gym && isFocusOpen() ? 'false' : 'true',
-    );
-    overlay.style.pointerEvents = gym && isFocusOpen() ? 'auto' : 'none';
-  }
-}
-function openFocusMode(idx) {
-  if (!isGymTabActive()) {
-    closeFocusMode(false);
-    showToast('집중모드는 헬스 탭에서만 가능');
-    return;
-  }
-  focusIdx = typeof idx === 'number' ? idx : getCurrentExerciseIdx();
-  renderFocus();
-  document.getElementById('focusOverlay')?.classList.add('show');
-  syncFocusVisibility();
-}
-function closeFocusMode(doSync = true) {
-  document.getElementById('focusOverlay')?.classList.remove('show');
-  if (doSync) syncFocusVisibility();
-}
-function focusBackdropClose(e) {
-  if (e.target?.id === 'focusOverlay') closeFocusMode();
-}
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && isFocusOpen()) closeFocusMode();
-});
-function renderFocus() {
-  if (!isGymTabActive()) return;
-  const r = ROUTINES[currentRoutine],
-    ex = r.exercises[focusIdx];
-  if (!ex) return;
-  const sr = getSmartRec(currentRoutine, focusIdx),
-    hist = getExHistory(currentRoutine, focusIdx),
-    prevRec = hist[0]?.rec || {},
-    prev = prevRec.summary || '이전 기록 없음',
-    rec = getRecord(`${currentRoutine}_${focusIdx}_${todayStr()}`);
-  let setIdx = 0;
-  while (setIdx < ex.sets - 1 && rec['checked_' + setIdx]) setIdx++;
-  const kg = document.getElementById(`kg_${focusIdx}_${setIdx}`)?.value ||
-    rec['kg_' + setIdx] || prevRec['kg_' + setIdx] || sr.kg || ex.defKg || 0;
-  const repsText = String(ex.reps || '').split('/')[setIdx] || String(ex.reps || '');
-  const reps = document.getElementById(`rp_${focusIdx}_${setIdx}`)?.value ||
-    rec['reps_' + setIdx] || prevRec['reps_' + setIdx] || parseInt(repsText) || 0;
-  document.getElementById('focusName').textContent = `${ex.name}`;
-  document.getElementById('focusTarget').textContent = sr.kg
-    ? `${sr.kg}kg 기준`
-    : `${ex.weight}`;
-  document.getElementById('focusMeta').textContent =
-    `추천: ${sr.msg}\n지난 기록: ${prev}\n큐: ${ex.tip || ex.con}`;
-  document.getElementById('focusSetTitle').textContent = `${setIdx + 1} / ${ex.sets} 세트`;
-  document.getElementById('focusSetMain').textContent =
-    `${kg > 0 ? kg + 'kg' : '자중'} × ${reps || '목표 횟수'}${reps ? '회' : ''}`;
-}
-function focusOpenCurrent() {
-  if (!isGymTabActive()) return;
-  closeFocusMode();
-  const card = document.getElementById('ex-' + focusIdx);
-  if (card) {
-    card.classList.add('open');
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-}
-function focusNext() {
-  if (!isGymTabActive()) return;
-  focusIdx = Math.min(
-    ROUTINES[currentRoutine].exercises.length - 1,
-    (focusIdx ?? 0) + 1,
-  );
-  renderFocus();
-}
-function focusPrev() {
-  if (!isGymTabActive()) return;
-  focusIdx = Math.max(0, (focusIdx ?? 0) - 1);
-  renderFocus();
-}
-function focusCompleteSet() {
-  if (!isGymTabActive()) return;
-  const ex = ROUTINES[currentRoutine].exercises[focusIdx];
-  if (!ex) return;
-  focusOpenCurrent();
-  for (let s = 0; s < ex.sets; s++) {
-    const btn = document.getElementById(`chk_${focusIdx}_${s}`);
-    if (btn && !btn.classList.contains('checked')) {
-      const sr = getSmartRec(currentRoutine, focusIdx);
-      const kgEl = document.getElementById(`kg_${focusIdx}_${s}`);
-      const repsEl = document.getElementById(`rp_${focusIdx}_${s}`);
-      if (kgEl && !kgEl.value) kgEl.value = sr.kg || ex.defKg || 0;
-      if (repsEl && !repsEl.value) {
-        const planned = String(ex.reps || '').split('/')[s] || String(ex.reps || '');
-        repsEl.value = parseInt(planned) || '';
-      }
-      toggleSetCheck(focusIdx, s);
-      break;
-    }
-  }
-  openFocusMode(focusIdx);
 }
 function toggleTheme() {
   const isDark = document.body.classList.toggle('dark');
@@ -2101,7 +2020,6 @@ function updateCoachPanel() {
       .map((x) => `<span class="coach-chip">${x}</span>`)
       .join('');
   }
-  updateStickyProgress();
 }
 function detectOvertraining() {
   const r = getReadiness();
@@ -2663,9 +2581,6 @@ function switchTabById(id) {
     if (active) b.setAttribute('aria-current', 'page');
     else b.removeAttribute('aria-current');
   });
-  if (id !== 'gym') closeFocusMode(false);
-  syncFocusVisibility();
-  updateStickyProgress();
   updateTodaySummary();
   updateCoachNudge();
   if (id === 'history') buildHistory();
@@ -2917,7 +2832,6 @@ initStorage().then(async () => {
   renderReadiness();
   showRoutine({ 1: 'A', 4: 'B', 6: 'C' }[new Date().getDay()] || 'A');
   updateCoachPanel();
-  syncFocusVisibility();
   renderRestTimer();
   updateBackupNote();
   renderAutoBackupList();

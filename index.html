@@ -83,21 +83,8 @@
       <div class="ts-card"><div class="ts-val" id="tsVolume">—</div><div class="ts-lbl">현재볼륨</div></div>
     </div>
     <div class="coach-nudge" id="coachNudge">🤖 코치 대기 중</div>
-    <div class="coach-grid beginner-coach-grid">
-      <details class="beginner-details" open><summary>오늘 컨디션 입력</summary><div class="coach-card" id="readinessCard">
-        <div class="coach-title">🧭 오늘 컨디션 체크</div>
-        <div class="readiness-row"><label>수면</label><div class="rd-scale" id="rdSleep" role="group" aria-label="수면 점수"></div></div>
-        <div class="readiness-row"><label>피로</label><div class="rd-scale" id="rdFatigue" role="group" aria-label="피로 점수"></div></div>
-        <div class="readiness-row"><label>통증</label><div class="rd-scale" id="rdPain" role="group" aria-label="통증 점수"></div></div>
-        <div class="coach-text" id="readinessText">오늘 운동 강도 판단 대기.</div>
-      </div></details>
-      <details class="beginner-details"><summary>코치 추천 보기</summary><div class="coach-card" id="coachPanel">
-        <div class="coach-title">🤖 실시간 코치</div>
-        <div class="coach-text" id="coachText">기록을 넣으면 다음 중량·세트 추천이 뜬다.</div>
-        <div class="coach-actions" id="coachActions"></div>
-      </div></details>
-    </div>
     <div class="routine-selector" id="routineSelector"></div>
+    <div class="routine-overview" id="routineOverview" aria-label="오늘 루틴 전체 종목"></div>
     <div id="routineContent"></div>
     <button class="ai-btn" onclick="getAiFeedback()">🤖 로컬 코치 피드백</button>
     <div class="ai-result" id="aiResult"></div>
@@ -212,37 +199,7 @@
   <button class="bnav-btn" onclick="switchTab('settings')"><span class="bnav-icon">⚙️</span><span class="bnav-label">설정</span></button>
 </nav>
 
-<div class="action-bar" id="actionBar" role="button" tabindex="0" onclick="openFocusMode()" aria-label="집중모드로 이어서 운동하기">
-  <div class="ab-main">
-    <div class="ab-title" id="abTitle">운동 대기</div>
-    <div class="ab-sub" id="abSub">기록을 시작하면 진행률이 표시됨</div>
-    <div class="ab-bar"><div class="ab-fill" id="abFill"></div></div>
-  </div>
-  <button class="ab-rest" id="abRest" type="button" onclick="event.stopPropagation();toggleRest()" aria-label="휴식 타이머 시작 또는 초기화">⏱ <span id="abRestDisplay">1:30</span></button>
-  <button class="ab-rest-add" type="button" onclick="event.stopPropagation();adjustRestTime(15,event)" aria-label="휴식시간 15초 추가">+15</button>
-</div>
-<div class="focus-overlay" id="focusOverlay" onclick="focusBackdropClose(event)">
-  <div class="focus-card" onclick="event.stopPropagation()">
-    <div class="focus-top"><div class="focus-title" id="focusName">운동</div><button class="focus-close" onclick="closeFocusMode()">전체보기</button></div>
-    <div class="focus-mini"><span id="focusRoutineMini">A루틴</span><span id="focusProgressMini">0/0</span></div>
-    <div class="focus-target" id="focusTarget">—</div>
-    <div class="focus-setbox"><div class="focus-set-title" id="focusSetTitle">현재 세트</div><div class="focus-set-main" id="focusSetMain">—</div></div>
-    <div class="focus-rest" id="focusRestBox">
-      <div class="focus-rest-info"><span class="focus-rest-lbl">세트 간 휴식</span><span class="focus-rest-time" id="focusRestDisplay">1:30</span></div>
-      <button type="button" id="focusRestBtn" onclick="toggleRest()">시작</button>
-      <button type="button" onclick="adjustRestTime(15,event)">+15</button>
-    </div>
-    <div class="focus-meta" id="focusMeta">오늘 할 운동을 선택해라.</div>
-    <div class="focus-actions">
-      <button class="primary" onclick="focusCompleteSet()">현재 세트 완료</button>
-      <button onclick="focusOpenCurrent()">기록화면 보기</button>
-      <button onclick="focusPrev()">이전</button>
-      <button onclick="focusNext()">다음</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/storage-migration.js" defer></script>
 <script src="js/completion-sync.js" defer></script>
