@@ -14,7 +14,7 @@ const ROUTINES = {
         defKg: 35,
         con: '팔꿈치를 뒷주머니로. 등으로 당기기. 2초.',
         ecc: '광배근 완전 스트레칭 3초.',
-        tip: '폼 교정 완료(광배 DOMS 확인). 스트랩 착용 후 40→45 점진 시도. 폼 무너지면 즉시 감량.',
+        tip: '동작 숙련 완료(광배 DOMS 확인). 스트랩 착용 후 40→45 점진 시도. 자세가 무너지면 즉시 감량.',
         warn: null,
       },
       {
@@ -79,14 +79,14 @@ const ROUTINES = {
       },
       {
         name: '레그 익스텐션',
-        target: '대퇴사두 · 오른쪽만 · 재활',
+        target: '대퇴사두 · 오른쪽 단측',
         sets: 3,
         reps: '15/15/15',
         weight: '가볍게',
         defKg: 0,
         con: '무릎 90% 지점까지만. 완전 신전 금지. 1~2초.',
         ecc: '천천히 버티며 2~3초.',
-        tip: '기존 앱 재활 운동. 과거 기록은 유지하며 무통증일만 수행.',
+        tip: '통증 없는 범위에서 천천히 수행. 불편하면 즉시 중단.',
         warn: '⚠️ 오른쪽만. 통증 오면 즉시 중단.',
       },
     ],
@@ -161,14 +161,14 @@ const ROUTINES = {
       },
       {
         name: '레그 익스텐션',
-        target: '대퇴사두 · 오른쪽만 · 재활',
+        target: '대퇴사두 · 오른쪽 단측',
         sets: 3,
         reps: '15/15/15',
         weight: '가볍게',
         defKg: 0,
         con: '90% 지점까지.',
         ecc: '2~3초.',
-        tip: '재활. 무통증일만.',
+        tip: '통증 없는 범위에서 천천히 수행.',
         warn: '⚠️ 오른쪽만. 통증 시 즉시 중단.',
       },
       {
@@ -188,7 +188,7 @@ const ROUTINES = {
   },
   C: {
     label: 'C루틴',
-    day: '선택일 (일)',
+    day: '토요일',
     tag: '상체 Push · 5종목',
     exercises: [
       {
@@ -262,149 +262,15 @@ const CLINICAL_PROFILE = {
   goals: ['갈비뼈-골반 중립 유지', '코어 안정성', '목 정렬 개선'],
   summary: '현재 검사상 뼈·관절의 구조적 이상이나 정렬 이상은 확인되지 않았습니다.\n거북목 경향과 코어 안정성 부족으로 인한 가벼운 골반 전방경사가 있습니다.\n목표는 골반을 억지로 말아 넣는 것이 아니라, 갈비뼈와 골반의 중립을 유지한 채 움직이는 능력을 높이는 것입니다.',
 };
-const SESSION_ROUTINES = {
-  pilates: { id: 'pilates', name: '필라테스', frequency: '주 1회', durationWeeks: 8, minutes: 50, source: '재활의학과 권고', intensity: '저강도~중강도', scheduleDay: null, conflictPolicy: { nextDayLowerBody: '중간 이상 강도 또는 복부·둔근 근육통 시 주의', sameAreaRecovery: '피로·통증 상태에 따라 48시간 권장' } },
-  'home-core': { id: 'home-core', name: '홈코어', frequency: '주 2회 (적응 후 최대 주 3회)', minutes: '8~10', source: '진단 결과 기반 보조 루틴' },
-};
-const WEEKLY_GOALS = { A: 1, B: 1, pilates: 1, 'home-core': 2, swim: 1, recovery: '선택' };
-const HOME_CORE_EXERCISES = [
-  ['데드버그', '8회 × 2세트', '좌우 한 쌍을 1회로 기록. 허리 과신전 금지, 갈비뼈가 들리지 않게.'],
-  ['브릿지', '12회 × 2세트', '허리로 들어 올리지 말고 둔근 사용.'],
-  ['사이드 플랭크', '좌우 20초 × 2세트', '필요하면 무릎을 대고 수행.'],
-  ['턱 당기기', '5초 유지 × 10회', '턱을 아래로 숙이지 말고 뒤로 수평 이동.'],
-  ['장요근 스트레칭', '좌우 30초 × 2세트', '허리를 꺾지 말고 골반을 중립에 가깝게 유지.'],
-];
-const LOWER_BODY_REINTRODUCTION = { status: '재도입', stages: ['1단계: 맨몸 스쿼트 또는 보조 스쿼트 2세트', '2단계: 통증 및 다음 날 악화 없으면 3세트', '3단계: 이후 런지 또는 레그프레스 추가 검토'], progress: '운동 중 통증 없음, 다음 날 악화 없음', stop: '날카로운 통증, 관절 통증, 24시간 이상 뚜렷한 악화' };
-const SUITCASE_CARRY = { status: '2단계 선택 운동', activation: '팔로프프레스 2주 이상 수행 + 허리 및 오른쪽 QL 통증 증가 없음', dose: '좌우 20~30m × 2세트', stop: 'QL 불편감이 있으면 중단' };
-const CORRECTIONS = [
-  {
-    name: 'QL 이완',
-    dur: '60초',
-    detail:
-      '옆으로 누운 상태에서 오른쪽 허리 위로 폼롤러 대고 천천히 체중 실기.\n\n목적: 오른쪽 QL 긴장 완화를 위한 기존 앱 제안.',
-  },
-  {
-    name: '클램쉘',
-    dur: '15회 × 3세트',
-    detail:
-      '옆으로 누워 무릎 굽히고, 발 붙인 채 위쪽 무릎만 천장 향해 벌리기. 골반은 뒤로 굴리지 않음.\n\n목적: 중둔근 활성화. 이상근 보상 패턴 차단.\n\n💡 복귀 기준: 30회 무통증 → 레그프레스·런지 복귀 조건 절반.',
-  },
-  {
-    name: '한발 브릿지',
-    dur: '15초 × 3세트',
-    detail:
-      '누워서 한쪽 발만 바닥에 놓고 골반 들어올리기.\n\n목적: 대둔근 편측 활성화.\n\n💡 복귀 기준: 오른발 15초 안정 → 레그프레스·런지 복귀 조건 절반.',
-  },
-  {
-    name: '데드버그',
-    dur: '10회 × 2세트',
-    detail:
-      '누운 상태에서 팔과 반대쪽 다리를 동시에 천천히 내리며 허리가 바닥에서 뜨지 않게.\n\n목적: 코어 안정화 — 다열근·횡복근 활성화.',
-  },
-  {
-    name: '왼쪽 대퇴직근 스트레칭',
-    dur: '30초 × 3',
-    detail:
-      '서서 왼발을 뒤로 잡아 스트레칭.\n\n⚠️ 가설: 왼쪽 대퇴직근+중둔근 단축 → 오른쪽 QL·고관절 과부하 패턴. 진료 시 담당의에게 보고.',
-  },
-];
-const SWIM_DRILLS = [
-  {
-    name: '외팔 드릴 (왼팔)',
-    ratio: '5비율',
-    detail:
-      '오른팔 앞으로 뻗어 고정, 왼팔만 스트로크.\n\n목적: 왼팔 캐치 감각 단독 발달.\n\n💡 큐: ① 입수 시 팔꿈치가 손보다 높게 ② 전완으로 물 걸기 (손목 스냅 X)',
-  },
-  {
-    name: '외팔 드릴 (오른팔)',
-    ratio: '3비율',
-    detail:
-      '왼팔 고정, 오른팔만 스트로크.\n\n목적: 오른팔 팔꿈치 수면 유지 교정.',
-  },
-  {
-    name: '캐치업 드릴',
-    ratio: '2비율',
-    detail:
-      '한쪽 팔이 완전히 앞 도달 전까지 다른 팔 입수 안 함.\n\n목적: 양팔 타이밍 정렬.',
-  },
-  {
-    name: '풀스트로크',
-    ratio: '확인',
-    detail:
-      '드릴 감각을 풀스트로크에서 유지 가능한지 체크.\n\n⚠️ CO₂ 주의: 물속 호기를 완전히 내뱉지 않으면 CO₂ 축적으로 먼저 힘들어짐.',
-  },
-];
-const SWIM_CONCEPTS = [
-  {
-    name: '캐치 = 앵커',
-    detail: '손·전완을 물에 고정(앵커)하고 몸통이 앞으로 지나가는 것.',
-  },
-  {
-    name: '피니쉬 오해 주의',
-    detail:
-      '피니쉬는 광배 수축이 끝나는 지점에서 자연스럽게 이탈. "손목 스냅으로 물을 찬다"는 틀린 개념.',
-  },
-  {
-    name: 'CO₂ 호흡 패턴',
-    detail:
-      '숨이 빨리 차는 건 CO₂ 축적. 물속 호기 완전히 내뱉어야. 바디롤 부족 → 흡기 창구 좁음 → 악순환.',
-  },
-];
-const RULES = [
-  {
-    num: '01',
-    text: '마지막 세트가 쉬우면 다음번 5% 증량 — 자극 없으면 성장 없음.',
-  },
-  {
-    num: '02',
-    text: '세트 간 휴식 60~90초 — 더 짧으면 젖산 피로, 더 길면 온도 떨어짐.',
-  },
-  { num: '03', text: '같은 부위 피로·통증이 남으면 상태에 따라 48시간 회복 권장.' },
-  { num: '04', text: '헬스 + 수영 같은 날 금지 — 회복 자원 충돌.' },
-  {
-    num: '05',
-    text: '통증 부위 직접 자극 금지 — 근육 자극 vs 관절 통증 구분 필수.',
-  },
-  { num: '06', text: 'RDL은 이상근 통증 0 상태 1주 유지 후에만.' },
-  {
-    num: '07',
-    text: '기구 고장 시 동작 패턴 동일한 것 1순위: 프레스→프레스, 풀→풀.',
-  },
-];
-const RECOVERY_CHECKS = [
-  { move: '클램쉘', pass: '30회 무통증', unlock: '레그프레스·런지 복귀' },
-  {
-    move: '한발 브릿지',
-    pass: '오른발 15초 안정',
-    unlock: '레그프레스·런지 복귀',
-  },
-  { move: '이상근 통증', pass: '0 상태 1주 유지', unlock: 'RDL 복귀' },
-];
-const PAIN_GUIDE = [
-  {
-    type: '근육 자극',
-    color: 'var(--green)',
-    desc: '타겟 부위 화끈·뻐근. 정상 — 계속 진행.',
-  },
-  {
-    type: '관절 통증',
-    color: 'var(--yellow)',
-    desc: '관절 라인·움직일 때 시큰. 즉시 중단.',
-  },
-  {
-    type: '신경 증상',
-    color: 'var(--red)',
-    desc: '저림·찌릿·방사통. 즉시 중단 + 진료 검토.',
-  },
-];
+const WEEKLY_GOALS = { A: 1, B: 1, C: 1 };
 const DAY_INFO = [
   { label: '월', type: 'A', rk: 'A' },
-  { label: '화', type: '걷기', rk: null },
+  { label: '화', type: '휴식', rk: null },
   { label: '수', type: '휴식', rk: null },
   { label: '목', type: 'B', rk: 'B' },
-  { label: '금', type: '걷기', rk: null },
-  { label: '토', type: '수영', rk: null },
-  { label: '일', type: 'C?', rk: 'C' },
+  { label: '금', type: '휴식', rk: null },
+  { label: '토', type: 'C', rk: 'C' },
+  { label: '일', type: '휴식', rk: null },
 ];
 const BAR_WEIGHTS = [
   { label: '바벨 20kg', kg: 20 },
@@ -742,6 +608,11 @@ function getHistory() {
 }
 function addHistory(e) {
   const h = getHistory();
+  if (
+    (e.id && h.some((item) => item.id === e.id)) ||
+    h.some((item) => item.date === e.date && item.routine === e.routine)
+  )
+    return;
   h.unshift(e);
   sls('wh', h.slice(0, 400));
 }
@@ -978,6 +849,203 @@ function setRestDuration(secs) {
 
 /* ═══ PROGRESS ═══ */
 let currentRoutine = 'A';
+const NOTION_WEBHOOK_CONFIG = 'notionWebhookConfig';
+const NOTION_WEBHOOK_OUTBOX = 'notionWebhookOutbox';
+const NOTION_WEBHOOK_DELIVERED = 'notionWebhookDelivered';
+const DEFAULT_NOTION_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwCr7_TgbOX3rPYl3aQX_DR7DEgB8NMP8Wgor1YE2YCdm9xNTTeMk5Wp9TFVjI2QQKKDA/exec';
+let notionWebhookFlushRunning = false;
+
+function getNotionWebhookConfig() {
+  const saved = gls(NOTION_WEBHOOK_CONFIG);
+  if (saved) return saved;
+  const legacy = gls('healthWebhookConfig');
+  if (legacy) return { enabled: !!legacy.enabled, url: legacy.url || '' };
+  const legacyUrl = (gls('webhookUrl') || '').trim();
+  if (legacyUrl) return { enabled: gls('webhookEnabled') !== false, url: legacyUrl };
+  return { enabled: true, url: DEFAULT_NOTION_WEBHOOK_URL };
+}
+function isValidWebhookUrl(value) {
+  try {
+    return new URL(value).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+function setNotionSyncStatus(message, isError) {
+  const el = document.getElementById('notionSyncStatus');
+  if (el) {
+    el.textContent = message || '';
+    el.style.color = isError ? 'var(--danger)' : '';
+  }
+}
+function hydrateNotionWebhookSettings() {
+  const config = getNotionWebhookConfig();
+  const enabled = document.getElementById('notionWebhookEnabled');
+  const url = document.getElementById('notionWebhookUrl');
+  if (enabled) enabled.checked = !!config.enabled;
+  if (url) url.value = config.url || '';
+}
+function saveNotionWebhookSettings() {
+  const enabled = !!document.getElementById('notionWebhookEnabled')?.checked;
+  const url = document.getElementById('notionWebhookUrl')?.value.trim() || '';
+  if (enabled && !isValidWebhookUrl(url)) {
+    showToast('⚠️ HTTPS 웹훅 URL을 확인해줘');
+    return false;
+  }
+  sls(NOTION_WEBHOOK_CONFIG, { enabled, url });
+  showToast(enabled ? '✅ Notion 자동 기록 켜짐' : 'Notion 자동 기록 꺼짐');
+  if (enabled) flushNotionWebhookOutbox();
+  return true;
+}
+async function postNotionWebhook(url, payload) {
+  await fetch(url, {
+    method: 'POST',
+    mode: 'no-cors',
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
+    keepalive: true,
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: JSON.stringify(payload),
+  });
+}
+async function testNotionWebhook() {
+  if (!saveNotionWebhookSettings()) return;
+  const config = getNotionWebhookConfig();
+  if (!config.enabled) {
+    showToast('자동 전송을 먼저 켜줘');
+    return;
+  }
+  try {
+    await postNotionWebhook(config.url, {
+      schemaVersion: 1,
+      event: 'webhook.test',
+      eventId: `test:${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      destination: { type: 'notion' },
+      notion: { title: '내 루틴 시험 기록', markdown: '# 내 루틴 시험 기록\n\nNotion 연동이 정상입니다.' },
+      message: '내 루틴 Notion 웹훅 시험 전송',
+    });
+    showToast('📨 시험 전송을 중계기에 전달했어');
+  } catch (error) {
+    console.error('[notion webhook] test failed', error);
+    showToast('⚠️ 시험 전송 실패 — URL·네트워크 확인');
+  }
+}
+function enqueueNotionCompletion(completion) {
+  const config = getNotionWebhookConfig();
+  if (!config.enabled || !isValidWebhookUrl(config.url)) return;
+  const delivered = gls(NOTION_WEBHOOK_DELIVERED) || [];
+  if (delivered.includes(completion.id)) {
+    setNotionSyncStatus('✅ Notion 중계 전달 완료');
+    return;
+  }
+  const event = CompletionSync.buildNotionEvent(completion);
+  sls(
+    NOTION_WEBHOOK_OUTBOX,
+    CompletionSync.enqueue(gls(NOTION_WEBHOOK_OUTBOX) || [], event),
+  );
+  setNotionSyncStatus('📨 Notion 기록 대기 중…');
+  flushNotionWebhookOutbox();
+}
+async function flushNotionWebhookOutbox() {
+  if (notionWebhookFlushRunning) return;
+  const config = getNotionWebhookConfig();
+  if (!config.enabled || !isValidWebhookUrl(config.url)) return;
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    setNotionSyncStatus('📴 오프라인 — 연결되면 Notion에 자동 기록');
+    return;
+  }
+  notionWebhookFlushRunning = true;
+  try {
+    let outbox = gls(NOTION_WEBHOOK_OUTBOX) || [];
+    for (const event of [...outbox]) {
+      try {
+        await postNotionWebhook(config.url, event);
+        outbox = CompletionSync.markDelivered(outbox, event.eventId);
+        sls(NOTION_WEBHOOK_OUTBOX, outbox);
+        const delivered = gls(NOTION_WEBHOOK_DELIVERED) || [];
+        if (!delivered.includes(event.eventId))
+          sls(NOTION_WEBHOOK_DELIVERED, [...delivered, event.eventId].slice(-400));
+        setNotionSyncStatus('✅ Notion 중계기에 전달됨');
+      } catch (error) {
+        console.error('[notion webhook] delivery failed', error);
+        setNotionSyncStatus('⚠️ 기록 보류 — 온라인이 되면 자동 재시도', true);
+        break;
+      }
+    }
+  } finally {
+    notionWebhookFlushRunning = false;
+  }
+}
+function flushRoutineInputs(routineKey, date) {
+  if (routineKey !== currentRoutine) return;
+  ROUTINES[routineKey].exercises.forEach((ex, idx) => {
+    const rec = getRecord(`${routineKey}_${idx}_${date}`);
+    if (ex.id) rec.exerciseId = ex.id;
+    const parts = [];
+    for (let s = 0; s < ex.sets; s++) {
+      const kgEl = document.getElementById(`kg_${idx}_${s}`);
+      const repsEl = document.getElementById(`rp_${idx}_${s}`);
+      if (kgEl) rec['kg_' + s] = parseFloat(kgEl.value) || 0;
+      if (repsEl) rec['reps_' + s] = parseInt(repsEl.value) || 0;
+      if (rec['kg_' + s] && rec['reps_' + s])
+        parts.push(`${rec['kg_' + s]}kg×${rec['reps_' + s]}`);
+    }
+    rec.summary = parts.join(' / ');
+    const rpe = document.getElementById(`rpe_${idx}`);
+    const pain = document.getElementById(`pain_${idx}`);
+    const note = document.getElementById(`note_${idx}`);
+    if (rpe) rec.rpe = rpe.value || '';
+    if (pain) rec.pain = pain.value || '';
+    if (note) rec.note = note.value || '';
+    clearTimeout(window['_t' + idx]);
+    saveRecord(`${routineKey}_${idx}_${date}`, rec);
+  });
+}
+function finalizeWorkoutCompletion(routineKey, date) {
+  const key = `workout:${routineKey}:${date}`;
+  let completion = gls(key);
+  if (!completion) {
+    flushRoutineInputs(routineKey, date);
+    const routine = ROUTINES[routineKey];
+    const totalSets = routine.exercises.reduce((sum, ex) => sum + ex.sets, 0);
+    const readiness = getReadiness();
+    completion = CompletionSync.buildWorkoutCompletion({
+      routineKey,
+      routineLabel: routine.label,
+      date,
+      completedAt: new Date().toISOString(),
+      volumeKg: computeVolume(routineKey),
+      totalSets,
+      readiness: { ...readiness, score: readinessScore() },
+      exercises: routine.exercises.map((ex, idx) => {
+        const rec = getRecord(`${routineKey}_${idx}_${date}`);
+        return {
+          id: ex.id || null,
+          name: ex.name,
+          summary: rec.summary || '',
+          rpe: rec.rpe || '',
+          pain: rec.pain || '',
+          note: rec.note || '',
+        };
+      }),
+    });
+    sls(key, completion);
+    sls('done:' + date, true);
+    const nc = markWorkoutDay();
+    document.getElementById('streakNum').textContent = nc;
+    addHistory({
+      id: completion.id,
+      date,
+      routine: routine.label,
+      summary: `${completion.volumeKg}kg · ${totalSets}세트`,
+    });
+    renderEnhancedDone();
+  }
+  enqueueNotionCompletion(completion);
+  return completion;
+}
+
 function updateProgress() {
   const r = ROUTINES[currentRoutine];
   const today = todayStr();
@@ -1004,40 +1072,53 @@ function updateProgress() {
       : `${r.label} · ${r.tag}`;
   const banner = document.getElementById('completeBanner');
   if (done === total && total > 0) {
-    if (!banner.classList.contains('show')) {
-      banner.classList.add('show');
-      document.getElementById('completeExCount').textContent = total;
-      document.getElementById('completeVolume').textContent =
-        computeVolume(currentRoutine);
-      let ts = 0;
-      r.exercises.forEach((e) => (ts += e.sets));
-      document.getElementById('completeSets').textContent = ts;
-      const now = new Date();
-      document.getElementById('completeTime').textContent =
-        `${now.getHours()}시 ${String(now.getMinutes()).padStart(2, '0')}분 완료`;
-      sls('done:' + todayStr(), true);
-      const nc = markWorkoutDay();
-      document.getElementById('streakNum').textContent = nc;
-      addHistory({
-        date: todayStr(),
-        routine: r.label,
-        summary: `${computeVolume(currentRoutine)}kg · ${ts}세트`,
-      });
-      sendWebhook('gym_routine_complete', {
-        routine: r.label,
-        day: r.day,
-        exerciseCount: total,
-        totalSets: ts,
-        totalVolumeKg: computeVolume(currentRoutine),
-        readinessScore: readinessScore(),
-      });
-      renderEnhancedDone();
-    }
+    banner.classList.add('show');
+    const completion = finalizeWorkoutCompletion(currentRoutine, today);
+    document.getElementById('completeExCount').textContent = total;
+    document.getElementById('completeVolume').textContent = completion.volumeKg;
+    document.getElementById('completeSets').textContent = completion.totalSets;
+    const completed = new Date(completion.completedAt);
+    document.getElementById('completeTime').textContent =
+      `${completed.getHours()}시 ${String(completed.getMinutes()).padStart(2, '0')}분 완료 · 자동 저장됨`;
   } else banner.classList.remove('show');
   updateCoachPanel();
   updateTodaySummary();
   updateStickyProgress();
   updateCoachNudge();
+  updateBeginnerGuide();
+}
+
+function updateBeginnerGuide() {
+  const title = document.getElementById('beginnerTitle');
+  const guide = document.getElementById('beginnerGuide');
+  const button = document.querySelector('.beginner-start button');
+  if (!title || !guide || !button) return;
+  const routine = ROUTINES[currentRoutine];
+  const done = getDoneCount(currentRoutine);
+  const total = routine.exercises.length;
+  const nextIdx = getCurrentExerciseIdx();
+  if (done >= total) {
+    title.textContent = '오늘 운동을 모두 마쳤어요';
+    guide.textContent = '기록은 자동 저장됐습니다. 충분히 쉬고 다음 운동 때 다시 만나요.';
+    button.textContent = '완료 기록 보기';
+    button.onclick = () => switchTabById('history');
+    return;
+  }
+  const next = routine.exercises[nextIdx];
+  title.textContent = done ? `${next.name}부터 이어서 하세요` : `${routine.label} · ${next.name}부터 시작`;
+  guide.textContent = done
+    ? `${done}/${total}종목 완료했습니다. 다음 세트의 무게와 횟수만 확인하세요.`
+    : '지난 기록은 자동으로 채워집니다. 무게를 확인하고 완료만 누르세요.';
+  button.textContent = done ? '이어서 운동하기' : '첫 운동 시작';
+  button.onclick = startTodayWorkout;
+}
+
+function startTodayWorkout() {
+  switchTabById('gym');
+  const idx = getCurrentExerciseIdx();
+  const card = document.getElementById('ex-' + idx);
+  if (card) card.classList.add('open', 'rec-open');
+  openFocusMode(idx);
 }
 
 function computeVolume(rk) {
@@ -1072,7 +1153,6 @@ function selectRoutine(key) {
   if (getDoneCount(key) < ROUTINES[key].exercises.length) openFocusMode();
 }
 function showRoutine(key) {
-  renderGuards();
   currentRoutine = key;
   document.querySelectorAll('.routine-chip').forEach((c) => {
     const active = c.dataset.rk === key;
@@ -1334,10 +1414,6 @@ function toggleSetCheck(idx, s) {
 
   /* ── Adaptive rest time (NEW) ── */
   if (isChecked) {
-    if (swamToday() && !window._swimGymWarned) {
-      window._swimGymWarned = true;
-      showToast('🚫 오늘 수영함 — 헬스 병행 금지 원칙. 정말 할 거면 저강도로.');
-    }
     const rpe = +document.getElementById(`rpe_${idx}`)?.value || 0;
     const restSecs = rpe >= 9 ? 120 : rpe >= 1 && rpe <= 7 ? 75 : 90;
     setRestDuration(restSecs);
@@ -1387,20 +1463,6 @@ function toggleSetCheck(idx, s) {
   rec.note = document.getElementById(`note_${idx}`)?.value || rec.note || '';
   saveRecord(rKey, rec);
   document.getElementById('ex-' + idx)?.classList.toggle('done', allChecked);
-  if (isChecked) {
-    sendWebhook('gym_set_complete', {
-      routine: ROUTINES[currentRoutine].label,
-      exercise: ex.name,
-      setNumber: s + 1,
-      totalSets: ex.sets,
-      kg: rec['kg_' + s] ?? null,
-      reps: rec['reps_' + s] ?? null,
-      rpe: rec.rpe || null,
-      pain: rec.pain || null,
-      note: rec.note || '',
-      exerciseDone: allChecked,
-    });
-  }
   if (allChecked) openNextExercise(idx);
   updateProgress();
 }
@@ -1592,13 +1654,25 @@ function renderFocus() {
   if (!ex) return;
   const sr = getSmartRec(currentRoutine, focusIdx),
     hist = getExHistory(currentRoutine, focusIdx),
-    prev = hist[0]?.rec?.summary || '이전 기록 없음';
+    prevRec = hist[0]?.rec || {},
+    prev = prevRec.summary || '이전 기록 없음',
+    rec = getRecord(`${currentRoutine}_${focusIdx}_${todayStr()}`);
+  let setIdx = 0;
+  while (setIdx < ex.sets - 1 && rec['checked_' + setIdx]) setIdx++;
+  const kg = document.getElementById(`kg_${focusIdx}_${setIdx}`)?.value ||
+    rec['kg_' + setIdx] || prevRec['kg_' + setIdx] || sr.kg || ex.defKg || 0;
+  const repsText = String(ex.reps || '').split('/')[setIdx] || String(ex.reps || '');
+  const reps = document.getElementById(`rp_${focusIdx}_${setIdx}`)?.value ||
+    rec['reps_' + setIdx] || prevRec['reps_' + setIdx] || parseInt(repsText) || 0;
   document.getElementById('focusName').textContent = `${ex.name}`;
   document.getElementById('focusTarget').textContent = sr.kg
     ? `${sr.kg}kg 기준`
     : `${ex.weight}`;
   document.getElementById('focusMeta').textContent =
     `추천: ${sr.msg}\n지난 기록: ${prev}\n큐: ${ex.tip || ex.con}`;
+  document.getElementById('focusSetTitle').textContent = `${setIdx + 1} / ${ex.sets} 세트`;
+  document.getElementById('focusSetMain').textContent =
+    `${kg > 0 ? kg + 'kg' : '자중'} × ${reps || '목표 횟수'}${reps ? '회' : ''}`;
 }
 function focusOpenCurrent() {
   if (!isGymTabActive()) return;
@@ -1630,6 +1704,14 @@ function focusCompleteSet() {
   for (let s = 0; s < ex.sets; s++) {
     const btn = document.getElementById(`chk_${focusIdx}_${s}`);
     if (btn && !btn.classList.contains('checked')) {
+      const sr = getSmartRec(currentRoutine, focusIdx);
+      const kgEl = document.getElementById(`kg_${focusIdx}_${s}`);
+      const repsEl = document.getElementById(`rp_${focusIdx}_${s}`);
+      if (kgEl && !kgEl.value) kgEl.value = sr.kg || ex.defKg || 0;
+      if (repsEl && !repsEl.value) {
+        const planned = String(ex.reps || '').split('/')[s] || String(ex.reps || '');
+        repsEl.value = parseInt(planned) || '';
+      }
       toggleSetCheck(focusIdx, s);
       break;
     }
@@ -1649,96 +1731,6 @@ function initTheme() {
     if (b) b.textContent = '☀️';
   }
 }
-/* ═══ 큰 글씨 모드 (피로한 눈으로도 읽히도록) ═══ */
-function initTextScale() {
-  if (gls('largeText')) {
-    document.body.classList.add('large-text');
-    document.getElementById('textScaleBtn')?.setAttribute('aria-pressed', 'true');
-  }
-}
-function toggleTextScale() {
-  const on = document.body.classList.toggle('large-text');
-  sls('largeText', on);
-  document.getElementById('textScaleBtn')?.setAttribute('aria-pressed', String(on));
-  showToast(on ? '🔤 큰 글씨 모드 켜짐' : '🔤 큰 글씨 모드 꺼짐');
-}
-/* ═══ 원칙 가드: 헬스+수영 같은 날 / 48시간 회복 ═══ */
-function swamToday() {
-  return (gls('swimLogs') || []).some((l) => l.date === todayStr());
-}
-function gymActivityToday() {
-  const t = todayStr();
-  return Object.keys(_cache).some((k) => {
-    if (!k.startsWith('rec:') || !k.endsWith(t)) return false;
-    const r = _cache[k] || {};
-    return Object.keys(r).some((f) => f.startsWith('checked_') && r[f]);
-  });
-}
-function gymYesterday() {
-  const y = new Date();
-  y.setDate(y.getDate() - 1);
-  const ys = fmtDate(y);
-  return getHistory().some((h) => h.date === ys && h.routine !== '수영');
-}
-function renderGuards() {
-  const el = document.getElementById('guardBanner');
-  if (!el) return;
-  const warns = [];
-  if (swamToday())
-    warns.push(
-      '🚫 오늘 수영 기록 있음 — 헬스+수영 같은 날 금지 원칙. 의도한 예외가 아니면 오늘 근력은 쉬어라.',
-    );
-  else if (gymYesterday() && !gymActivityToday())
-    warns.push(
-      '⏳ 어제 근력운동 완료 — 48시간 회복 미경과. 오늘은 유산소·교정·수영 권장.',
-    );
-  el.innerHTML = warns
-    .map((w) => `<div class="alert-warn">${w}</div>`)
-    .join('');
-  el.style.display = warns.length ? '' : 'none';
-}
-
-function saveSwimLog() {
-  const poolLen = +document.getElementById('swimPool')?.value || 18;
-  const strokes = +document.getElementById('swimStrokes')?.value || 0;
-  const dps = strokes > 0 ? Math.round((poolLen / strokes) * 100) / 100 : null;
-  const log = {
-    date: todayStr(),
-    poolLen,
-    strokes: document.getElementById('swimStrokes')?.value || '',
-    dps,
-    breath: document.getElementById('swimBreath')?.value || '',
-    left: document.getElementById('swimLeft')?.value || '',
-    right: document.getElementById('swimRight')?.value || '',
-    memo: document.getElementById('swimMemo')?.value || '',
-  };
-  const h = gls('swimLogs') || [];
-  h.unshift(log);
-  sls('swimLogs', h.slice(0, 200));
-  addHistory({
-    date: log.date,
-    routine: '수영',
-    summary: `${poolLen}m ${log.strokes || '?'}스트로크${dps ? ` · DPS ${dps}m` : ''} · 호흡 ${log.breath || '-'}`,
-  });
-  sendWebhook('swim_log', {
-    poolLenM: poolLen,
-    strokes: log.strokes,
-    distancePerStrokeM: dps,
-    breath: log.breath,
-    leftArm: log.left,
-    rightArm: log.right,
-    memo: log.memo,
-  });
-  showToast(dps ? `🏊 저장됨 — 스트로크당 ${dps}m` : '🏊 수영 기록 저장됨');
-  if (gymActivityToday())
-    setTimeout(
-      () => showToast('⚠️ 오늘 헬스 기록 있음 — 같은 날 병행 금지 원칙'),
-      2400,
-    );
-  renderSwimLogs();
-  renderGuards();
-}
-
 /* ═══ FINAL UX COACH FUNCTIONS ═══ */
 function getDoneCount(rk = currentRoutine) {
   const r = ROUTINES[rk];
@@ -1817,7 +1809,7 @@ function enhancedCompletionAdvice() {
 `;
   advice +=
     rs < 60
-      ? '오늘은 회복 부담이 컸다. 내일은 걷기/교정 위주가 맞다.'
+      ? '오늘은 회복 부담이 컸다. 내일은 충분히 쉬는 게 맞다.'
       : '오늘 볼륨은 괜찮다. 내일은 같은 부위 48시간 회복 확보.';
   advice += `
 다음 추천: 단백질 120g 근처, 수면 7시간 이상, ${next} 기록 추적.`;
@@ -2024,9 +2016,7 @@ function renderReadiness() {
       )
       .join('');
   });
-  const score = Math.round(
-    r.sleep * 20 + (6 - r.fatigue) * 12 + (6 - r.pain) * 8,
-  );
+  const score = readinessScore();
   const card = document.getElementById('readinessCard'),
     txt = document.getElementById('readinessText');
   if (!card || !txt) return;
@@ -2037,11 +2027,13 @@ function renderReadiness() {
       ? `회복 ${score}점. 오늘은 정상 볼륨 가능.`
       : score >= 55
         ? `회복 ${score}점. 중량보다 자세 우선. 마지막 세트 1~2회 여유.`
-        : `회복 ${score}점. 볼륨 30~40% 줄이고 재활 위주 권장.`;
+        : `회복 ${score}점. 볼륨을 30~40% 줄이거나 오늘은 쉬는 것을 권장.`;
 }
 function readinessScore() {
   const r = getReadiness();
-  return Math.round(r.sleep * 20 + (6 - r.fatigue) * 12 + (6 - r.pain) * 8);
+  return Math.round(
+    (r.sleep / 5) * 40 + ((6 - r.fatigue) / 5) * 30 + ((6 - r.pain) / 5) * 30,
+  );
 }
 function avg(a) {
   return a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
@@ -2119,256 +2111,6 @@ function detectOvertraining() {
   if (streak >= 5 && readinessScore() < 55)
     return `${streak}일 연속 운동 + 낮은 회복도. 내일 쉬는 게 맞다.`;
   return null;
-}
-/* ═══ 교정 루틴 수행 추적 ═══ */
-function getCorrDone(date = todayStr()) {
-  return gls('corr:' + date) || {};
-}
-function corrDoneCount(date = todayStr()) {
-  const d = getCorrDone(date);
-  return CORRECTIONS.filter((_, i) => d[i]).length;
-}
-function corrWeekDays() {
-  let n = 0;
-  for (let i = 0; i < 7; i++) {
-    const dt = new Date();
-    dt.setDate(dt.getDate() - i);
-    if (corrDoneCount(fmtDate(dt)) === CORRECTIONS.length) n++;
-  }
-  return n;
-}
-function renderCorrProgress() {
-  const el = document.getElementById('corrProgress');
-  if (!el) return;
-  el.textContent = `오늘 ${corrDoneCount()}/${CORRECTIONS.length} 완료 · 최근 7일 중 ${corrWeekDays()}일 전체 수행`;
-}
-function toggleCorr(i) {
-  const key = 'corr:' + todayStr();
-  const d = gls(key) || {};
-  d[i] = !d[i];
-  sls(key, d);
-  const btn = document.getElementById('corrChk_' + i);
-  if (btn) btn.classList.toggle('checked', !!d[i]);
-  renderCorrProgress();
-  if (CORRECTIONS.every((_, j) => d[j])) {
-    showToast('🔄 오늘 교정 루틴 완료!');
-    try { navigator.vibrate?.(60); } catch {}
-  }
-}
-function buildCorrections() {
-  const list = document.getElementById('corrList');
-  if (!list) return;
-  const done = getCorrDone();
-  CORRECTIONS.forEach((c, i) => {
-    const card = document.createElement('div');
-    card.className = 'list-card';
-    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')" role="button" tabindex="0" aria-label="${c.name} 상세 펼치기/접기"><button class="corr-chk${done[i] ? ' checked' : ''}" id="corrChk_${i}" onclick="event.stopPropagation();toggleCorr(${i})" aria-label="${c.name} 완료 체크">✓</button><div class="list-name">${c.name}</div><div class="list-dur">${c.dur}</div><span class="ex-chev">▾</span></div><div class="list-detail">${c.detail.replace(/\n/g, '<br>')}</div>`;
-    list.appendChild(card);
-  });
-  renderCorrProgress();
-}
-function renderSwimLogs() {
-  const el = document.getElementById('swimRecent');
-  if (!el) return;
-  const logs = gls('swimLogs') || [];
-  if (!logs.length) {
-    el.innerHTML = '';
-    return;
-  }
-  const withDps = logs
-    .filter((l) => l.dps)
-    .slice(0, 15)
-    .reverse();
-  let spark = '';
-  if (withDps.length >= 2) {
-    const vals = withDps.map((l) => l.dps);
-    const min = Math.min(...vals),
-      max = Math.max(...vals),
-      range = max - min || 1;
-    const W = 280,
-      H = 52,
-      pad = 8;
-    const pts = vals
-      .map(
-        (v, i) =>
-          `${(pad + (i / (vals.length - 1)) * (W - 2 * pad)).toFixed(1)},${(H - pad - ((v - min) / range) * (H - 2 * pad)).toFixed(1)}`,
-      )
-      .join(' ');
-    spark = `<div class="dps-spark"><div class="dps-spark-title">📈 DPS 추세 (최근 ${vals.length}회 · 목표 2.0m+)</div><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="dps-spark-range">최저 ${min}m · 최고 ${max}m</div></div>`;
-  }
-  const rows = logs
-    .slice(0, 8)
-    .map(
-      (l) =>
-        `<div class="swim-row"><span class="sr-date">${(l.date || '').slice(5)}</span><span class="sr-main">${l.poolLen || 25}m · ${l.strokes || '?'}스트로크${l.dps ? ` · <b>DPS ${l.dps}m</b>` : ''}</span><span class="sr-sub">${l.breath || ''}</span></div>`,
-    )
-    .join('');
-  el.innerHTML =
-    spark +
-    `<div class="coach-title" style="margin-top:12px">🗒 최근 기록</div><div class="swim-rows">${rows}</div>`;
-}
-function buildSwim() {
-  const list = document.getElementById('swimList');
-  SWIM_DRILLS.forEach((d) => {
-    const card = document.createElement('div');
-    card.className = 'list-card';
-    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')" role="button" tabindex="0" aria-label="${d.name} 상세 펼치기/접기"><div class="list-dot" style="background:var(--accent)"></div><div class="list-name">${d.name}</div><div class="list-dur">${d.ratio}</div><span class="ex-chev">▾</span></div><div class="list-detail">${d.detail.replace(/\n/g, '<br>')}</div>`;
-    list.appendChild(card);
-  });
-  const concepts = document.getElementById('swimConcepts');
-  SWIM_CONCEPTS.forEach((c) => {
-    const card = document.createElement('div');
-    card.className = 'list-card';
-    card.innerHTML = `<div class="list-head" onclick="this.parentElement.classList.toggle('open')" role="button" tabindex="0" aria-label="${c.name} 상세 펼치기/접기"><div class="list-dot" style="background:var(--accent-mid)"></div><div class="list-name">${c.name}</div><span class="ex-chev">▾</span></div><div class="list-detail">${c.detail}</div>`;
-    concepts.appendChild(card);
-  });
-}
-function buildRules() {
-  const list = document.getElementById('rulesList');
-  RULES.forEach((r) => {
-    const li = document.createElement('div');
-    li.className = 'rule-item';
-    li.innerHTML = `<span class="p-num">${r.num}</span><span>${r.text}</span>`;
-    list.appendChild(li);
-  });
-  const checks = document.getElementById('recoveryChecks');
-  RECOVERY_CHECKS.forEach((c) => {
-    const d = document.createElement('div');
-    d.className = 'rec-check-item';
-    d.innerHTML = `<div class="rci-move">${c.move}</div><div class="rci-pass">통과: ${c.pass}</div><div class="rci-unlock">→ ${c.unlock}</div>`;
-    checks.appendChild(d);
-  });
-  const pain = document.getElementById('painGuide');
-  PAIN_GUIDE.forEach((p) => {
-    const d = document.createElement('div');
-    d.className = 'pain-item';
-    d.innerHTML = `<div class="pain-dot" style="background:${p.color}"></div><div><div class="pain-type" style="color:${p.color}">${p.type}</div><div class="pain-desc">${p.desc}</div></div>`;
-    pain.appendChild(d);
-  });
-  renderRoutineEditor();
-}
-/* ═══ ROUTINE EDITOR (A/B 루틴에 종목 추가 · 목표 중량 수정) ═══
-   기존 종목은 idx로 기록이 저장되므로 순서 변경/삭제는 지원하지 않는다.
-   새 종목은 항상 배열 끝에 추가되어 기존 기록의 idx를 건드리지 않는다. */
-function applyRoutineOverrides() {
-  ['A', 'B'].forEach((rk) => {
-    (gls('customExercises:' + rk) || []).forEach((ex) => ROUTINES[rk].exercises.push({ ...ex }));
-    const overrides = gls('weightOverrides:' + rk) || {};
-    Object.keys(overrides).forEach((idxStr) => {
-      const idx = Number(idxStr);
-      if (ROUTINES[rk].exercises[idx]) ROUTINES[rk].exercises[idx].defKg = overrides[idxStr];
-    });
-  });
-}
-function renderRoutineEditor() {
-  const el = document.getElementById('routineEditor');
-  if (!el) return;
-  el.innerHTML = ['A', 'B']
-    .map((rk) => {
-      const r = ROUTINES[rk];
-      const rows = r.exercises
-        .map(
-          (ex, i) => `
-      <div class="rex-row">
-        <div class="rex-name">${escapeHtml(ex.name)}${ex.custom ? ` <span class="rex-tag">커스텀${ex.muscles ? ' · ' + escapeHtml(ex.muscles.join('/')) : ''}</span>` : ''}</div>
-        <div class="rex-kg-wrap"><input class="rex-kg" type="number" inputmode="decimal" step="0.5" min="0" value="${ex.defKg || ''}" placeholder="kg" onchange="setWeightOverride('${rk}',${i},this.value)" aria-label="${escapeHtml(ex.name)} 목표 중량 kg"></div>
-      </div>`,
-        )
-        .join('');
-      const last = r.exercises[r.exercises.length - 1];
-      const removeBtn = last?.custom
-        ? `<button class="quick-btn danger" type="button" onclick="removeLastCustomExercise('${rk}')">마지막 커스텀 종목 삭제</button>`
-        : '';
-      return `
-      <div class="rex-routine">
-        <div class="rex-head"><strong>${r.label}</strong><span class="sec-badge">${r.exercises.length}종목</span></div>
-        ${rows}
-        <div class="rex-add">
-          <input id="rxName_${rk}" placeholder="새 종목 이름" aria-label="${rk}루틴 새 종목 이름">
-          <input id="rxTarget_${rk}" placeholder="타깃 부위" aria-label="${rk}루틴 새 종목 타깃 부위">
-          <input id="rxSets_${rk}" type="number" inputmode="numeric" min="1" placeholder="세트 수" value="3" aria-label="${rk}루틴 새 종목 세트 수">
-          <input id="rxReps_${rk}" placeholder="반복 (예: 10/10/10)" aria-label="${rk}루틴 새 종목 반복 횟수">
-          <input id="rxKg_${rk}" type="number" inputmode="decimal" step="0.5" min="0" placeholder="목표 kg" aria-label="${rk}루틴 새 종목 목표 중량">
-          <select id="rxMuscle_${rk}" aria-label="${rk}루틴 새 종목 근육 그룹 (근육별 볼륨 집계용)">${MUSCLE_GROUP_OPTIONS.map((m) => `<option value="${m}">${m}</option>`).join('')}</select>
-        </div>
-        <div class="rex-btns">
-          <button class="quick-btn primary" type="button" onclick="addCustomExercise('${rk}')">+ 종목 추가</button>
-          ${removeBtn}
-        </div>
-      </div>`;
-    })
-    .join('');
-}
-function addCustomExercise(rk) {
-  const nameEl = document.getElementById('rxName_' + rk);
-  const name = (nameEl?.value || '').trim();
-  if (!name) {
-    showToast('⚠️ 종목 이름을 입력해라');
-    return;
-  }
-  const target = (document.getElementById('rxTarget_' + rk)?.value || '').trim() || '직접 추가';
-  const sets = Math.max(1, parseInt(document.getElementById('rxSets_' + rk)?.value, 10) || 3);
-  const reps = (document.getElementById('rxReps_' + rk)?.value || '').trim() || Array(sets).fill('10').join('/');
-  const defKg = Math.max(0, parseFloat(document.getElementById('rxKg_' + rk)?.value) || 0);
-  const muscle = document.getElementById('rxMuscle_' + rk)?.value || '전신/기타';
-  const ex = {
-    name,
-    target,
-    sets,
-    reps,
-    weight: defKg > 0 ? `${defKg}kg 시도` : '가볍게',
-    defKg,
-    con: '개인 추가 종목 — 폼 큐는 직접 기록해라.',
-    ecc: '천천히 컨트롤하며.',
-    tip: '',
-    warn: null,
-    custom: true,
-    muscles: [muscle],
-  };
-  const list = gls('customExercises:' + rk) || [];
-  list.push(ex);
-  sls('customExercises:' + rk, list);
-  ROUTINES[rk].exercises.push({ ...ex });
-  showToast(`✅ ${rk}루틴에 '${name}' 추가됨`);
-  renderRoutineEditor();
-  if (currentRoutine === rk) showRoutine(rk);
-}
-function removeLastCustomExercise(rk) {
-  const list = gls('customExercises:' + rk) || [];
-  const idx = ROUTINES[rk].exercises.length - 1;
-  const last = ROUTINES[rk].exercises[idx];
-  if (!list.length || !last?.custom) return;
-  const hasHistory = getExHistory(rk, idx).length > 0 || !!gls(`pr:${rk}_${idx}`);
-  if (hasHistory) {
-    showToast('⚠️ 이미 기록이 있어 삭제할 수 없다');
-    return;
-  }
-  if (!confirm(`'${last.name}'을(를) ${ROUTINES[rk].label}에서 삭제할까?`)) return;
-  list.pop();
-  sls('customExercises:' + rk, list);
-  ROUTINES[rk].exercises.pop();
-  const wKey = 'weightOverrides:' + rk;
-  const overrides = gls(wKey) || {};
-  if (Object.prototype.hasOwnProperty.call(overrides, idx)) {
-    delete overrides[idx];
-    sls(wKey, overrides);
-  }
-  showToast(`🗑️ '${last.name}' 삭제됨`);
-  renderRoutineEditor();
-  if (currentRoutine === rk) showRoutine(rk);
-}
-function setWeightOverride(rk, idx, val) {
-  const kg = parseFloat(val);
-  const wKey = 'weightOverrides:' + rk;
-  const overrides = gls(wKey) || {};
-  if (!isNaN(kg) && kg >= 0) {
-    overrides[idx] = kg;
-    ROUTINES[rk].exercises[idx].defKg = kg;
-  } else {
-    delete overrides[idx];
-  }
-  sls(wKey, overrides);
-  showToast('✅ 목표 중량 저장됨');
 }
 function buildHistory() {
   buildStats();
@@ -2585,20 +2327,11 @@ function buildCalendar() {
   ];
   const dow = ['월', '화', '수', '목', '금', '토', '일'];
   const worked = new Set();
-  const corrDays = new Set();
   Object.keys(_cache).forEach((k) => {
     if (k.startsWith('done:')) {
       const d = k.replace('done:', '');
       if (d.startsWith(`${yr}-${String(mo + 1).padStart(2, '0')}`))
         worked.add(parseInt(d.slice(8)));
-    }
-    if (k.startsWith('corr:')) {
-      const d = k.replace('corr:', '');
-      if (
-        d.startsWith(`${yr}-${String(mo + 1).padStart(2, '0')}`) &&
-        corrDoneCount(d) === CORRECTIONS.length
-      )
-        corrDays.add(parseInt(d.slice(8)));
     }
   });
   let html = `<div class="cal-month">${yr}년 ${mNames[mo]}</div><div class="cal-dow">${dow.map((d) => `<div class="cal-dow-lbl">${d}</div>`).join('')}</div><div class="cal-days">`;
@@ -2608,7 +2341,6 @@ function buildCalendar() {
       'cd',
       d === todayD ? 'today' : '',
       worked.has(d) ? 'has' : '',
-      corrDays.has(d) ? 'corr' : '',
     ]
       .filter(Boolean)
       .join(' ');
@@ -2853,7 +2585,7 @@ function buildWorkoutSummary() {
     .filter(Boolean)
     .join('\n');
   const rd = getReadiness();
-  return `💪 ${r.label} 완료\n날짜: ${today}\n총 볼륨: ${vol}kg\n총 세트: ${totalSets}세트\n컨디션: 수면 ${rd.sleep}/5 · 피로 ${rd.fatigue}/5 · 통증 ${rd.pain}/5 (회복 ${readinessScore()}점)\n\n${logs || '기록 없음'}\n\n(Claude 분석용: 위 기록 기준으로 다음 세션 중량·볼륨·회복 판단 요청)`;
+  return `💪 ${r.label} 완료\n날짜: ${today}\n총 볼륨: ${vol}kg\n총 세트: ${totalSets}세트\n컨디션: 수면 ${rd.sleep}/5 · 피로 ${rd.fatigue}/5 · 통증 ${rd.pain}/5 (회복 ${readinessScore()}점)\n\n${logs || '기록 없음'}\n\n(GPT 분석 요청: 위 기록 기준으로 다음 세션 중량·볼륨·회복을 판단해 주세요.)`;
 }
 function copyWorkoutSummary() {
   const btn = document.getElementById('calBtn');
@@ -2918,17 +2650,10 @@ function getAiFeedback() {
   const el = document.getElementById('aiResult');
   if (!el) return;
   el.className = 'ai-result visible';
-  el.textContent = '검사상 구조적 이상이나 정렬 이상은 없어 운동 자체를 제한할 이유는 없습니다.\n현재 우선순위는 코어 힘 자체보다, 갈비뼈와 골반의 위치를 유지한 채 팔다리를 움직이는 능력입니다. 골반을 억지로 말아 넣지 마세요.\n필라테스 주 1회·8주는 재활의학과 권고입니다. 홈코어와 팔로프프레스는 앱에서 제안하는 보조 운동입니다.\n하체 운동은 기존 유지가 아니라 단계적 재도입 상태입니다.\n\n' + localGymFeedback();
-}
-function getSwimFeedback() {
-  const el = document.getElementById('swimAiResult');
-  if (!el) return;
-  el.className = 'ai-result visible';
-  el.textContent =
-    '오늘 목표 1개만 잡자.\n1) 풀 실측 18m 기준 — 스트로크당 거리(DPS) 2.0m 이상 유지가 지표.\n2) 속도 올리지 말고 물속 호기를 끝까지 내뱉어라.\n3) 오른팔 EVF: 캐치에서 팔꿈치 높게, 전완으로 물 걸기. 손목 스냅 금지.\n4) 양측 호흡 훈련은 오른팔 상완근 회복 확인 후 도입 — 그 전엔 무리한 전환 금지.\n5) 드릴 순서: 왼팔 외팔 5 → 오른팔 외팔 3 → 캐치업 2 → 풀스트로크 확인.';
+  el.textContent = localGymFeedback();
 }
 function switchTabById(id) {
-  const tabs = ['gym', 'rehab', 'swim', 'history', 'rules'];
+  const tabs = ['gym', 'history', 'settings'];
   document
     .querySelectorAll('.tab-panel')
     .forEach((p) => p.classList.toggle('active', p.id === 'tab-' + id));
@@ -2944,7 +2669,6 @@ function switchTabById(id) {
   updateTodaySummary();
   updateCoachNudge();
   if (id === 'history') buildHistory();
-  if (id === 'rehab') buildRehab();
   sls('activeTab', id);
 }
 function switchTab(id) {
@@ -3138,137 +2862,6 @@ async function restoreAutoBackup(slot) {
     showToast('⚠️ 복원 실패');
   }
 }
-/* ═══ 외부 저장소 연동 (웹훅) ═══
-   노션 REST API는 CORS를 허용하지 않아 브라우저에서 직접 부를 수 없다.
-   대신 Zapier/Make/Pipedream/구글 Apps Script 등에서 만든 웹훅 주소로
-   저장/완료 이벤트를 POST하고, 노션 연결은 그 자동화 쪽에서 처리한다.
-   기기마다 매번 설정하지 않도록 기본 웹훅 주소를 코드에 박아두고,
-   최초 방문(= 저장된 설정이 아직 없을 때)에만 자동으로 채워 넣는다.
-   이후 사용자가 직접 바꾸거나 끄면 그 선택이 항상 우선한다. */
-const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwCr7_TgbOX3rPYl3aQX_DR7DEgB8NMP8Wgor1YE2YCdm9xNTTeMk5Wp9TFVjI2QQKKDA/exec';
-function ensureDefaultWebhook() {
-  if (gls('webhookUrl') === null) sls('webhookUrl', DEFAULT_WEBHOOK_URL);
-  if (gls('webhookEnabled') === null) sls('webhookEnabled', true);
-}
-const DEFAULT_WEBHOOK_EVENTS = {
-  gym_set_complete: true,
-  gym_routine_complete: true,
-  swim_log: true,
-  rehab_session: true,
-};
-function getWebhookEvents() {
-  return { ...DEFAULT_WEBHOOK_EVENTS, ...(gls('webhookEvents') || {}) };
-}
-function saveWebhookUrl(url) {
-  sls('webhookUrl', (url || '').trim());
-  showToast('🔗 웹훅 주소 저장됨');
-}
-function toggleWebhookEnabled(on) {
-  sls('webhookEnabled', on);
-  showToast(on ? '🔗 웹훅 전송 켜짐' : '🔗 웹훅 전송 꺼짐');
-}
-function toggleWebhookEvent(key, on) {
-  const events = getWebhookEvents();
-  events[key] = on;
-  sls('webhookEvents', events);
-}
-/* 실제 네트워크 전송. 우선 정상 CORS 요청을 시도하고, 그게 막히는 도구(구글 Apps Script 등)를
-   위해 no-cors 요청으로 한 번 더 시도한다 — 응답은 못 읽지만 요청 자체는 서버에 도달한다. */
-async function postWebhookPayload(payload) {
-  const url = currentWebhookUrl();
-  if (!url) return { ok: false, error: '웹훅 주소 없음' };
-  const body = JSON.stringify(payload);
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body,
-    });
-    return { ok: res.ok, status: res.status };
-  } catch (error) {
-    try {
-      await fetch(url, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body,
-      });
-      return { ok: null, note: '요청은 보냈으나 응답 확인 불가 (no-cors)' };
-    } catch (error2) {
-      return { ok: false, error: String(error2?.message || error2) };
-    }
-  }
-}
-/* 입력창에 방금 붙여넣고 바로 버튼을 누르면 blur(change 이벤트)가 아직 안 일어나
-   저장소엔 반영이 안 됐을 수 있다 — 화면에 보이는 입력값을 우선으로 보고, 그 김에 저장까지 한다. */
-function currentWebhookUrl() {
-  const live = (document.getElementById('webhookUrl')?.value || '').trim();
-  if (live) {
-    if (live !== (gls('webhookUrl') || '')) sls('webhookUrl', live);
-    return live;
-  }
-  return (gls('webhookUrl') || '').trim();
-}
-async function sendWebhook(event, data) {
-  if (!gls('webhookEnabled')) return;
-  if (getWebhookEvents()[event] === false) return;
-  if (!currentWebhookUrl()) return;
-  const payload = {
-    app: 'my-routine',
-    event,
-    date: todayStr(),
-    sentAt: new Date().toISOString(),
-    ...data,
-  };
-  const result = await postWebhookPayload(payload);
-  sls('webhookLastResult', { ...result, at: new Date().toISOString(), event });
-  renderWebhookStatus();
-}
-async function testWebhook() {
-  if (!currentWebhookUrl()) {
-    showToast('⚠️ 웹훅 주소를 먼저 입력해라');
-    return;
-  }
-  showToast('🧪 테스트 전송 중…');
-  const payload = {
-    app: 'my-routine',
-    event: 'test',
-    date: todayStr(),
-    sentAt: new Date().toISOString(),
-    message: '내 루틴 앱에서 보낸 테스트 전송입니다.',
-  };
-  const result = await postWebhookPayload(payload);
-  sls('webhookLastResult', { ...result, at: new Date().toISOString(), event: 'test' });
-  renderWebhookStatus();
-  showToast('전송 요청 완료 — 아래 상태와 자동화 도구 로그를 확인해라');
-}
-function renderWebhookStatus() {
-  const el = document.getElementById('webhookStatus');
-  if (!el) return;
-  const last = gls('webhookLastResult');
-  if (!last) {
-    el.textContent = '아직 전송 기록 없음';
-    return;
-  }
-  const t = new Date(last.at);
-  const time = `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
-  const label = last.event === 'test' ? '테스트 전송' : last.event;
-  if (last.ok === true) el.textContent = `✅ 마지막 전송 성공 · ${label} (${time})`;
-  else if (last.ok === false) el.textContent = `⚠️ 마지막 전송 실패 · ${label} (${time}) — 주소를 확인해라`;
-  else el.textContent = `📡 마지막 전송 요청 보냄 · ${label} (${time}) — 응답 확인 불가, 자동화 도구 로그에서 확인해라`;
-}
-function renderWebhookSettings() {
-  const urlEl = document.getElementById('webhookUrl');
-  const enabledEl = document.getElementById('webhookEnabled');
-  if (urlEl) urlEl.value = gls('webhookUrl') || '';
-  if (enabledEl) enabledEl.checked = !!gls('webhookEnabled');
-  const events = getWebhookEvents();
-  Object.keys(DEFAULT_WEBHOOK_EVENTS).forEach((k) => {
-    const el = document.getElementById('webhookEvent_' + k);
-    if (el) el.checked = events[k] !== false;
-  });
-  renderWebhookStatus();
-}
 function daysSinceBackup() {
   const d = gls('lastBackup');
   if (!d) return null;
@@ -3315,33 +2908,28 @@ initStorage().then(async () => {
   } catch (error) {
     console.error('[storage migration] initialization failed', error);
   }
-  seedClinicalData();
   applyRoutineOverrides();
   await runAutoBackupIfNeeded();
   initTheme();
-  initTextScale();
   buildHeader();
   buildWeekStrip();
   buildSelector();
-  buildCorrections();
-  buildSwim();
-  buildRules();
   renderReadiness();
-  showRoutine({ 1: 'A', 4: 'B', 0: 'C' }[new Date().getDay()] || 'A');
+  showRoutine({ 1: 'A', 4: 'B', 6: 'C' }[new Date().getDay()] || 'A');
   updateCoachPanel();
   syncFocusVisibility();
   renderRestTimer();
   updateBackupNote();
   renderAutoBackupList();
-  ensureDefaultWebhook();
-  renderWebhookSettings();
-  renderGuards();
-  renderSwimLogs();
+  hydrateNotionWebhookSettings();
+  flushNotionWebhookOutbox();
   const savedTab = gls('activeTab');
-  if (['gym', 'rehab', 'swim', 'history', 'rules'].includes(savedTab)) switchTabById(savedTab);
+  if (['gym', 'history', 'settings'].includes(savedTab)) switchTabById(savedTab);
   const sb = document.getElementById('soundBtn');
   if (sb) sb.textContent = soundOn() ? '🔔' : '🔕';
 });
+
+window.addEventListener('online', flushNotionWebhookOutbox);
 
 /* ═══ PWA ═══ */
 if ('serviceWorker' in navigator && location.protocol === 'https:') {

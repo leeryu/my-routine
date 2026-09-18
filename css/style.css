@@ -184,20 +184,6 @@ body:not(.gym-active) .main{padding-bottom:calc(110px + env(safe-area-inset-bott
 .list-detail{display:none;border-top:1px solid var(--border);padding:14px;background:var(--bg);font-size:13px;color:var(--text-2);line-height:1.7}
 .list-card.open .list-detail{display:block}
 
-/* RULES / RECOVERY / PAIN */
-.rule-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:0;overflow:hidden;box-shadow:var(--sh);margin-bottom:10px}
-.rule-item{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-2);align-items:flex-start}
-.rule-item:last-child{border-bottom:none}
-.p-num{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;padding-top:1px}
-.rec-check-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
-.rci-move{font-size:13px;font-weight:700;margin-bottom:4px}
-.rci-pass{font-size:12px;color:var(--green);margin-bottom:2px}
-.rci-unlock{font-size:12px;color:var(--text-3)}
-.pain-item{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
-.pain-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
-.pain-type{font-size:13px;font-weight:700;margin-bottom:2px}
-.pain-desc{font-size:12px;color:var(--text-3)}
-
 /* STATS */
 .stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
 .stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center;box-shadow:var(--sh)}
@@ -333,11 +319,6 @@ body:not(.gym-active) .main{padding-bottom:calc(110px + env(safe-area-inset-bott
 .focus-rest.danger .focus-rest-time{color:var(--red)}
 .focus-rest button{flex-shrink:0;border:1.5px solid var(--border);background:var(--surface);color:var(--text-2);border-radius:10px;padding:9px 12px;font-weight:900;font-family:var(--sans);font-size:12px;cursor:pointer}
 .theme-btn{position:fixed;right:12px;top:12px;z-index:110;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;font-size:13px;font-weight:900;padding:7px 10px;cursor:pointer;backdrop-filter:blur(8px)}
-.text-scale-btn{position:fixed;right:12px;top:54px;z-index:110;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;font-size:12px;font-weight:900;padding:7px 10px;cursor:pointer;backdrop-filter:blur(8px);font-family:var(--sans)}
-body.dark .text-scale-btn{background:rgba(0,0,0,.25)}
-body.large-text .text-scale-btn{background:var(--accent);border-color:var(--accent)}
-body.large-text{zoom:1.15}
-.swim-log-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:var(--sh)}.swim-log-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.swim-log-grid input,.swim-log-grid select,.swim-log-grid textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;font-family:var(--sans);color:var(--text)}.swim-log-grid textarea{grid-column:1/-1;min-height:56px;resize:vertical}.swim-save{width:100%;margin-top:10px;background:var(--accent);color:#fff;border:0;border-radius:12px;padding:12px;font-weight:900;font-family:var(--sans)}
 body.dark{--bg:#111124;--surface:#1b1b33;--card:#1b1b33;--border:#323052;--accent-soft:#27244c;--green-soft:#123629;--yellow-soft:#3a2b12;--red-soft:#3b181f;--text:#f4f1ff;--text-2:#c6c0e6;--text-3:#918bb8;color-scheme:dark}body.dark .rec-inp,body.dark .pc-inp{background:#141429;color:#fff}body.dark .hdr{background:linear-gradient(145deg,#26215f 0%,#4d3fd3 70%,#6857e8 100%)}body.dark .theme-btn{background:rgba(0,0,0,.25)}
 
 /* 집중모드는 헬스 탭에서만 노출 */
@@ -425,36 +406,11 @@ body.dark .report-coach{background:rgba(0,0,0,.12)}
 .backup-btns{display:flex;gap:8px}
 .backup-btns .ai-btn{margin-top:8px;padding:12px}
 .backup-hint{margin-top:10px;font-size:11px;color:var(--text-3);line-height:1.5}
-
-/* ═══ 외부 저장소 연동 (웹훅) ═══ */
-.webhook-box{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
-.webhook-hint{font-size:11px;color:var(--text-3);line-height:1.6;margin-bottom:12px}
-.webhook-toggle{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:10px}
-.webhook-toggle input{width:18px;height:18px;accent-color:var(--accent)}
-.webhook-url{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;font-family:var(--sans);color:var(--text);margin-bottom:12px}
-.webhook-events{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.webhook-events label{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--text-2)}
-.webhook-events input{width:16px;height:16px;accent-color:var(--accent);flex-shrink:0}
-.webhook-status{margin-top:10px;font-size:11px;color:var(--text-3);line-height:1.5}
-@media(max-width:380px){.webhook-events{grid-template-columns:1fr}}
-
-/* ═══ 교정 체크 ═══ */
-.corr-chk{width:30px;height:30px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg);color:var(--text-3);font-size:14px;font-weight:900;cursor:pointer;flex-shrink:0;transition:all .15s}
-.corr-chk.checked{background:var(--green,#00b894);border-color:var(--green,#00b894);color:#fff}
-.corr-progress{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin-bottom:12px}
-
-/* ═══ 수영 최근 기록 + DPS ═══ */
-.dps-spark{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-top:14px;box-shadow:var(--sh)}
-.dps-spark-title{font-size:12px;font-weight:800;color:var(--text-2);margin-bottom:8px}
-.dps-spark svg{width:100%;height:52px;display:block}
-.dps-spark-range{font-size:10px;font-family:var(--mono);color:var(--text-3);margin-top:6px}
-.swim-rows{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:8px;margin-bottom:14px}
-.swim-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px}
-.swim-row:last-child{border-bottom:0}
-.sr-date{font-family:var(--mono);font-size:11px;color:var(--text-3);flex-shrink:0}
-.sr-main{flex:1;color:var(--text-2)}
-.sr-main b{color:var(--accent)}
-.sr-sub{font-size:11px;color:var(--text-3)}
+.webhook-box{display:grid;gap:11px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+.webhook-box>label:not(.webhook-toggle){font-size:11px;font-weight:800;color:var(--text-2)}
+.webhook-box input[type="text"],.webhook-box input[type="url"]{display:block;width:100%;min-height:48px;margin-top:5px;padding:11px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
+.webhook-toggle{display:flex;align-items:center;gap:10px;min-height:44px;font-size:13px;font-weight:900;color:var(--text)}
+.webhook-toggle input{width:24px;height:24px;accent-color:var(--accent)}
 
 /* ═══ 사운드 토글 ═══ */
 .sound-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-size:15px;padding:9px 12px;cursor:pointer;margin-right:8px}
@@ -474,41 +430,24 @@ body.dark .report-coach{background:rgba(0,0,0,.12)}
 .hist-sec .sec-hdr .sec-badge{margin-left:8px}
 .hist-sec[open] .sec-chev{transform:rotate(180deg)}
 .cal-legend{font-size:10px;color:var(--text-3);margin:6px 2px 14px}
-.cal-legend-corr{color:var(--green,#00b894);font-weight:900}
-.cd.corr{position:relative}
-.cd.corr::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--green,#00b894)}
 
-/* ═══ REHAB / SESSION ROUTINES ═══ */
-.clinical-card,.weekly-goals,.session-card,.reintro-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:var(--sh);scroll-margin-bottom:calc(110px + env(safe-area-inset-bottom))}
-.clinical-head,.session-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.clinical-card p,.weekly-goals p,.reintro-card p{font-size:12px;line-height:1.65;color:var(--text-2)}
-.source-badge{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900;margin-right:7px}.source-badge.doctor{background:var(--green-soft);color:var(--green)}.source-badge.app{background:var(--accent-soft);color:var(--accent)}
-.clinical-facts,.goal-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}.clinical-facts span,.goal-grid span{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px;font-size:11px;font-weight:800;color:var(--text-2)}
-.medical-rec{background:var(--green-soft);color:var(--green);border-radius:10px;padding:9px;margin:9px 0;font-size:12px;font-weight:900}.clinical-card small{color:var(--text-3);line-height:1.5}
-.session-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.session-tab{min-height:44px;border:1.5px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text-2);font-family:var(--sans);font-weight:900}.session-tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
-.session-head h3,.reintro-card h3{margin:6px 0 0}.session-head>b{font-size:11px;color:var(--text-2);text-align:right}.session-form{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.session-form label{font-size:11px;font-weight:800;color:var(--text-2)}.session-form input,.session-form select,.session-form textarea{display:block;width:100%;min-height:44px;margin-top:5px;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-family:var(--sans)}.session-form textarea{min-height:70px;resize:vertical}.session-form .full{grid-column:1/-1}.session-save{width:100%;min-height:48px;margin-top:12px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-family:var(--sans);font-weight:900}
-.home-core-item{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)}.home-core-item>input{width:24px;height:24px;accent-color:var(--accent);flex:0 0 auto}.home-core-item span{display:grid;gap:3px}.home-core-item b{font-size:11px;color:var(--accent)}.home-core-item small{font-size:11px;line-height:1.5;color:var(--text-3)}.reintro-card hr{border:0;border-top:1px solid var(--border);margin:15px 0}
-@media(max-width:380px){.clinical-facts,.goal-grid,.session-form{grid-template-columns:1fr}.session-form .full{grid-column:auto}}
-
-.session-mode{margin:10px 0;padding:8px 10px;border-radius:10px;background:var(--bg);color:var(--text-3);font-size:11px;font-weight:800;overflow-wrap:anywhere}.session-mode.edit{background:var(--yellow-soft);color:var(--yellow)}#tab-rehab{padding-bottom:calc(48px + env(safe-area-inset-bottom))}.clinical-card,.session-card{overflow-wrap:anywhere}
-
-/* ═══ ROUTINE EDITOR ═══ */
-.rex-routine{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
-.rex-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.rex-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
-.rex-row:last-of-type{border-bottom:none}
-.rex-name{color:var(--text-2);font-weight:700}
-.rex-tag{font-size:9px;font-weight:900;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:2px 5px;margin-left:4px}
-.rex-kg-wrap{flex-shrink:0}
-.rex-kg{width:78px;height:34px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-family:var(--mono);font-weight:700;text-align:center;font-size:13px}
-.rex-add{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
-.rex-add input,.rex-add select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:9px;font-size:12px;font-family:var(--sans);color:var(--text)}
-.rex-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.rex-btns .quick-btn{flex:1;min-width:120px}
-@media(max-width:380px){.rex-add{grid-template-columns:1fr}}
-
-/* ═══ AUTO BACKUP LIST ═══ */
-.autobk-hdr{font-size:11px;font-weight:700;color:var(--text-3);margin-top:14px;margin-bottom:4px}
-.autobk-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
-.autobk-row:last-child{border-bottom:none}
-.autobk-date{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text)}
-.autobk-count{font-size:10px;color:var(--text-3);margin-top:2px}
+/* ═══ BEGINNER-FIRST REDESIGN ═══ */
+.hdr{padding:18px 18px 1px;background:linear-gradient(145deg,#4035b4 0%,#6c5ce7 58%,#8b75ff 100%)}
+.hdr-top{align-items:center;margin-bottom:12px}.hdr-greeting{font-size:12px}.hdr-name{font-size:25px}.hdr-date{font-size:12px}.hdr-prog-bar{min-height:66px;padding:10px 13px;margin-bottom:12px;border-radius:16px}.prog-title{font-size:15px;font-weight:800}.prog-sub{font-size:12px}
+.main{max-width:720px;margin:0 auto;padding-top:14px}.week-wrap{position:relative;z-index:2}.day-pill{min-width:54px;min-height:54px;justify-content:center}.dp-type{font-size:13px}
+.beginner-start{background:linear-gradient(135deg,#17152f,#343064);border-radius:20px;color:#fff;padding:18px;margin-bottom:14px;box-shadow:0 10px 28px rgba(35,29,90,.2)}
+.beginner-kicker{font-size:11px;font-weight:900;color:#c8c0ff;letter-spacing:.3px;margin-bottom:5px}.beginner-start h2{font-size:19px;line-height:1.35;margin-bottom:7px}.beginner-start p{font-size:12px;line-height:1.6;color:rgba(255,255,255,.7);margin-bottom:14px}.beginner-start button{width:100%;min-height:52px;border:0;border-radius:14px;background:#fff;color:#4035b4;font-family:var(--sans);font-size:15px;font-weight:900;cursor:pointer}
+.rest-bar{background:linear-gradient(145deg,#5b4cdb,#765ff0);border:0;border-radius:22px;padding:16px;margin-bottom:14px;color:#fff;box-shadow:0 10px 26px rgba(71,54,180,.25);text-align:center}
+.rest-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left}.rest-heading strong{font-size:15px}.rest-heading span{font-size:10px;color:rgba(255,255,255,.7)}
+.rest-timer{font-size:56px;line-height:1;font-weight:900;color:#fff;margin:12px 0 14px;letter-spacing:1px}.rest-timer.warn{color:#ffe08a}.rest-timer.danger{color:#ffb2b2}
+.rest-actions{display:grid;grid-template-columns:1fr 1.35fr 1fr 48px;gap:7px}.rest-actions button{min-height:50px;border:1px solid rgba(255,255,255,.22);border-radius:13px;background:rgba(255,255,255,.12);color:#fff;font-family:var(--sans);font-size:12px;font-weight:900;cursor:pointer}.rest-actions .rest-btn{background:#fff;color:#5142c9;font-size:14px;padding:0}.rest-actions .sound-btn{margin:0;padding:0;background:rgba(255,255,255,.12)}
+.rest-prog-track{height:6px;background:rgba(255,255,255,.2);margin-top:12px}.rest-prog-fill{background:#fff}.rest-hint{color:rgba(255,255,255,.72);font-size:11px;min-height:17px}
+.routine-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.routine-chip{justify-content:center;min-height:50px;border-radius:14px;padding:8px;font-size:12px;text-align:center}.routine-chip strong{display:block;font-size:15px}.routine-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 6px 18px rgba(71,54,180,.18)}
+.beginner-coach-grid{display:grid;grid-template-columns:1fr;gap:9px;margin-bottom:15px}.beginner-details{background:var(--surface);border:1.5px solid var(--border);border-radius:15px;overflow:hidden;box-shadow:var(--sh)}.beginner-details summary{list-style:none;min-height:48px;display:flex;align-items:center;padding:0 14px;font-size:13px;font-weight:900;cursor:pointer}.beginner-details summary::-webkit-details-marker{display:none}.beginner-details summary::after{content:'＋';margin-left:auto;color:var(--accent);font-size:18px}.beginner-details[open] summary::after{content:'−'}.beginner-details .coach-card{border:0;border-top:1px solid var(--border);border-radius:0;box-shadow:none;margin:0}
+.ex-head{min-height:66px;padding:14px}.ex-name{font-size:16px}.ex-target{font-size:12px}.rec-toggle{min-height:48px}.rec-toggle-lbl{font-size:12px;font-weight:800}.set-title{font-size:13px}.set-check-btn{min-width:96px!important;height:48px!important;font-size:14px!important}.adj-s{height:50px!important}.rec-inp{height:50px!important;font-size:22px!important}
+.bnav{padding-top:8px}.bnav-btn{min-height:52px}.bnav-icon{font-size:22px}.bnav-label{font-size:12px;font-weight:800}.settings-hero{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1.5px solid var(--accent-mid);border-radius:18px;padding:16px;margin-bottom:18px}.settings-hero>span{font-size:26px}.settings-hero h2{font-size:20px}.settings-hero p{font-size:12px;color:var(--text-3)}
+.notion-sync-status{min-height:16px;margin:10px 0 0;font-size:12px;font-weight:800;color:rgba(255,255,255,.9)}.setup-steps{padding-left:22px;font-size:11px;line-height:1.7;color:var(--text-2)}.setup-steps code{font-size:10px;color:var(--accent);overflow-wrap:anywhere}
+.webhook-box input[type="url"]{font-size:14px}.backup-btns .ai-btn{min-height:48px}
+body.dark .beginner-start{background:linear-gradient(135deg,#252143,#3a3376)}body.dark .beginner-details{background:var(--surface)}
+@media (min-width:700px){.beginner-coach-grid{grid-template-columns:1fr 1fr}.beginner-details{align-self:start}}
+@media (max-width:380px){.rest-timer{font-size:49px}.rest-actions{grid-template-columns:1fr 1.25fr 1fr 44px}.rest-actions button{font-size:11px}.routine-chip{font-size:10px;padding:6px}.routine-chip strong{font-size:14px}}

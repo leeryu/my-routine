@@ -1,7 +1,7 @@
 {
   "name": "내 루틴",
   "short_name": "루틴",
-  "description": "헬스·교정·수영 루틴 트래커",
+  "description": "초보자를 위한 간편한 헬스 루틴 기록 앱",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -14,7 +14,6 @@
 </head>
 <body class="gym-active">
 <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="다크모드 전환">🌙</button>
-<button class="text-scale-btn" onclick="toggleTextScale()" id="textScaleBtn" aria-label="큰 글씨 모드 켜기/끄기" aria-pressed="false">가+</button>
 
 <div class="hdr">
   <div class="hdr-top">
@@ -28,7 +27,6 @@
       <div class="streak-label">🔥 연속</div>
     </div>
   </div>
-  <div class="injury-pill">⚠️ 이상근 회복기</div>
   <div class="hdr-prog-bar">
     <div class="prog-ring-wrap">
       <svg class="prog-svg" width="46" height="46" viewBox="0 0 46 46">
@@ -59,79 +57,50 @@
       </div>
       <button class="cal-btn" id="calBtn" onclick="copyWorkoutSummary()">📋 운동 요약 복사</button>
       <button class="cal-btn" onclick="exportBackup()">📤 백업</button>
+      <p class="notion-sync-status" id="notionSyncStatus"></p>
+    </div>
+    <section class="beginner-start" aria-labelledby="beginnerTitle">
+      <div class="beginner-kicker">오늘은 이것만 하면 돼요</div>
+      <h2 id="beginnerTitle">루틴을 고르고 첫 운동을 시작하세요</h2>
+      <p id="beginnerGuide">지난 기록은 자동으로 채워집니다. 무게를 확인하고 완료만 누르세요.</p>
+      <button type="button" onclick="startTodayWorkout()">운동 시작</button>
+    </section>
+    <div class="rest-bar" role="timer" aria-live="polite">
+      <div class="rest-heading"><strong>휴식 타이머</strong><span>세트 완료 시 자동 시작</span></div>
+      <div class="rest-timer" id="restDisplay">1:30</div>
+      <div class="rest-actions">
+        <button type="button" onclick="adjustRestTime(-15,event)" aria-label="휴식시간 15초 줄이기">−15초</button>
+        <button class="rest-btn" id="restBtn" type="button" onclick="toggleRest()">시작</button>
+        <button type="button" onclick="adjustRestTime(15,event)" aria-label="휴식시간 15초 추가">+15초</button>
+        <button class="sound-btn" id="soundBtn" type="button" onclick="toggleSound()" aria-label="휴식 종료음 켜기/끄기">🔕</button>
+      </div>
+      <div class="rest-prog-track"><div class="rest-prog-fill" id="restFill" style="width:100%"></div></div>
+      <div class="rest-hint" id="restHint"></div>
     </div>
     <div class="today-summary" id="todaySummary">
       <div class="ts-card"><div class="ts-val" id="tsRemain">—</div><div class="ts-lbl">남은운동</div></div>
       <div class="ts-card"><div class="ts-val" id="tsTime">—</div><div class="ts-lbl">예상시간</div></div>
       <div class="ts-card"><div class="ts-val" id="tsVolume">—</div><div class="ts-lbl">현재볼륨</div></div>
     </div>
-    <div id="guardBanner" style="display:none"></div>
     <div class="coach-nudge" id="coachNudge">🤖 코치 대기 중</div>
-    <div class="coach-grid">
-      <div class="coach-card" id="readinessCard">
+    <div class="coach-grid beginner-coach-grid">
+      <details class="beginner-details" open><summary>오늘 컨디션 입력</summary><div class="coach-card" id="readinessCard">
         <div class="coach-title">🧭 오늘 컨디션 체크</div>
         <div class="readiness-row"><label>수면</label><div class="rd-scale" id="rdSleep" role="group" aria-label="수면 점수"></div></div>
         <div class="readiness-row"><label>피로</label><div class="rd-scale" id="rdFatigue" role="group" aria-label="피로 점수"></div></div>
         <div class="readiness-row"><label>통증</label><div class="rd-scale" id="rdPain" role="group" aria-label="통증 점수"></div></div>
         <div class="coach-text" id="readinessText">오늘 운동 강도 판단 대기.</div>
-      </div>
-      <div class="coach-card" id="coachPanel">
+      </div></details>
+      <details class="beginner-details"><summary>코치 추천 보기</summary><div class="coach-card" id="coachPanel">
         <div class="coach-title">🤖 실시간 코치</div>
         <div class="coach-text" id="coachText">기록을 넣으면 다음 중량·세트 추천이 뜬다.</div>
         <div class="coach-actions" id="coachActions"></div>
-      </div>
-    </div>
-    <div class="rest-bar">
-      <div class="rest-top">
-        <div class="rest-info">
-          <div class="rest-lbl">세트 간 휴식</div>
-          <div class="rest-timer" id="restDisplay">1:30</div>
-        </div>
-        <button class="sound-btn" id="soundBtn" onclick="toggleSound()" aria-label="휴식 종료음 켜기/끄기">🔕</button>
-        <button class="rest-btn" id="restBtn" onclick="toggleRest()">시작</button>
-      </div>
-      <div class="rest-prog-track"><div class="rest-prog-fill" id="restFill" style="width:100%"></div></div>
-      <div class="rest-hint" id="restHint"></div>
+      </div></details>
     </div>
     <div class="routine-selector" id="routineSelector"></div>
     <div id="routineContent"></div>
     <button class="ai-btn" onclick="getAiFeedback()">🤖 로컬 코치 피드백</button>
     <div class="ai-result" id="aiResult"></div>
-  </div>
-
-  <!-- 재활 -->
-  <div class="tab-panel" id="tab-rehab">
-    <section class="clinical-card" id="clinicalSummary"></section>
-    <section class="weekly-goals" id="weeklyGoals"></section>
-    <div class="session-tabs"><button class="session-tab active" data-session="pilates" onclick="showSessionRoutine('pilates',this)" aria-current="page">필라테스</button><button class="session-tab" data-session="home-core" onclick="showSessionRoutine('home-core',this)">홈코어</button></div>
-    <div id="sessionRoutineContent"></div>
-    <section class="reintro-card" id="lowerBodyStatus"></section>
-  </div>
-
-  <!-- 수영 -->
-  <div class="tab-panel" id="tab-swim">
-    <div class="sec-hdr"><div class="sec-icon">🏊</div><div class="sec-title">자유형 훈련</div><div class="sec-badge">주 2~3회</div></div>
-    <div class="alert-danger">🚫 헬스 + 수영 같은 날 금지<br><span style="opacity:.7">이용 수영장별 보조기구 규정 확인</span></div>
-    
-    <div class="swim-log-box">
-      <div class="coach-title">🏊 랩 기록</div>
-      <div class="swim-log-grid">
-        <select id="swimPool"><option value="18" selected>18m 풀 (동네 실측)</option><option value="25">25m 풀</option></select>
-        <input id="swimStrokes" type="number" inputmode="numeric" placeholder="스트로크 수 (1랩)">
-        <select id="swimBreath"><option value="">호흡 느낌</option><option>편함</option><option>보통</option><option>짧음</option><option>물 들어옴</option></select>
-        <select id="swimLeft"><option value="">왼팔 감각</option><option>좋음</option><option>보통</option><option>흐트러짐</option></select>
-        <select id="swimRight"><option value="">오른팔 감각</option><option>좋음</option><option>보통</option><option>흐트러짐</option></select>
-        <textarea id="swimMemo" placeholder="오늘 수영 메모: 오른팔 캐치, 호흡, 롤링 느낌"></textarea>
-      </div>
-      <button class="swim-save" onclick="saveSwimLog()">수영 기록 저장</button>
-    </div>
-    <div id="swimRecent"></div>
-    <div id="swimList"></div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">핵심 개념</div></div>
-    <div id="swimConcepts"></div>
-    <button class="ai-btn" onclick="getSwimFeedback()">🤖 로컬 수영 코칭</button>
-    <div class="ai-result" id="swimAiResult"></div>
   </div>
 
   <!-- 기록 -->
@@ -141,33 +110,40 @@
       <div class="stat-card"><div class="stat-val" id="statMonVol">—</div><div class="stat-lbl">이번달 볼륨</div></div>
       <div class="stat-card"><div class="stat-val" id="statPRs">—</div><div class="stat-lbl">PR 기록</div></div>
     </div>
-    <div class="hist-subtabs">
-      <button class="hist-subtab active" data-panel="summary" onclick="showHistSubtab('summary',this)" aria-current="page">요약</button>
-      <button class="hist-subtab" data-panel="charts" onclick="showHistSubtab('charts',this)">차트</button>
-      <button class="hist-subtab" data-panel="log" onclick="showHistSubtab('log',this)">기록</button>
-    </div>
-
-    <div class="hist-subpanel active" id="histPanel-summary">
-      <details class="hist-sec" open>
-        <summary><div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">주간 코치 리포트</div><span class="sec-chev">▾</span></div></summary>
-        <div class="weekly-report" id="weeklyReport">기록 누적 후 분석 가능</div>
-      </details>
-      <details class="hist-sec" open>
-        <summary><div class="sec-hdr"><div class="sec-icon">🏆</div><div class="sec-title">개인 기록 (PR)</div><span class="sec-chev">▾</span></div></summary>
-        <div class="pr-board" id="prBoard"><div style="padding:16px;text-align:center;font-size:13px;color:var(--text-3)">기록 없음</div></div>
-      </details>
-      <details class="hist-sec">
-        <summary><div class="sec-hdr"><div class="sec-icon">💪</div><div class="sec-title">근육별 이번달 볼륨</div><span class="sec-chev">▾</span></div></summary>
-        <div class="muscle-grid" id="muscleGrid"></div>
-      </details>
-    </div>
-
-    <div class="hist-subpanel" id="histPanel-charts">
-      <details class="hist-sec" open>
-        <summary><div class="sec-hdr"><div class="sec-icon">📈</div><div class="sec-title">진행도 차트</div><div class="sec-badge">추정 1RM</div><span class="sec-chev">▾</span></div></summary>
-        <div class="chart-box">
-          <div class="chart-sel-row" id="chartSel"></div>
-          <div id="chartArea"><div class="chart-empty">운동을 선택하세요</div></div>
+    <details class="hist-sec" open>
+      <summary><div class="sec-hdr"><div class="sec-icon">🏆</div><div class="sec-title">개인 기록 (PR)</div><span class="sec-chev">▾</span></div></summary>
+      <div class="pr-board" id="prBoard"><div style="padding:16px;text-align:center;font-size:13px;color:var(--text-3)">기록 없음</div></div>
+    </details>
+    <details class="hist-sec" open>
+      <summary><div class="sec-hdr"><div class="sec-icon">📈</div><div class="sec-title">진행도 차트</div><div class="sec-badge">추정 1RM</div><span class="sec-chev">▾</span></div></summary>
+      <div class="chart-box">
+        <div class="chart-sel-row" id="chartSel"></div>
+        <div id="chartArea"><div class="chart-empty">운동을 선택하세요</div></div>
+      </div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">주간 코치 리포트</div><span class="sec-chev">▾</span></div></summary>
+      <div class="weekly-report" id="weeklyReport">기록 누적 후 분석 가능</div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">💪</div><div class="sec-title">근육별 이번달 볼륨</div><span class="sec-chev">▾</span></div></summary>
+      <div class="muscle-grid" id="muscleGrid"></div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">이번달 출석</div><span class="sec-chev">▾</span></div></summary>
+      <div class="cal-box" id="calBox"></div>
+      <div class="cal-legend">● 운동 완료일</div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">📊</div><div class="sec-title">주간 볼륨</div><span class="sec-chev">▾</span></div></summary>
+      <div id="histChart"></div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">🧮</div><div class="sec-title">플레이트 계산기</div><span class="sec-chev">▾</span></div></summary>
+      <div class="plate-box">
+        <div class="pc-row">
+          <input class="pc-inp" type="number" inputmode="decimal" id="pcKg" placeholder="목표 중량" oninput="calcPlates()">
+          <span class="pc-unit">kg</span>
         </div>
       </details>
       <details class="hist-sec" open>
@@ -180,7 +156,7 @@
       <details class="hist-sec" open>
         <summary><div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">이번달 출석</div><span class="sec-chev">▾</span></div></summary>
         <div class="cal-box" id="calBox"></div>
-        <div class="cal-legend">● 운동일 · <span class="cal-legend-corr">•</span> 교정 전체 수행일</div>
+        <div class="cal-legend">● 운동일</div>
       </details>
       <details class="hist-sec">
         <summary><div class="sec-hdr"><div class="sec-icon">🧮</div><div class="sec-title">플레이트 계산기</div><span class="sec-chev">▾</span></div></summary>
@@ -200,20 +176,9 @@
     </div>
   </div>
 
-  <!-- 원칙 -->
-  <div class="tab-panel" id="tab-rules">
-    <div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">운동 원칙</div></div>
-    <div class="rule-card" id="rulesList"></div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">🩻</div><div class="sec-title">부상 복귀 기준</div></div>
-    <div id="recoveryChecks"></div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">⚡</div><div class="sec-title">통증 구분</div></div>
-    <div id="painGuide"></div>
-    <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">🛠️</div><div class="sec-title">루틴 편집</div></div>
-    <div id="routineEditor"></div>
-    <div class="divider"></div>
+  <!-- 설정 -->
+  <div class="tab-panel" id="tab-settings">
+    <div class="settings-hero"><span>⚙️</span><div><h2>설정</h2><p>백업과 Notion 연동만 모았습니다.</p></div></div>
     <div class="sec-hdr"><div class="sec-icon">💾</div><div class="sec-title">데이터 관리</div></div>
     <div class="backup-box">
       <div class="backup-note" id="backupNote">마지막 백업: 확인 중…</div>
@@ -227,29 +192,24 @@
       <div id="autoBackupBox"></div>
     </div>
     <div class="divider"></div>
-    <div class="sec-hdr"><div class="sec-icon">🔗</div><div class="sec-title">외부 저장소 연동</div></div>
+    <div class="sec-hdr"><div class="sec-icon">N</div><div class="sec-title">Notion 자동 기록</div></div>
     <div class="webhook-box">
-      <div class="webhook-hint">노션 API는 브라우저에서 직접 부를 수 없어(CORS), Zapier·Make·Pipedream·구글 Apps Script 중 하나로 웹훅 주소를 만들고 그 자동화가 노션(또는 원하는 곳)에 저장하도록 연결해라. 여기엔 그 웹훅 주소만 입력하면 된다.</div>
-      <label class="webhook-toggle"><input type="checkbox" id="webhookEnabled" onchange="toggleWebhookEnabled(this.checked)"> 웹훅 전송 사용</label>
-      <input type="url" id="webhookUrl" class="webhook-url" placeholder="https://hooks.zapier.com/... 또는 Apps Script 웹앱 URL" onchange="saveWebhookUrl(this.value)" aria-label="웹훅 주소">
-      <div class="webhook-events">
-        <label><input type="checkbox" id="webhookEvent_gym_set_complete" onchange="toggleWebhookEvent('gym_set_complete',this.checked)"> 헬스 세트 완료 시</label>
-        <label><input type="checkbox" id="webhookEvent_gym_routine_complete" onchange="toggleWebhookEvent('gym_routine_complete',this.checked)"> 헬스 루틴 전체 완료 시</label>
-        <label><input type="checkbox" id="webhookEvent_swim_log" onchange="toggleWebhookEvent('swim_log',this.checked)"> 수영 기록 저장 시</label>
-        <label><input type="checkbox" id="webhookEvent_rehab_session" onchange="toggleWebhookEvent('rehab_session',this.checked)"> 재활 세션 저장 시</label>
+      <label class="webhook-toggle"><input id="notionWebhookEnabled" type="checkbox"> 루틴 완료 시 Notion에 자동 기록</label>
+      <label>중계 웹훅 URL<input id="notionWebhookUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+      <div class="backup-btns">
+        <button class="ai-btn" type="button" onclick="saveNotionWebhookSettings()">설정 저장</button>
+        <button class="ai-btn" type="button" onclick="testNotionWebhook()">시험 전송</button>
       </div>
-      <button class="ai-btn" type="button" onclick="testWebhook()">🧪 테스트 전송</button>
-      <div class="webhook-status" id="webhookStatus">아직 전송 기록 없음</div>
+      <ol class="setup-steps"><li>저장소의 <code>integrations/notion-webhook.gs</code>를 Apps Script에 배포</li><li>스크립트 속성에 Notion 토큰 저장</li><li>웹 앱 URL을 여기에 입력하고 시험 전송</li></ol>
+      <div class="backup-hint">Notion 토큰은 앱이나 GitHub에 넣지 않습니다. 운동 기록은 사람이 읽는 요약과 AI가 읽기 쉬운 구조화 데이터로 함께 저장됩니다.</div>
     </div>
   </div>
 </div>
 
 <nav class="bnav">
-  <button class="bnav-btn active" onclick="switchTab('gym')" aria-current="page"><span class="bnav-icon">🏋️</span><span class="bnav-label">헬스</span></button>
-  <button class="bnav-btn" onclick="switchTab('rehab')"><span class="bnav-icon">🧘</span><span class="bnav-label">재활</span></button>
-  <button class="bnav-btn" onclick="switchTab('swim')"><span class="bnav-icon">🏊</span><span class="bnav-label">수영</span></button>
+  <button class="bnav-btn active" onclick="switchTab('gym')"><span class="bnav-icon">🏋️</span><span class="bnav-label">오늘 운동</span></button>
   <button class="bnav-btn" onclick="switchTab('history')"><span class="bnav-icon">📊</span><span class="bnav-label">기록</span></button>
-  <button class="bnav-btn" onclick="switchTab('rules')"><span class="bnav-icon">📋</span><span class="bnav-label">원칙</span></button>
+  <button class="bnav-btn" onclick="switchTab('settings')"><span class="bnav-icon">⚙️</span><span class="bnav-label">설정</span></button>
 </nav>
 
 <div class="action-bar" id="actionBar" role="button" tabindex="0" onclick="openFocusMode()" aria-label="집중모드로 이어서 운동하기">
@@ -285,5 +245,5 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/storage-migration.js" defer></script>
-<script src="js/rehab.js" defer></script>
+<script src="js/completion-sync.js" defer></script>
 <script src="js/app.js" defer></script>
