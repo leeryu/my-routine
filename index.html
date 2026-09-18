@@ -193,11 +193,25 @@
   </div>
 </div>
 
-<nav class="bnav">
-  <button class="bnav-btn active" onclick="switchTab('gym')"><span class="bnav-icon">🏋️</span><span class="bnav-label">오늘 운동</span></button>
-  <button class="bnav-btn" onclick="switchTab('history')"><span class="bnav-icon">📊</span><span class="bnav-label">기록</span></button>
-  <button class="bnav-btn" onclick="switchTab('settings')"><span class="bnav-icon">⚙️</span><span class="bnav-label">설정</span></button>
-</nav>
+<div class="bottom-dock" id="bottomDock">
+  <button type="button" class="dock-toggle" id="dockToggle" onclick="toggleBottomDockMode()" aria-label="휴식 타이머 보기">⏱</button>
+  <nav class="bnav" id="bnav">
+    <button class="bnav-btn active" onclick="switchTab('gym')"><span class="bnav-icon">🏋️</span><span class="bnav-label">오늘 운동</span></button>
+    <button class="bnav-btn" onclick="switchTab('history')"><span class="bnav-icon">📊</span><span class="bnav-label">기록</span></button>
+    <button class="bnav-btn" onclick="switchTab('settings')"><span class="bnav-icon">⚙️</span><span class="bnav-label">설정</span></button>
+  </nav>
+  <div class="bottom-rest-bar" id="bottomRestBar">
+    <div class="brb-top">
+      <div class="brb-info"><span class="brb-label">휴식 타이머</span><span class="brb-time" id="brbDisplay">1:30</span></div>
+      <div class="brb-controls">
+        <button type="button" class="brb-adj" onclick="adjustRestTime(-15,event)" aria-label="휴식시간 15초 줄이기">−15</button>
+        <button type="button" class="brb-main" id="brbBtn" onclick="toggleRest()">시작</button>
+        <button type="button" class="brb-adj" onclick="adjustRestTime(15,event)" aria-label="휴식시간 15초 추가">+15</button>
+      </div>
+    </div>
+    <div class="brb-track"><div class="brb-fill" id="brbFill" style="width:100%"></div></div>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

@@ -1786,16 +1786,31 @@ function formatRestTime(secs) {
   return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, '0')}`;
 }
 
+/* ═══ 하단 독: 탭 메뉴 ↔ 휴식 타이머 전환 ═══ */
+let bottomDockMode = 'nav';
+function setBottomDockMode(mode) {
+  bottomDockMode = mode === 'rest' ? 'rest' : 'nav';
+  const dock = document.getElementById('bottomDock');
+  if (dock) dock.classList.toggle('mode-rest', bottomDockMode === 'rest');
+  const toggle = document.getElementById('dockToggle');
+  if (toggle) {
+    toggle.textContent = bottomDockMode === 'rest' ? '☰' : '⏱';
+    toggle.setAttribute('aria-label', bottomDockMode === 'rest' ? '탭 메뉴 보기' : '휴식 타이머 보기');
+  }
+}
+function toggleBottomDockMode() {
+  setBottomDockMode(bottomDockMode === 'rest' ? 'nav' : 'rest');
+}
+
 function renderRestTimer(state = '') {
   const display = restLeft <= 0 ? 'GO! 💪' : formatRestTime(restLeft);
   const mainDisplay = document.getElementById('restDisplay');
   const btn = document.getElementById('restBtn');
   const fill = document.getElementById('restFill');
-  const abDisplay = document.getElementById('abRestDisplay');
-  const abRest = document.getElementById('abRest');
-  const focusDisplay = document.getElementById('focusRestDisplay');
-  const focusBtn = document.getElementById('focusRestBtn');
-  const focusBox = document.getElementById('focusRestBox');
+  const brbDisplay = document.getElementById('brbDisplay');
+  const brbBtn = document.getElementById('brbBtn');
+  const brbFill = document.getElementById('brbFill');
+  const brbBar = document.getElementById('bottomRestBar');
 
   if (mainDisplay) {
     mainDisplay.textContent = display;
@@ -1806,18 +1821,14 @@ function renderRestTimer(state = '') {
     fill.style.width = restLeft <= 0 ? '100%' : `${Math.max(0, (restLeft / restTotal) * 100)}%`;
     fill.style.background = state === 'danger' ? 'var(--red)' : state === 'warn' ? 'var(--yellow)' : state === 'done' ? 'var(--green)' : 'var(--accent)';
   }
-  if (abDisplay) abDisplay.textContent = display;
-  if (abRest) {
-    abRest.classList.remove('running', 'warn', 'danger');
-    if (restRunning) abRest.classList.add('running');
-    if (state === 'danger' || state === 'warn') abRest.classList.add(state);
+  if (brbDisplay) brbDisplay.textContent = display;
+  if (brbBtn) brbBtn.textContent = restRunning ? '초기화' : '시작';
+  if (brbFill) {
+    brbFill.style.width = restLeft <= 0 ? '100%' : `${Math.max(0, (restLeft / restTotal) * 100)}%`;
   }
-  if (focusDisplay) focusDisplay.textContent = display;
-  if (focusBtn) focusBtn.textContent = restRunning ? '초기화' : '시작';
-  if (focusBox) {
-    focusBox.classList.remove('running', 'warn', 'danger');
-    if (restRunning) focusBox.classList.add('running');
-    if (state === 'danger' || state === 'warn') focusBox.classList.add(state);
+  if (brbBar) {
+    brbBar.classList.remove('warn', 'danger');
+    if (state === 'danger' || state === 'warn') brbBar.classList.add(state);
   }
 }
 
@@ -1900,6 +1911,7 @@ function restTick() {
     playDoneBeep();
     showToast('⏱ 휴식 완료!');
     try { navigator.vibrate?.([100, 50, 100]); } catch {}
+    setBottomDockMode('nav');
     return;
   }
   renderRestTimer(restLeft <= 10 ? 'danger' : restLeft <= 30 ? 'warn' : '');
@@ -1913,6 +1925,7 @@ function toggleRest(autoStart) {
     restLeft = restTotal;
     releaseWakeLock();
     renderRestTimer();
+    setBottomDockMode('nav');
     return;
   }
   if (restRunning) return;
@@ -1924,6 +1937,7 @@ function toggleRest(autoStart) {
   acquireWakeLock();
   if (soundOn()) ensureAudio();
   restInterval = setInterval(restTick, 250);
+  setBottomDockMode('rest');
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;

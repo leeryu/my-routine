@@ -48,12 +48,29 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .dp-check{font-size:12px;line-height:1}
 
 /* BOTTOM NAV */
-.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:6px 0 max(6px,env(safe-area-inset-bottom));z-index:100;box-shadow:0 -4px 20px rgba(80,60,180,.07)}
+.bottom-dock{position:fixed;bottom:0;left:0;right:0;z-index:100}
+.bnav{background:var(--surface);border-top:1px solid var(--border);display:flex;padding:6px 0 max(6px,env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(80,60,180,.07)}
 .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 0;font-family:var(--sans)}
 .bnav-icon{font-size:20px;line-height:1;transition:transform .15s}
 .bnav-label{font-size:10px;font-weight:600;color:var(--text-3)}
 .bnav-btn.active .bnav-label{color:var(--accent)}
 .bnav-btn.active .bnav-icon{transform:scale(1.12)}
+/* 하단 독: 탭 메뉴 ↔ 휴식 타이머 전환 */
+.dock-toggle{position:absolute;left:50%;top:-18px;transform:translateX(-50%);width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);color:var(--text-2);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.14);z-index:101}
+.bottom-rest-bar{display:none;background:linear-gradient(145deg,#5b4cdb,#765ff0);padding:10px 16px max(10px,env(safe-area-inset-bottom));box-shadow:0 -4px 20px rgba(80,60,180,.2)}
+.bottom-dock.mode-rest .bnav{display:none}
+.bottom-dock.mode-rest .bottom-rest-bar{display:block}
+.brb-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brb-info{display:flex;flex-direction:column;min-width:0}
+.brb-label{font-size:10px;font-weight:800;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px}
+.brb-time{font-family:var(--mono);font-size:32px;font-weight:900;color:#fff;line-height:1.15;transition:color .3s}
+.bottom-rest-bar.warn .brb-time{color:#ffe08a}
+.bottom-rest-bar.danger .brb-time{color:#ffb2b2}
+.brb-controls{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.brb-adj{min-height:40px;padding:0 10px;border:1px solid rgba(255,255,255,.28);border-radius:11px;background:rgba(255,255,255,.14);color:#fff;font-family:var(--sans);font-size:12px;font-weight:900;cursor:pointer}
+.brb-main{min-height:44px;padding:0 16px;border:0;border-radius:12px;background:#fff;color:#5142c9;font-family:var(--sans);font-size:14px;font-weight:900;cursor:pointer}
+.brb-track{height:4px;background:rgba(255,255,255,.22);border-radius:99px;margin-top:9px;overflow:hidden}
+.brb-fill{height:100%;background:#fff;border-radius:99px;transition:width 1s linear,background .3s}
 .tab-panel{display:none}.tab-panel.active{display:block}
 .main{padding:16px 16px calc(130px + env(safe-area-inset-bottom));padding-top:14px;max-width:720px;margin:0 auto}
 body.gym-active .main{padding-bottom:calc(190px + env(safe-area-inset-bottom))}
