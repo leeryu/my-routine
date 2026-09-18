@@ -81,6 +81,55 @@
     };
   }
 
+  function buildExerciseCompletion(input) {
+    const completedAt = input.completedAt || new Date().toISOString();
+    const id = `gym-ex:${input.routineKey}:${input.exerciseIdx}:${input.date}`;
+    return {
+      id,
+      type: 'gym-exercise',
+      date: input.date,
+      routineKey: input.routineKey,
+      routineLabel: input.routineLabel,
+      exerciseIdx: Number(input.exerciseIdx),
+      exerciseName: input.exerciseName,
+      exerciseId: input.exerciseId || null,
+      completedAt,
+      summary: input.summary || '',
+      rpe: input.rpe || '',
+      pain: input.pain || '',
+      note: input.note || '',
+    };
+  }
+
+  function buildExerciseNotionEvent(completion) {
+    const exercise = clone(completion);
+    const details = [
+      exercise.summary || '세트 상세 없음',
+      exercise.rpe ? `RPE ${exercise.rpe}` : '',
+      exercise.pain ? `통증 ${exercise.pain}` : '',
+      exercise.note ? `메모 ${exercise.note}` : '',
+    ].filter(Boolean).join(' / ');
+    const title = `${exercise.date} ${exercise.routineLabel} · ${exercise.exerciseName}`;
+    const markdown = [
+      `# ${title}`,
+      '',
+      `- **세트 기록:** ${details}`,
+      '',
+      '```json',
+      JSON.stringify(exercise, null, 2),
+      '```',
+    ].join('\n');
+    return {
+      schemaVersion: 1,
+      event: 'exercise.completed',
+      eventId: exercise.id,
+      createdAt: exercise.completedAt,
+      destination: { type: 'notion' },
+      notion: { title, markdown },
+      exercise,
+    };
+  }
+
   function enqueue(outbox, event) {
     const next = Array.isArray(outbox) ? clone(outbox) : [];
     if (!next.some((item) => item.eventId === event.eventId)) next.push(clone(event));
@@ -91,5 +140,5 @@
     return (Array.isArray(outbox) ? outbox : []).filter((item) => item.eventId !== eventId);
   }
 
-  return { buildWorkoutCompletion, buildNotionEvent, enqueue, markDelivered };
+  return { buildWorkoutCompletion, buildNotionEvent, buildExerciseCompletion, buildExerciseNotionEvent, enqueue, markDelivered };
 });

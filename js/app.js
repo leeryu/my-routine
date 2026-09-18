@@ -188,7 +188,7 @@ const ROUTINES = {
   },
   C: {
     label: 'C루틴',
-    day: '토요일',
+    day: '일요일',
     tag: '상체 Push · 5종목',
     exercises: [
       {
@@ -269,8 +269,8 @@ const DAY_INFO = [
   { label: '수', type: '휴식', rk: null },
   { label: '목', type: 'B', rk: 'B' },
   { label: '금', type: '휴식', rk: null },
-  { label: '토', type: 'C', rk: 'C' },
-  { label: '일', type: '휴식', rk: null },
+  { label: '토', type: '휴식', rk: null },
+  { label: '일', type: 'C', rk: 'C' },
 ];
 const BAR_WEIGHTS = [
   { label: '바벨 20kg', kg: 20 },
@@ -959,6 +959,32 @@ async function testNotionWebhook() {
     showToast('⚠️ 시험 전송 실패 — URL·네트워크 확인');
   }
 }
+function enqueueExerciseNotionCompletion(idx, ex, rec) {
+  const config = getNotionWebhookConfig();
+  if (!config.enabled || !isValidWebhookUrl(config.url)) return;
+  const completion = CompletionSync.buildExerciseCompletion({
+    routineKey: currentRoutine,
+    routineLabel: ROUTINES[currentRoutine].label,
+    date: todayStr(),
+    exerciseIdx: idx,
+    exerciseName: ex.name,
+    exerciseId: ex.id || null,
+    completedAt: new Date().toISOString(),
+    summary: rec.summary || '',
+    rpe: rec.rpe || '',
+    pain: rec.pain || '',
+    note: rec.note || '',
+  });
+  const delivered = gls(NOTION_WEBHOOK_DELIVERED) || [];
+  if (delivered.includes(completion.id)) return;
+  const event = CompletionSync.buildExerciseNotionEvent(completion);
+  sls(
+    NOTION_WEBHOOK_OUTBOX,
+    CompletionSync.enqueue(gls(NOTION_WEBHOOK_OUTBOX) || [], event),
+  );
+  setNotionSyncStatus('📨 Notion 기록 대기 중…');
+  flushNotionWebhookOutbox();
+}
 function enqueueNotionCompletion(completion) {
   const config = getNotionWebhookConfig();
   if (!config.enabled || !isValidWebhookUrl(config.url)) return;
@@ -1522,7 +1548,10 @@ function toggleSetCheck(idx, s) {
   rec.note = document.getElementById(`note_${idx}`)?.value || rec.note || '';
   saveRecord(rKey, rec);
   document.getElementById('ex-' + idx)?.classList.toggle('done', allChecked);
-  if (allChecked) openNextExercise(idx);
+  if (allChecked) {
+    enqueueExerciseNotionCompletion(idx, ex, rec);
+    openNextExercise(idx);
+  }
   updateProgress();
 }
 function saveEx(idx, silent) {
@@ -2830,7 +2859,7 @@ initStorage().then(async () => {
   buildWeekStrip();
   buildSelector();
   renderReadiness();
-  showRoutine({ 1: 'A', 4: 'B', 6: 'C' }[new Date().getDay()] || 'A');
+  showRoutine({ 1: 'A', 4: 'B', 0: 'C' }[new Date().getDay()] || 'A');
   updateCoachPanel();
   renderRestTimer();
   updateBackupNote();
