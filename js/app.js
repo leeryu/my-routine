@@ -93,7 +93,7 @@ const ROUTINES = {
   },
   B: {
     label: 'B루틴',
-    day: '목요일',
+    day: '수요일',
     tag: 'Push · 등 보조 · 7종목',
     exercises: [
       {
