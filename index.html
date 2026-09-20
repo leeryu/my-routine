@@ -136,35 +136,14 @@
           <input class="pc-inp" type="number" inputmode="decimal" id="pcKg" placeholder="목표 중량" oninput="calcPlates()">
           <span class="pc-unit">kg</span>
         </div>
-      </details>
-      <details class="hist-sec" open>
-        <summary><div class="sec-hdr"><div class="sec-icon">📊</div><div class="sec-title">주간 볼륨</div><span class="sec-chev">▾</span></div></summary>
-        <div id="histChart"></div>
-      </details>
-    </div>
-
-    <div class="hist-subpanel" id="histPanel-log">
-      <details class="hist-sec" open>
-        <summary><div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">이번달 출석</div><span class="sec-chev">▾</span></div></summary>
-        <div class="cal-box" id="calBox"></div>
-        <div class="cal-legend">● 운동일</div>
-      </details>
-      <details class="hist-sec">
-        <summary><div class="sec-hdr"><div class="sec-icon">🧮</div><div class="sec-title">플레이트 계산기</div><span class="sec-chev">▾</span></div></summary>
-        <div class="plate-box">
-          <div class="pc-row">
-            <input class="pc-inp" type="number" inputmode="decimal" id="pcKg" placeholder="목표 중량" oninput="calcPlates()">
-            <span class="pc-unit">kg</span>
-          </div>
-          <div class="pc-bar-sel" id="pcBarSel"></div>
-          <div class="pc-result" id="pcResult"><div class="pc-empty">중량을 입력하세요</div></div>
-        </div>
-      </details>
-      <details class="hist-sec">
-        <summary><div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">최근 운동</div><span class="sec-chev">▾</span></div></summary>
-        <div id="histLog"></div>
-      </details>
-    </div>
+        <div class="pc-bar-sel" id="pcBarSel"></div>
+        <div class="pc-result" id="pcResult"><div class="pc-empty">중량을 입력하세요</div></div>
+      </div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">최근 운동</div><span class="sec-chev">▾</span></div></summary>
+      <div id="histLog"></div>
+    </details>
   </div>
 
   <!-- 데일리 -->
