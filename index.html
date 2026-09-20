@@ -112,6 +112,10 @@
       <summary><div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">주간 코치 리포트</div><span class="sec-chev">▾</span></div></summary>
       <div class="weekly-report" id="weeklyReport">기록 누적 후 분석 가능</div>
     </details>
+    <details class="hist-sec" open>
+      <summary><div class="sec-hdr"><div class="sec-icon">📆</div><div class="sec-title">주간 요약</div><span class="sec-chev">▾</span></div></summary>
+      <div class="ws-summary-box" id="weeklySummaryBox"><div class="pc-empty">기록이 쌓이면 표시됨</div></div>
+    </details>
     <details class="hist-sec">
       <summary><div class="sec-hdr"><div class="sec-icon">💪</div><div class="sec-title">근육별 이번달 볼륨</div><span class="sec-chev">▾</span></div></summary>
       <div class="muscle-grid" id="muscleGrid"></div>
@@ -163,6 +167,27 @@
     </div>
   </div>
 
+  <!-- 데일리 -->
+  <div class="tab-panel" id="tab-daily">
+    <div id="mondayRecoveryBox"></div>
+    <details class="hist-sec" open>
+      <summary><div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">주간 스케줄</div><span class="sec-chev">▾</span></div></summary>
+      <div class="ws-box" id="weeklyScheduleBox"></div>
+    </details>
+    <details class="hist-sec" open>
+      <summary><div class="sec-hdr"><div class="sec-icon">🍚</div><div class="sec-title">오늘 칼로리·매크로</div><span class="sec-chev">▾</span></div></summary>
+      <div id="calorieTableBox"></div>
+    </details>
+    <details class="hist-sec" open>
+      <summary><div class="sec-hdr"><div class="sec-icon">📝</div><div class="sec-title">오늘 기록</div><span class="sec-chev">▾</span></div></summary>
+      <div id="dailyLogBox"></div>
+    </details>
+    <details class="hist-sec">
+      <summary><div class="sec-hdr"><div class="sec-icon">🦵</div><div class="sec-title">하체 재도입 트래커</div><span class="sec-chev">▾</span></div></summary>
+      <div id="lowerBodyBox"></div>
+    </details>
+  </div>
+
   <!-- 설정 -->
   <div class="tab-panel" id="tab-settings">
     <div class="settings-hero"><span>⚙️</span><div><h2>설정</h2><p>백업과 Notion 연동만 모았습니다.</p></div></div>
@@ -198,6 +223,7 @@
   <nav class="bnav" id="bnav">
     <button class="bnav-btn active" onclick="switchTab('gym')"><span class="bnav-icon">🏋️</span><span class="bnav-label">오늘 운동</span></button>
     <button class="bnav-btn" onclick="switchTab('history')"><span class="bnav-icon">📊</span><span class="bnav-label">기록</span></button>
+    <button class="bnav-btn" onclick="switchTab('daily')"><span class="bnav-icon">📅</span><span class="bnav-label">데일리</span></button>
     <button class="bnav-btn" onclick="switchTab('settings')"><span class="bnav-icon">⚙️</span><span class="bnav-label">설정</span></button>
   </nav>
   <div class="bottom-rest-bar" id="bottomRestBar">
@@ -217,4 +243,5 @@
 
 <script src="js/storage-migration.js" defer></script>
 <script src="js/completion-sync.js" defer></script>
+<script src="js/progression.js" defer></script>
 <script src="js/app.js" defer></script>

@@ -453,3 +453,43 @@ body.dark .report-coach{background:rgba(0,0,0,.12)}
 body.dark .beginner-start{background:linear-gradient(135deg,#252143,#3a3376)}body.dark .beginner-details{background:var(--surface)}
 @media (min-width:700px){.beginner-coach-grid{grid-template-columns:1fr 1fr}.beginner-details{align-self:start}}
 @media (max-width:380px){.rest-timer{font-size:49px}.rest-actions{grid-template-columns:1fr 1.25fr 1fr 44px}.rest-actions button{font-size:11px}.routine-chip{font-size:10px;padding:6px}.routine-chip strong{font-size:14px}}
+
+/* ═══ 데일리 탭: 주간 스케줄 / 칼로리표 / 매일 기록 / 하체 트래커 ═══ */
+.ws-box{display:flex;flex-direction:column;gap:6px}
+.ws-note{font-size:11px;font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:8px 10px;margin-bottom:2px}
+.ws-row{display:flex;align-items:center;gap:12px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px}
+.ws-row.today{border-color:var(--accent);background:var(--accent-soft)}
+.ws-day{width:24px;flex-shrink:0;font-size:12px;font-weight:900;color:var(--text-3)}
+.ws-row.today .ws-day{color:var(--accent)}
+.ws-label{font-size:13px;font-weight:700;color:var(--text)}
+.mrc-check-row{margin:8px 0;font-size:13px;font-weight:700;color:var(--text-2)}
+.mrc-check-row label{display:flex;align-items:center;gap:8px}
+.mrc-check-row input{width:20px;height:20px;accent-color:var(--accent)}
+.cal-type-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cal-target-card{background:linear-gradient(145deg,#5b4cdb,#765ff0);border-radius:16px;padding:16px;color:#fff;text-align:center}
+.cal-target-kcal{font-family:var(--mono);font-size:26px;font-weight:900}
+.cal-target-macros{display:flex;justify-content:center;gap:16px;margin-top:6px;font-size:12px;font-weight:700;color:rgba(255,255,255,.85)}
+.dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.dl-grid label{font-size:11px;font-weight:800;color:var(--text-2)}
+.dl-grid input{display:block;width:100%;min-height:44px;margin-top:5px;padding:0 11px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-family:var(--mono);font-size:15px;-webkit-appearance:none}
+.lb-stage-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh);margin-bottom:10px}
+.lb-stage-num{font-size:11px;font-weight:900;color:var(--accent);letter-spacing:.5px}
+.lb-stage-name{font-size:17px;font-weight:900;margin:2px 0 8px}
+.lb-stage-meta{display:flex;gap:8px;flex-wrap:wrap}
+.lb-stage-meta span{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:800;color:var(--text-2)}
+.lb-streak{margin-top:10px;font-size:12px;color:var(--text-2)}
+.lb-check-row{margin:7px 0;font-size:13px;font-weight:700;color:var(--text-2)}
+.lb-check-row label{display:flex;align-items:center;gap:8px}
+.lb-check-row input{width:20px;height:20px;accent-color:var(--accent)}
+.lb-session-form .quick-btn{width:100%;margin-top:6px}
+.lb-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.lb-actions .quick-btn[disabled]{opacity:.45;cursor:not-allowed}
+.lb-regress-hint{font-size:11px;color:var(--text-3);margin-top:8px}
+.lb-history{margin-top:12px;display:flex;flex-direction:column;gap:5px}
+.lb-hist-row{font-size:11px;font-weight:700;padding:7px 10px;border-radius:9px;background:var(--bg);border:1px solid var(--border);color:var(--text-2)}
+.lb-hist-row.pass{border-color:var(--green);color:var(--green)}
+.lb-hist-row.fail{border-color:var(--red);color:var(--red)}
+.ws-summary-box{display:flex;flex-direction:column;gap:6px}
+.ws-summary-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:10px 12px}
+.ws-summary-lbl{font-size:12px;font-weight:700;color:var(--text-2)}
+.ws-summary-val{font-family:var(--mono);font-size:13px;font-weight:900;color:var(--text)}

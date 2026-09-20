@@ -140,8 +140,10 @@ test('version 9 backup conversion ignores the current browser flags', () => {
   });
   assert.equal(result.storageSchemaVersion, migration.CURRENT_SCHEMA_VERSION);
   assert.equal(result.migrV10, true);
-  assert.deepEqual(result['rec:B_2_2026-07-10'], { name: 'shoulder' });
+  // v9 B_1(숄더프레스) -> v10 B_2 -> v12 B_2(keep) -> v13 B_3(새 순서에서 숄더프레스 자리)
+  assert.deepEqual(result['rec:B_3_2026-07-10'], { name: 'shoulder' });
   assert.equal(result['rec:B_1_2026-07-10'], undefined);
+  assert.equal(result['rec:B_2_2026-07-10'], undefined);
 });
 
 test('unknown backup schema version is rejected', () => {
@@ -237,12 +239,21 @@ test('version 10 backup upgrades metadata without changing records', () => {
   const result = migration.convertBackupPayload({ schemaVersion: 10, data: original });
   assert.equal(result.storageSchemaVersion, migration.CURRENT_SCHEMA_VERSION);
   assert.deepEqual(result['rec:A_0_2026-07-31'], original['rec:A_0_2026-07-31']);
-  assert.equal(result['pr:B_1'], 40);
+  // v10 B_1(랫풀다운) -> v12 B_1(keep) -> v13 B_5(새 순서에서 랫풀다운 자리)
+  assert.equal(result['pr:B_5'], 40);
 });
 
 test('current backup round trip preserves session and legacy records', () => {
-  const data = { storageSchemaVersion: migration.CURRENT_SCHEMA_VERSION, 'rec:A_0_2026-07-31': { kg_0: 35 }, 'rec:B_6_2026-07-31': { exerciseId: 'pallof-press', kg_0: 5 }, 'rec:C_0_2026-07-31': { kg_0: 20 }, 'prExerciseId:B_6': 'pallof-press', 'session:pilates:2026-07-31': { minutes: 50 }, 'session:home-core:2026-07-31': { completed: [true] }, clinicalProfile: { version: 1 }, 'migrationStatus:v12': { status: 'completed' }, 'migrationBackup:v12': { sourceSchemaVersion: 11, keys: { storageSchemaVersion: 11 } } };
+  const data = { storageSchemaVersion: migration.CURRENT_SCHEMA_VERSION, 'rec:A_0_2026-07-31': { kg_0: 35 }, 'rec:B_0_2026-07-31': { kg_0: 20 }, 'archivedRec:B_pallof-press_2026-07-31': { exerciseId: 'pallof-press', kg_0: 5 }, 'archivedRec:C_0_2026-07-31': { kg_0: 20 }, 'archivedPrExerciseId:B_pallof-press': 'pallof-press', 'session:pilates:2026-07-31': { minutes: 50 }, 'session:home-core:2026-07-31': { completed: [true] }, clinicalProfile: { version: 1 }, 'migrationStatus:v13': { status: 'completed' }, 'migrationBackup:v13': { sourceSchemaVersion: 12, keys: { storageSchemaVersion: 12 } } };
   assert.deepEqual(migration.convertBackupPayload({ schemaVersion: migration.CURRENT_SCHEMA_VERSION, data }), data);
+});
+
+test('v12 backup upgrades straight to v13 without a redundant v11 -> v12 pass', () => {
+  const original = { storageSchemaVersion: 12, 'rec:B_0_2026-09-01': { name: 'chest press' }, 'rec:B_6_2026-09-01': { exerciseId: 'pallof-press', kg_0: 5 } };
+  const result = migration.convertBackupPayload({ schemaVersion: 12, data: original });
+  assert.equal(result.storageSchemaVersion, migration.CURRENT_SCHEMA_VERSION);
+  assert.deepEqual(result['rec:B_1_2026-09-01'], { name: 'chest press' });
+  assert.deepEqual(result['archivedRec:B_pallof-press_2026-09-01'], { exerciseId: 'pallof-press', kg_0: 5 });
 });
 
 test('v11 -> v12: leg extension and pallof shift down while crunch/side-plank are archived, not deleted', () => {
@@ -295,6 +306,66 @@ test('v11 -> v12: weightOverrides:B keeps overrides for shifted exercises and dr
   });
   assert.equal(output.ok, true);
   assert.deepEqual(output.result['weightOverrides:B'], { 0: 10, 5: 20, 6: 2 });
+});
+
+test('v12 -> v13: B routine reorders to 덤벨로우·체스트프레스·레터럴레이즈·숄더프레스·리버스펙덱·랫풀다운·레그익스텐션, 팔로프프레스 archived', () => {
+  const input = {
+    storageSchemaVersion: 12,
+    'rec:B_0_2026-09-01': { name: 'chest press' },
+    'pr:B_0': 40,
+    'rec:B_1_2026-09-01': { name: 'lat pulldown' },
+    'pr:B_1': 30,
+    'rec:B_2_2026-09-01': { name: 'shoulder press' },
+    'rec:B_3_2026-09-01': { name: 'dumbbell row' },
+    'pr:B_3': 16,
+    'rec:B_4_2026-09-01': { name: 'lateral raise' },
+    'rec:B_5_2026-09-01': { name: 'leg extension' },
+    'rec:B_6_2026-09-01': { exerciseId: 'pallof-press', kg_0: 5 },
+    'pr:B_6': 5,
+    'prExerciseId:B_6': 'pallof-press',
+  };
+  const output = migration.transformV12ToV13(input);
+  assert.equal(output.ok, true);
+  assert.deepEqual(output.result['rec:B_1_2026-09-01'], { name: 'chest press' });
+  assert.equal(output.result['pr:B_1'], 40);
+  assert.deepEqual(output.result['rec:B_5_2026-09-01'], { name: 'lat pulldown' });
+  assert.equal(output.result['pr:B_5'], 30);
+  assert.deepEqual(output.result['rec:B_3_2026-09-01'], { name: 'shoulder press' });
+  assert.deepEqual(output.result['rec:B_0_2026-09-01'], { name: 'dumbbell row' });
+  assert.equal(output.result['pr:B_0'], 16);
+  assert.deepEqual(output.result['rec:B_2_2026-09-01'], { name: 'lateral raise' });
+  assert.deepEqual(output.result['rec:B_6_2026-09-01'], { name: 'leg extension' });
+  // 팔로프프레스는 삭제가 아니라 보존
+  assert.deepEqual(output.result['archivedRec:B_pallof-press_2026-09-01'], { exerciseId: 'pallof-press', kg_0: 5 });
+  assert.equal(output.result['archivedPr:B_pallof-press'], 5);
+  assert.equal(output.result['archivedPrExerciseId:B_pallof-press'], 'pallof-press');
+  assert.equal(output.result['prExerciseId:B_6'], undefined);
+});
+
+test('v12 -> v13: C routine records are archived, not deleted, regardless of index', () => {
+  const output = migration.transformV12ToV13({
+    storageSchemaVersion: 12,
+    'rec:C_0_2026-08-30': { name: 'chest press' },
+    'pr:C_0': 20,
+    'rec:C_4_2026-08-30': { name: 'pushdown' },
+    'prExerciseId:C_4': 'cable-pushdown',
+  });
+  assert.equal(output.ok, true);
+  assert.deepEqual(output.result['archivedRec:C_0_2026-08-30'], { name: 'chest press' });
+  assert.equal(output.result['archivedPr:C_0'], 20);
+  assert.deepEqual(output.result['archivedRec:C_4_2026-08-30'], { name: 'pushdown' });
+  assert.equal(output.result['archivedPrExerciseId:C_4'], 'cable-pushdown');
+  assert.equal(output.result['rec:C_0_2026-08-30'], undefined);
+  assert.equal(output.result['pr:C_0'], undefined);
+});
+
+test('v12 -> v13: weightOverrides:B moves with the new indexes and drops the archived one', () => {
+  const output = migration.transformV12ToV13({
+    storageSchemaVersion: 12,
+    'weightOverrides:B': { 0: 40, 1: 30, 3: 14, 6: 2.5 },
+  });
+  assert.equal(output.ok, true);
+  assert.deepEqual(output.result['weightOverrides:B'], { 1: 40, 5: 30, 0: 14 });
 });
 
 test('internal recovery backups are protected from overwrite on import', () => {

@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const CURRENT_SCHEMA_VERSION = 12;
+  const CURRENT_SCHEMA_VERSION = 13;
   const B_RECORD_RE = /^rec:B_([1-6])_(\d{4}-\d{2}-\d{2})$/;
   const B_PR_RE = /^pr:B_([1-6])$/;
 
@@ -152,6 +152,94 @@
     return { ok: true, original, result, moves, conflicts: [] };
   }
 
+  /*
+   * v12 -> v13: B루틴이 (덤벨로우, 체스트프레스, 레터럴레이즈, 숄더프레스,
+   * 리버스펙덱, 랫풀다운, 레그익스텐션) 순서·구성으로 재편된다. 리버스펙덱은
+   * B에 새로 들어오는 종목이라 과거 기록이 없고, 팔로프프레스는 B에서
+   * 빠지므로 기존 크런치/사이드플랭크 archive 패턴과 동일하게 기록을
+   * 삭제하지 않고 archivedRec:/archivedPr:로 옮겨 보존한다.
+   *
+   * 같은 개편에서 C루틴(일요일 웨이트)이 주간 스케줄에서 완전히 빠지고
+   * 수영으로 대체되므로, C의 모든 rec:/pr:/prExerciseId: 기록도 인덱스와
+   * 무관하게 전부 archivedRec:C_.../archivedPr:C_.../archivedPrExerciseId:C_...
+   * 로 보존한다(삭제 아님).
+   */
+  const B_V13_INDEX_MAP = { 0: 1, 1: 5, 2: 3, 3: 0, 4: 2, 5: 6 };
+  const B_V13_ARCHIVE_TAG = { 6: 'pallof-press' };
+
+  function bV13TargetForIdx(idx) {
+    if (Object.prototype.hasOwnProperty.call(B_V13_ARCHIVE_TAG, idx))
+      return { kind: 'archive', tag: B_V13_ARCHIVE_TAG[idx] };
+    if (Object.prototype.hasOwnProperty.call(B_V13_INDEX_MAP, idx))
+      return { kind: 'shift', newIdx: B_V13_INDEX_MAP[idx] };
+    return { kind: 'keep' };
+  }
+
+  function transformV12ToV13(source) {
+    const original = clone(source || {});
+    const result = clone(original);
+    const moves = [];
+    const KEY_KINDS = [
+      { re: /^rec:B_(\d+)_(\d{4}-\d{2}-\d{2})$/, archive: (tag, m) => `archivedRec:B_${tag}_${m[2]}`, shift: (newIdx, m) => `rec:B_${newIdx}_${m[2]}` },
+      { re: /^pr:B_(\d+)$/, archive: (tag) => `archivedPr:B_${tag}`, shift: (newIdx) => `pr:B_${newIdx}` },
+      { re: /^prExerciseId:B_(\d+)$/, archive: (tag) => `archivedPrExerciseId:B_${tag}`, shift: (newIdx) => `prExerciseId:B_${newIdx}` },
+    ];
+    const C_KEY_KINDS = [
+      { re: /^rec:C_(\d+)_(\d{4}-\d{2}-\d{2})$/, archive: (m) => `archivedRec:C_${m[1]}_${m[2]}` },
+      { re: /^pr:C_(\d+)$/, archive: (m) => `archivedPr:C_${m[1]}` },
+      { re: /^prExerciseId:C_(\d+)$/, archive: (m) => `archivedPrExerciseId:C_${m[1]}` },
+    ];
+    Object.keys(original).forEach((key) => {
+      for (const { re, archive } of C_KEY_KINDS) {
+        const m = key.match(re);
+        if (!m) continue;
+        moves.push({ from: key, to: archive(m), value: clone(original[key]) });
+        return;
+      }
+      for (const { re, archive, shift } of KEY_KINDS) {
+        const m = key.match(re);
+        if (!m) continue;
+        const idx = Number(m[1]);
+        const target = bV13TargetForIdx(idx);
+        if (target.kind === 'keep') return;
+        const to = target.kind === 'archive' ? archive(target.tag, m) : shift(target.newIdx, m);
+        moves.push({ from: key, to, value: clone(original[key]) });
+        return;
+      }
+    });
+
+    const wKey = 'weightOverrides:B';
+    let overridesMove = null;
+    if (Object.prototype.hasOwnProperty.call(original, wKey)) {
+      const oldOverrides = original[wKey] || {};
+      const nextOverrides = {};
+      Object.keys(oldOverrides).forEach((idxStr) => {
+        const target = bV13TargetForIdx(Number(idxStr));
+        if (target.kind === 'keep') nextOverrides[idxStr] = oldOverrides[idxStr];
+        else if (target.kind === 'shift') nextOverrides[String(target.newIdx)] = oldOverrides[idxStr];
+        // archived (old 팔로프프레스) override is a default-weight
+        // preference, not workout history — it is dropped, not moved.
+      });
+      overridesMove = { key: wKey, value: nextOverrides };
+    }
+
+    const moveSources = new Set(moves.map((mv) => mv.from));
+    const conflicts = moves
+      .filter((mv) => Object.prototype.hasOwnProperty.call(original, mv.to) && !moveSources.has(mv.to))
+      .map((mv) => ({ from: mv.from, to: mv.to, sourceValue: clone(mv.value), targetValue: clone(original[mv.to]) }));
+
+    if (conflicts.length) {
+      return { ok: false, original, result: original, moves, conflicts };
+    }
+
+    moves.forEach((move) => delete result[move.from]);
+    moves.forEach((move) => {
+      result[move.to] = clone(move.value);
+    });
+    if (overridesMove) result[overridesMove.key] = overridesMove.value;
+    return { ok: true, original, result, moves, conflicts: [] };
+  }
+
   function classifyStorage(source) {
     const snapshot = source || {};
     const version = Number(snapshot.storageSchemaVersion) || null;
@@ -211,7 +299,10 @@
       key.startsWith('sessionRevision:') ||
       key === 'wh' ||
       key === 'swimLogs' ||
-      key === 'streak'
+      key === 'streak' ||
+      key === 'dailyLog' ||
+      key === 'lowerBodyProgress' ||
+      key === 'weeklyRecovery'
     );
   }
 
@@ -220,7 +311,7 @@
       throw new Error('invalid backup payload');
     const startVersion = payload.schemaVersion;
     if (startVersion === CURRENT_SCHEMA_VERSION) return clone(payload.data);
-    if (![9, 10, 11].includes(startVersion))
+    if (![9, 10, 11, 12].includes(startVersion))
       throw new Error(`unsupported backup schema version: ${startVersion}`);
 
     let data = clone(payload.data);
@@ -235,14 +326,24 @@
       data.migrV10 = true;
     }
     // v10 -> v11 never renamed identity keys, so v9/v10 backups fall
-    // straight through to the v11 -> v12 B-routine reindex below.
-    const converted12 = transformV11ToV12(data);
-    if (!converted12.ok) {
+    // straight through to the v11 -> v12 B-routine reindex below. A v12
+    // backup is already in that shape, so it skips straight to v12 -> v13.
+    if (startVersion !== 12) {
+      const converted12 = transformV11ToV12(data);
+      if (!converted12.ok) {
+        const error = new Error('backup has conflicting B routine keys');
+        error.conflicts = converted12.conflicts;
+        throw error;
+      }
+      data = converted12.result;
+    }
+    const converted13 = transformV12ToV13(data);
+    if (!converted13.ok) {
       const error = new Error('backup has conflicting B routine keys');
-      error.conflicts = converted12.conflicts;
+      error.conflicts = converted13.conflicts;
       throw error;
     }
-    data = converted12.result;
+    data = converted13.result;
     data.storageSchemaVersion = CURRENT_SCHEMA_VERSION;
     return data;
   }
@@ -306,5 +407,6 @@
     isProtectedBackupKey,
     reconcileStorageSnapshots,
     transformV9ToV10,
+    transformV12ToV13,
   };
 });

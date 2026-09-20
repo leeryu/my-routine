@@ -22,8 +22,8 @@ const ROUTINES = {
         target: '광배근 · 승모 중하부 · 능형근',
         sets: 4,
         reps: '10/10/10/10',
-        weight: '14 → 16kg 시도',
-        defKg: 14,
+        weight: '16kg 시도',
+        defKg: 16,
         con: '팔꿈치를 엉덩이 방향으로. 배꼽 옆. 어깨뼈 조임.',
         ecc: '어깨뼈 완전히 열며 광배 스트레칭. 3초.',
         tip: '반대 손 벤치 짚어 허리 회전 최소화. 마지막 세트 왼팔 먼저(크로스도미넌스).',
@@ -46,8 +46,8 @@ const ROUTINES = {
         target: '측면삼각근',
         sets: 3,
         reps: '15/15/15',
-        weight: '매우 가볍게',
-        defKg: 0,
+        weight: '6kg 시도',
+        defKg: 6,
         con: '새끼손가락이 엄지보다 살짝 높게. 2초.',
         ecc: '천천히 완전히 3초.',
         tip: '90도 이상 올리면 승모 개입. 중량 욕심 금물.',
@@ -97,6 +97,18 @@ const ROUTINES = {
     tag: 'Push · 등 보조 · 7종목',
     exercises: [
       {
+        name: '덤벨 로우',
+        target: '광배근 · 승모 중하부 · 능형근',
+        sets: 3,
+        reps: '10/10/10',
+        weight: '20kg 전후',
+        defKg: 20,
+        con: '팔꿈치 엉덩이 방향. 어깨뼈 조임.',
+        ecc: '3초. 광배 스트레칭.',
+        tip: '등 주2회 유지용 보조. A보다 가볍게, 감각 위주.',
+        warn: null,
+      },
+      {
         // 정책: 기존 B_0 덤벨 벤치프레스 기록을 체스트 프레스 기록으로
         // 이어서 사용한다. 두 운동은 현재 같은 B_0 키를 공유하며, 향후
         // 영구 운동 ID 도입 시 별도 기록으로 분리할 수 있다.
@@ -104,11 +116,47 @@ const ROUTINES = {
         target: '대흉근 · 삼두 · 전면삼각',
         sets: 3,
         reps: '10/10/10',
-        weight: '조절',
-        defKg: 0,
+        weight: '40kg 목표',
+        defKg: 40,
         con: '가슴 조임 1초.',
         ecc: '가슴 스트레칭 3초.',
         tip: '견갑골 등받이 고정.',
+        warn: null,
+      },
+      {
+        name: '레터럴 레이즈',
+        target: '측면삼각근',
+        sets: 3,
+        reps: '15/15/15',
+        weight: '6kg 시도',
+        defKg: 6,
+        con: '새끼손가락 높이 2초.',
+        ecc: '천천히 3초.',
+        tip: '어깨 높이 이상 금지.',
+        warn: null,
+      },
+      {
+        name: '숄더 프레스',
+        target: '삼각근 · 삼두',
+        sets: 3,
+        reps: '12/12/12',
+        weight: '20kg 목표',
+        defKg: 20,
+        con: '자연스럽게 밀어올리기 1초.',
+        ecc: '어깨 높이 아래로 3초.',
+        tip: '앉아서 코어를 유지한다. 갈비뼈가 들리거나 허리가 과하게 꺾이면 중량을 낮춰라.',
+        warn: '⚠️ 골반 전방경사 — 허리 과신전 금지. 어깨 시큰하면 즉시 중단.',
+      },
+      {
+        name: '리버스 펙덱',
+        target: '후면삼각 · 능형근 · 승모 중부',
+        sets: 3,
+        reps: '12/12/12',
+        weight: '40kg 목표',
+        defKg: 40,
+        con: '팔꿈치 살짝 굽힌 채 양옆으로. 후면 어깨 조임. 2초.',
+        ecc: '천천히 2초.',
+        tip: '등 볼륨 보조용. 중량보다 자세, 후면 어깨 쥐어짜는 느낌 우선.',
         warn: null,
       },
       {
@@ -116,47 +164,11 @@ const ROUTINES = {
         target: '광배근 · 대원근 · 이두',
         sets: 3,
         reps: '10/10/10',
-        weight: '30~32kg',
-        defKg: 30,
+        weight: '40kg 목표',
+        defKg: 40,
         con: '팔꿈치를 뒷주머니로. 등으로 당기기. 2초.',
         ecc: '광배근 완전 스트레칭 3초.',
         tip: 'B는 등 볼륨 보조용 — A(월)보다 가볍게, 감각 위주.',
-        warn: null,
-      },
-      {
-        name: '숄더 프레스',
-        target: '삼각근 · 삼두',
-        sets: 3,
-        reps: '12/12/12',
-        weight: '가볍게 시작',
-        defKg: 0,
-        con: '자연스럽게 밀어올리기 1초.',
-        ecc: '어깨 높이 아래로 3초.',
-        tip: '앉아서 코어를 유지한다. 갈비뼈가 들리거나 허리가 과하게 꺾이면 중량을 낮춰라.',
-        warn: '⚠️ 골반 전방경사 — 허리 과신전 금지. 어깨 시큰하면 즉시 중단.',
-      },
-      {
-        name: '덤벨 로우',
-        target: '광배근 · 승모 중하부 · 능형근',
-        sets: 3,
-        reps: '10/10/10',
-        weight: '15kg 전후',
-        defKg: 14,
-        con: '팔꿈치 엉덩이 방향. 어깨뼈 조임.',
-        ecc: '3초. 광배 스트레칭.',
-        tip: '등 주2회 유지용 보조. A보다 가볍게, 감각 위주.',
-        warn: null,
-      },
-      {
-        name: '레터럴 레이즈',
-        target: '측면삼각근',
-        sets: 3,
-        reps: '15/15/15',
-        weight: '매우 가볍게',
-        defKg: 0,
-        con: '새끼손가락 높이 2초.',
-        ecc: '천천히 3초.',
-        tip: '어깨 높이 이상 금지.',
         warn: null,
       },
       {
@@ -164,92 +176,12 @@ const ROUTINES = {
         target: '대퇴사두 · 오른쪽 단측',
         sets: 3,
         reps: '15/15/15',
-        weight: '가볍게',
-        defKg: 0,
+        weight: '40kg 목표',
+        defKg: 40,
         con: '90% 지점까지.',
         ecc: '2~3초.',
         tip: '통증 없는 범위에서 천천히 수행.',
         warn: '⚠️ 오른쪽만. 통증 시 즉시 중단.',
-      },
-      {
-        id: 'pallof-press',
-        name: '팔로프프레스',
-        target: '코어 · 몸통 회전 저항',
-        sets: 2,
-        reps: '좌우 10회',
-        weight: '저중량 시작',
-        defKg: 0,
-        con: '갈비뼈와 골반의 중립을 유지한 채 케이블을 밀기.',
-        ecc: '몸통이 돌아가지 않게 천천히 되돌리기.',
-        tip: '앱 제안 보조 운동. B루틴 마지막에서 좌우 동일하게 수행.',
-        warn: null,
-      },
-    ],
-  },
-  C: {
-    label: 'C루틴',
-    day: '일요일',
-    tag: '상체 Push · 5종목',
-    exercises: [
-      {
-        name: '체스트 프레스',
-        target: '대흉근 · 삼두 · 전면삼각',
-        sets: 3,
-        reps: '10/10/10',
-        weight: '조절',
-        defKg: 0,
-        con: '가슴 조임 1초.',
-        ecc: '가슴 스트레칭 3초.',
-        tip: '견갑골 등받이 고정.',
-        warn: null,
-      },
-      {
-        name: '숄더 프레스',
-        target: '삼각근 · 삼두',
-        sets: 3,
-        reps: '10/10/10',
-        weight: '조절',
-        defKg: 0,
-        con: '자연스럽게 밀어올리기 1초.',
-        ecc: '어깨 높이 아래로 3초.',
-        tip: '갈비뼈가 들리거나 허리가 과하게 꺾이면 중량을 낮춰라.',
-        warn: null,
-      },
-      {
-        name: '리버스 펙덱',
-        target: '후면삼각 · 능형근',
-        sets: 3,
-        reps: '12/12/12',
-        weight: '가볍게',
-        defKg: 0,
-        con: '후면 어깨 쥐어짜기 2초.',
-        ecc: '2초.',
-        tip: '자세 우선.',
-        warn: null,
-      },
-      {
-        name: '레터럴 레이즈',
-        target: '측면삼각근',
-        sets: 3,
-        reps: '12/12/12',
-        weight: '매우 가볍게',
-        defKg: 0,
-        con: '새끼손가락 높이 2초.',
-        ecc: '천천히 3초.',
-        tip: '어깨 높이 이상 금지.',
-        warn: null,
-      },
-      {
-        name: '케이블 푸쉬다운',
-        target: '삼두박근',
-        sets: 3,
-        reps: '12/12/12',
-        weight: '조절',
-        defKg: 0,
-        con: '팔꿈치 고정. 삼두로 밀기 1초.',
-        ecc: '스트레칭 2초.',
-        tip: '팔꿈치 앞뒤 흔들림 = 무효.',
-        warn: null,
       },
     ],
   },
@@ -265,12 +197,12 @@ const CLINICAL_PROFILE = {
 const WEEKLY_GOALS = { A: 1, B: 1, C: 1 };
 const DAY_INFO = [
   { label: '월', type: 'A', rk: 'A' },
-  { label: '화', type: '휴식', rk: null },
-  { label: '수', type: '휴식', rk: null },
-  { label: '목', type: 'B', rk: 'B' },
+  { label: '화', type: '홈코어', rk: null },
+  { label: '수', type: 'B', rk: 'B' },
+  { label: '목', type: '홈코어', rk: null },
   { label: '금', type: '휴식', rk: null },
-  { label: '토', type: '휴식', rk: null },
-  { label: '일', type: 'C', rk: 'C' },
+  { label: '토', type: '수영', rk: null },
+  { label: '일', type: '수영', rk: null },
 ];
 const BAR_WEIGHTS = [
   { label: '바벨 20kg', kg: 20 },
@@ -350,6 +282,8 @@ const MIGRATION_BACKUP_V11 = 'migrationBackup:v11';
 const MIGRATION_STATUS_V11 = 'migrationStatus:v11';
 const MIGRATION_BACKUP_V12 = 'migrationBackup:v12';
 const MIGRATION_STATUS_V12 = 'migrationStatus:v12';
+const MIGRATION_BACKUP_V13 = 'migrationBackup:v13';
+const MIGRATION_STATUS_V13 = 'migrationStatus:v13';
 
 function storageSnapshot() {
   return JSON.parse(JSON.stringify(_cache));
@@ -587,6 +521,45 @@ async function migrateV12() {
     return { status: 'completed' };
   } catch (error) {
     try { await persistSet(MIGRATION_STATUS_V12, { status: 'failed', failedAt: new Date().toISOString(), message: String(error.message || error) }); } catch {}
+    throw error;
+  }
+}
+/* v12→v13: B루틴 재편성(덤벨로우→체스트프레스→레터럴레이즈→숄더프레스→
+   리버스펙덱(신규)→랫풀다운→레그익스텐션) 인덱스 리맵. 팔로프프레스는
+   B에서 빠지므로 기록/PR은 archivedRec:/archivedPr:로 보존(삭제 아님). */
+async function migrateV13() {
+  const before = storageSnapshot();
+  if (Number(before.storageSchemaVersion) === STORAGE_SCHEMA_VERSION) {
+    if (!before[MIGRATION_STATUS_V13]) await persistSet(MIGRATION_STATUS_V13, { status: 'completed-unverified', detectedAt: new Date().toISOString(), sourceSchemaVersion: STORAGE_SCHEMA_VERSION, movedKeys: [] });
+    return { status: 'current' };
+  }
+  if (Number(before.storageSchemaVersion) !== 12) return { status: 'not-applicable' };
+  const existingBackup = before[MIGRATION_BACKUP_V13];
+  if (existingBackup && existingBackup.sourceSchemaVersion !== 12) {
+    const conflict = { status: 'backup-conflict', detectedAt: new Date().toISOString(), sourceSchemaVersion: 12 };
+    await persistSet(MIGRATION_STATUS_V13, conflict);
+    return conflict;
+  }
+  const backupOk = await createSafetyBackup(MIGRATION_BACKUP_V13, 12, before, Object.keys(before));
+  if (!backupOk) {
+    await persistSet(MIGRATION_STATUS_V13, { status: 'backup-failed', failedAt: new Date().toISOString() });
+    return { status: 'backup-failed' };
+  }
+  const transformed = StorageMigration.transformV12ToV13(before);
+  if (!transformed.ok) {
+    const conflict = { status: 'conflict', detectedAt: new Date().toISOString(), sourceSchemaVersion: 12, conflicts: transformed.conflicts };
+    await persistSet(MIGRATION_STATUS_V13, conflict);
+    console.warn('[storage migration] v13 migration blocked by key conflicts', conflict);
+    return conflict;
+  }
+  const after = transformed.result;
+  after.storageSchemaVersion = STORAGE_SCHEMA_VERSION;
+  after[MIGRATION_STATUS_V13] = { status: 'completed', completedAt: new Date().toISOString(), sourceSchemaVersion: 12, movedKeys: transformed.moves.map(({ from, to }) => ({ from, to })) };
+  try {
+    await StorageMigration.commitSnapshot({ set: persistSet, delete: persistDelete }, before, after, [MIGRATION_STATUS_V13, 'storageSchemaVersion']);
+    return { status: 'completed' };
+  } catch (error) {
+    try { await persistSet(MIGRATION_STATUS_V13, { status: 'failed', failedAt: new Date().toISOString(), message: String(error.message || error) }); } catch {}
     throw error;
   }
 }
@@ -1192,7 +1165,7 @@ function computeVolume(rk) {
 /* ═══ ROUTINE RENDERING ═══ */
 function buildSelector() {
   const sel = document.getElementById('routineSelector');
-  ['A', 'B', 'C'].forEach((k) => {
+  Object.keys(ROUTINES).forEach((k) => {
     const c = document.createElement('button');
     c.className = 'routine-chip' + (k === currentRoutine ? ' active' : '');
     c.type = 'button';
@@ -2110,7 +2083,7 @@ function buildStats() {
   document.getElementById('statTotal').textContent = allDates.size + '일';
   const m = todayStr().slice(0, 7);
   let monVol = 0;
-  ['A', 'B', 'C'].forEach((rk) =>
+  Object.keys(ROUTINES).forEach((rk) =>
     ROUTINES[rk].exercises.forEach((ex, i) => {
       Object.keys(_cache)
         .filter((k) => k.startsWith(`rec:${rk}_${i}_${m}`))
@@ -2130,7 +2103,7 @@ function buildStats() {
 }
 function getMonthMuscleVolume(monthKey) {
   const result = {};
-  ['A', 'B', 'C'].forEach((rk) =>
+  Object.keys(ROUTINES).forEach((rk) =>
     ROUTINES[rk].exercises.forEach((ex, i) => {
       Object.keys(_cache)
         .filter((k) => k.startsWith(`rec:${rk}_${i}_${monthKey}`))
@@ -2312,7 +2285,7 @@ function buildCalendar() {
 }
 function buildPRBoard() {
   const prs = [];
-  ['A', 'B', 'C'].forEach((rk) =>
+  Object.keys(ROUTINES).forEach((rk) =>
     ROUTINES[rk].exercises.forEach((ex, i) => {
       const v = gls(`pr:${rk}_${i}`);
       if (v > 0) prs.push({ name: ex.name, kg: v, rk });
@@ -2337,7 +2310,7 @@ let selectedChartEx = '';
 function buildChartSelector() {
   const seen = new Set();
   const names = [];
-  ['A', 'B', 'C'].forEach((rk) =>
+  Object.keys(ROUTINES).forEach((rk) =>
     ROUTINES[rk].exercises.forEach((ex) => {
       if (!seen.has(ex.name)) {
         seen.add(ex.name);
@@ -2363,7 +2336,7 @@ function selectChart(exName) {
     .querySelectorAll('.cchip')
     .forEach((c) => c.classList.toggle('act', c.textContent === exName));
   const data = [];
-  ['A', 'B', 'C'].forEach((rk) =>
+  Object.keys(ROUTINES).forEach((rk) =>
     ROUTINES[rk].exercises.forEach((ex, i) => {
       if (ex.name !== exName) return;
       Object.keys(_cache)
@@ -2428,7 +2401,7 @@ function buildHistChart() {
     d.setDate(d.getDate() - i);
     const dateStr = fmtDate(d);
     let vol = 0;
-    ['A', 'B', 'C'].forEach((rk) =>
+    Object.keys(ROUTINES).forEach((rk) =>
       ROUTINES[rk].exercises.forEach((ex, ei) => {
         const rec = getRecord(`${rk}_${ei}_${dateStr}`);
         for (let s = 0; s < ex.sets; s++)
@@ -2614,7 +2587,7 @@ function getAiFeedback() {
   el.textContent = localGymFeedback();
 }
 function switchTabById(id) {
-  const tabs = ['gym', 'history', 'settings'];
+  const tabs = ['gym', 'history', 'daily', 'settings'];
   document
     .querySelectorAll('.tab-panel')
     .forEach((p) => p.classList.toggle('active', p.id === 'tab-' + id));
@@ -2626,7 +2599,8 @@ function switchTabById(id) {
   });
   updateTodaySummary();
   updateCoachNudge();
-  if (id === 'history') buildHistory();
+  if (id === 'history') { buildHistory(); renderWeeklySummary(); }
+  if (id === 'daily') renderDailyTab();
   sls('activeTab', id);
 }
 function switchTab(id) {
@@ -2854,6 +2828,309 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
+
+/* ═══ 데일리 탭: 주간 스케줄 / 하체 재도입 트래커 / 칼로리표 / 매일 기록 ═══ */
+const WEEKLY_SCHEDULE_BASE = {
+  mon: { key: 'mon', dayLabel: '월', label: '헬스A + 홈코어', workoutType: 'gym', rk: 'A' },
+  tue: { key: 'tue', dayLabel: '화', label: '홈코어', workoutType: 'rest', rk: null },
+  wed: { key: 'wed', dayLabel: '수', label: '헬스B', workoutType: 'gym', rk: 'B' },
+  thu: { key: 'thu', dayLabel: '목', label: '홈코어 또는 휴식', workoutType: 'rest', rk: null },
+  fri: { key: 'fri', dayLabel: '금', label: '휴식', workoutType: 'rest', rk: null },
+  sat: { key: 'sat', dayLabel: '토', label: '수영 45~60분', workoutType: 'swim1', rk: null },
+  sun: { key: 'sun', dayLabel: '일', label: '수영 60~90분', workoutType: 'swim2', rk: null },
+};
+const CALORIE_TABLE = {
+  gym: { label: '헬스일', kcal: '2,250~2,300', proteinG: '130~140g', fatG: '55~70g' },
+  swim1: { label: '수영1회', kcal: '2,200~2,300', proteinG: '130~140g', fatG: '55~70g' },
+  swim2: { label: '수영2회', kcal: '2,300~2,450', proteinG: '130~140g', fatG: '60~70g' },
+  rest: { label: '휴식일', kcal: '2,050~2,150', proteinG: '130~140g', fatG: '55~65g' },
+};
+const LOWER_BODY_STAGES = [
+  { stage: 1, name: '맨몸 스쿼트', setsReps: '2×12~15', rir: '4~5', startLoad: '체중' },
+  { stage: 2, name: '맨몸 스쿼트', setsReps: '3×15', rir: '3~4', startLoad: '체중' },
+  { stage: 3, name: '레그프레스 (가벼운 부하)', setsReps: '3×12', rir: '3~4', startLoad: '스택 최소중량의 30~40%' },
+  { stage: 4, name: '레그프레스 (점진증량)', setsReps: '3×10~12', rir: '2~3', startLoad: '3단계 마지막 중량' },
+  { stage: 5, name: '런지 / 스플릿스쿼트', setsReps: '각다리 2~3×10', rir: '3~4', startLoad: '맨몸' },
+];
+const LOWER_BODY_ADVANCE_STREAK = 2;
+
+function getDailyLog(date) {
+  return (gls('dailyLog') || {})[date] || {};
+}
+function saveDailyLogEntry(date, patch) {
+  const all = gls('dailyLog') || {};
+  all[date] = { ...(all[date] || {}), ...patch };
+  sls('dailyLog', all);
+}
+function getSwimLog(date) {
+  return (gls('swimLogs') || {})[date] || {};
+}
+function saveSwimLogEntry(date, patch) {
+  const all = gls('swimLogs') || {};
+  all[date] = { ...(all[date] || {}), ...patch };
+  sls('swimLogs', all);
+}
+function getLowerBodyProgress() {
+  return (
+    gls('lowerBodyProgress') || {
+      stage: 1,
+      sessions: [],
+      stageLog: [{ stage: 1, at: new Date().toISOString(), reason: 'init' }],
+    }
+  );
+}
+function saveLowerBodyProgress(p) {
+  sls('lowerBodyProgress', p);
+}
+function getWeeklyRecovery() {
+  return gls('weeklyRecovery') || {};
+}
+function saveWeeklyRecoveryEntry(weekKey, patch) {
+  const all = gls('weeklyRecovery') || {};
+  all[weekKey] = { ...(all[weekKey] || {}), ...patch };
+  sls('weeklyRecovery', all);
+}
+
+function getEffectiveWeeklySchedule() {
+  const wk = Progression.isoWeekKey(todayStr());
+  const rec = getWeeklyRecovery()[wk];
+  if (!rec || !rec.shifted) return { schedule: WEEKLY_SCHEDULE_BASE, droppedDay: null, shifted: false };
+  const { schedule: rawShifted, droppedDay } = Progression.shiftScheduleForRecovery(WEEKLY_SCHEDULE_BASE, {
+    ...WEEKLY_SCHEDULE_BASE.mon,
+    label: '홈코어 (헬스A는 화요일로 이동)',
+    workoutType: 'rest',
+    rk: null,
+  });
+  const schedule = {};
+  Progression.WEEK_ORDER.forEach((k) => {
+    schedule[k] = { ...rawShifted[k], key: k, dayLabel: WEEKLY_SCHEDULE_BASE[k].dayLabel };
+  });
+  return { schedule, droppedDay, shifted: true };
+}
+function shouldPromptMondayRecovery() {
+  if (new Date().getDay() !== 1) return false;
+  const wk = Progression.isoWeekKey(todayStr());
+  const rec = getWeeklyRecovery()[wk];
+  return !rec || !rec.answeredAt;
+}
+function renderMondayRecoveryCard() {
+  const el = document.getElementById('mondayRecoveryBox');
+  if (!el) return;
+  if (!shouldPromptMondayRecovery()) {
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = `
+<div class="coach-card warn">
+  <div class="coach-title">🧭 월요일 회복 체크</div>
+  <div class="coach-text">아래 중 하나라도 해당하면 오늘은 홈코어로, 헬스A는 화요일로 이동해요.</div>
+  <div class="mrc-check-row"><label><input type="checkbox" id="mrcLat"> 광배·후면삼각근·회전근개 피로</label></div>
+  <div class="mrc-check-row"><label><input type="checkbox" id="mrcFatigue"> 전신 피로도</label></div>
+  <div class="mrc-check-row"><label><input type="checkbox" id="mrcRom"> 어깨 가동범위 제한</label></div>
+  <button type="button" class="quick-btn primary" onclick="submitMondayRecovery()">확인 완료</button>
+</div>`;
+}
+function submitMondayRecovery() {
+  const flags = {
+    lat: !!document.getElementById('mrcLat')?.checked,
+    fatigue: !!document.getElementById('mrcFatigue')?.checked,
+    shoulderRom: !!document.getElementById('mrcRom')?.checked,
+  };
+  const shifted = Object.values(flags).some(Boolean);
+  const wk = Progression.isoWeekKey(todayStr());
+  saveWeeklyRecoveryEntry(wk, { flags, shifted, answeredAt: new Date().toISOString() });
+  showToast(shifted ? '🔁 오늘은 홈코어로, 헬스A는 화요일로 이동했어' : '✅ 오늘 컨디션 좋음 — 원래 스케줄대로');
+  renderDailyTab();
+}
+function renderWeeklySchedule() {
+  const el = document.getElementById('weeklyScheduleBox');
+  if (!el) return;
+  const { schedule, droppedDay, shifted } = getEffectiveWeeklySchedule();
+  const jsMap = [6, 0, 1, 2, 3, 4, 5];
+  const todayIdx = jsMap[new Date().getDay()];
+  const order = Progression.WEEK_ORDER;
+  const note = shifted
+    ? `<div class="ws-note">⚠️ 이번 주는 회복 신호로 스케줄이 하루씩 밀렸어${droppedDay ? ` · ${escapeHtml(droppedDay.label)}은 이번 주 생략` : ''}</div>`
+    : '';
+  el.innerHTML =
+    note +
+    order
+      .map((k, i) => {
+        const day = schedule[k];
+        return `<div class="ws-row${i === todayIdx ? ' today' : ''}"><span class="ws-day">${day.dayLabel}</span><span class="ws-label">${escapeHtml(day.label)}</span></div>`;
+      })
+      .join('');
+}
+let selectedWorkoutType = null;
+function getTodayWorkoutType() {
+  if (selectedWorkoutType) return selectedWorkoutType;
+  const { schedule } = getEffectiveWeeklySchedule();
+  const order = Progression.WEEK_ORDER;
+  const jsMap = [6, 0, 1, 2, 3, 4, 5];
+  const todayIdx = jsMap[new Date().getDay()];
+  return schedule[order[todayIdx]]?.workoutType || 'rest';
+}
+function selectWorkoutType(type) {
+  selectedWorkoutType = type;
+  renderCalorieTable();
+  renderDailyLogForm();
+}
+function renderCalorieTable() {
+  const el = document.getElementById('calorieTableBox');
+  if (!el) return;
+  const active = getTodayWorkoutType();
+  const chips = Object.keys(CALORIE_TABLE)
+    .map(
+      (k) =>
+        `<button type="button" class="routine-chip${k === active ? ' active' : ''}" onclick="selectWorkoutType('${k}')">${CALORIE_TABLE[k].label}</button>`,
+    )
+    .join('');
+  const row = CALORIE_TABLE[active];
+  el.innerHTML = `<div class="cal-type-row">${chips}</div><div class="cal-target-card"><div class="cal-target-kcal">${row.kcal} kcal</div><div class="cal-target-macros"><span>단백질 ${row.proteinG}</span><span>지방 ${row.fatG}</span></div></div>`;
+}
+function saveDailyLogField(field, value) {
+  saveDailyLogEntry(todayStr(), { [field]: value === '' ? undefined : parseFloat(value) });
+  renderWeeklySummary();
+}
+function saveSwimLogField(field, value) {
+  saveSwimLogEntry(todayStr(), { [field]: value === '' ? undefined : parseFloat(value) });
+  renderWeeklySummary();
+}
+function renderDailyLogForm() {
+  const el = document.getElementById('dailyLogBox');
+  if (!el) return;
+  const today = todayStr();
+  const log = getDailyLog(today);
+  const type = getTodayWorkoutType();
+  const isSwimDay = type === 'swim1' || type === 'swim2';
+  const swim = getSwimLog(today);
+  el.innerHTML = `
+<div class="dl-grid">
+  <label>공복체중(kg)<input type="number" inputmode="decimal" value="${log.bodyweightKg ?? ''}" onchange="saveDailyLogField('bodyweightKg', this.value)"></label>
+  <label>총 kcal<input type="number" inputmode="decimal" value="${log.kcal ?? ''}" onchange="saveDailyLogField('kcal', this.value)"></label>
+  <label>단백질(g)<input type="number" inputmode="decimal" value="${log.proteinG ?? ''}" onchange="saveDailyLogField('proteinG', this.value)"></label>
+  <label>나트륨(mg)<input type="number" inputmode="decimal" value="${log.sodiumMg ?? ''}" onchange="saveDailyLogField('sodiumMg', this.value)"></label>
+</div>
+${
+  isSwimDay
+    ? `<div class="dl-grid">
+  <label>SWOLF 평균<input type="number" inputmode="decimal" value="${swim.avgSwolf ?? ''}" onchange="saveSwimLogField('avgSwolf', this.value)"></label>
+  <label>스트로크 수<input type="number" inputmode="decimal" value="${swim.strokeCount ?? ''}" onchange="saveSwimLogField('strokeCount', this.value)"></label>
+  <label>주관적 피로도(1~5)<input type="number" inputmode="numeric" min="1" max="5" value="${swim.rpe ?? ''}" onchange="saveSwimLogField('rpe', this.value)"></label>
+</div>`
+    : ''
+}`;
+}
+function renderLowerBodySessionHistory(sessions) {
+  if (!sessions.length) return '<div class="pc-empty">기록 없음</div>';
+  return sessions
+    .slice(-10)
+    .reverse()
+    .map((s) => {
+      const passed = Progression.isSessionPassed(s.checks);
+      return `<div class="lb-hist-row${passed ? ' pass' : ' fail'}">${s.date} · STAGE ${s.stage} · ${passed ? '✅ 통과' : '⚠️ 미통과'}</div>`;
+    })
+    .join('');
+}
+function renderLowerBodyTracker() {
+  const el = document.getElementById('lowerBodyBox');
+  if (!el) return;
+  const progress = getLowerBodyProgress();
+  const stageInfo = LOWER_BODY_STAGES[progress.stage - 1];
+  const streak = Progression.consecutivePassedAtStage(progress.sessions, progress.stage);
+  const canAdvance = Progression.canAdvanceStage(progress.sessions, progress.stage, LOWER_BODY_ADVANCE_STREAK);
+  el.innerHTML = `
+<div class="lb-stage-card">
+  <div class="lb-stage-num">STAGE ${progress.stage} / 5</div>
+  <div class="lb-stage-name">${escapeHtml(stageInfo.name)}</div>
+  <div class="lb-stage-meta"><span>${stageInfo.setsReps}</span><span>RIR ${stageInfo.rir}</span><span>${escapeHtml(stageInfo.startLoad)}</span></div>
+  <div class="lb-streak">연속 통과 세션: <strong>${streak}</strong>회 (${LOWER_BODY_ADVANCE_STREAK}회 이상이면 다음 단계 가능)</div>
+</div>
+<div class="lb-session-form">
+  <div class="lb-check-row"><label><input type="checkbox" id="lbPainOk"> 운동 중 통증 0~2/10</label></div>
+  <div class="lb-check-row"><label><input type="checkbox" id="lbNoIncrease"> 세트 진행해도 통증 증가 없음</label></div>
+  <div class="lb-check-row"><label><input type="checkbox" id="lbNoFlare"> 다음날 기존 증상 악화 없음(직전 세션 기준)</label></div>
+  <div class="lb-check-row"><label><input type="checkbox" id="lbSymmetryOk"> 좌우 대칭 무너짐 없음</label></div>
+  <button type="button" class="quick-btn primary" onclick="logLowerBodySession()">오늘 세션 기록</button>
+</div>
+<div class="lb-actions">
+  <button type="button" class="quick-btn"${canAdvance ? '' : ' disabled'} onclick="advanceLowerBodyStage()">다음 단계로${canAdvance ? '' : ` (${streak}/${LOWER_BODY_ADVANCE_STREAK})`}</button>
+  <button type="button" class="quick-btn danger" onclick="regressLowerBodyStage()">퇴행 — 이전 단계로</button>
+</div>
+<div class="lb-regress-hint">⚠️ 통증 3/10 이상 또는 저림·방사통 발생 시 즉시 이전 단계로</div>
+<div class="lb-history">${renderLowerBodySessionHistory(progress.sessions)}</div>`;
+}
+function logLowerBodySession() {
+  const progress = getLowerBodyProgress();
+  const checks = {
+    painOk: !!document.getElementById('lbPainOk')?.checked,
+    noIncrease: !!document.getElementById('lbNoIncrease')?.checked,
+    noNextDayFlare: !!document.getElementById('lbNoFlare')?.checked,
+    symmetryOk: !!document.getElementById('lbSymmetryOk')?.checked,
+  };
+  progress.sessions = progress.sessions || [];
+  progress.sessions.push({ date: todayStr(), stage: progress.stage, checks, loggedAt: new Date().toISOString() });
+  saveLowerBodyProgress(progress);
+  showToast(Progression.isSessionPassed(checks) ? '✅ 오늘 세션 기록됨 — 조건 통과' : '기록됨 — 일부 조건 미충족');
+  renderLowerBodyTracker();
+}
+function advanceLowerBodyStage() {
+  const progress = getLowerBodyProgress();
+  if (!Progression.canAdvanceStage(progress.sessions, progress.stage, LOWER_BODY_ADVANCE_STREAK)) return;
+  const next = Progression.nextStage(progress.stage);
+  progress.stageLog = progress.stageLog || [];
+  progress.stageLog.push({ stage: next, at: new Date().toISOString(), reason: 'advance' });
+  progress.stage = next;
+  saveLowerBodyProgress(progress);
+  showToast(`🎉 STAGE ${next}로 진행`);
+  renderLowerBodyTracker();
+}
+function regressLowerBodyStage() {
+  const progress = getLowerBodyProgress();
+  if (progress.stage <= 1) {
+    showToast('이미 1단계야');
+    return;
+  }
+  const prev = Progression.prevStage(progress.stage);
+  progress.stageLog = progress.stageLog || [];
+  progress.stageLog.push({ stage: prev, at: new Date().toISOString(), reason: 'regress' });
+  progress.stage = prev;
+  saveLowerBodyProgress(progress);
+  showToast(`⚠️ STAGE ${prev}로 되돌림`);
+  renderLowerBodyTracker();
+}
+function renderDailyTab() {
+  renderMondayRecoveryCard();
+  renderWeeklySchedule();
+  renderCalorieTable();
+  renderDailyLogForm();
+  renderLowerBodyTracker();
+}
+function seriesFromLog(storeKey, field) {
+  const all = gls(storeKey) || {};
+  return Object.keys(all)
+    .map((date) => ({ date, value: all[date]?.[field] }))
+    .filter((e) => e.value !== undefined && e.value !== null && !Number.isNaN(Number(e.value)));
+}
+function renderWeeklySummary() {
+  const el = document.getElementById('weeklySummaryBox');
+  if (!el) return;
+  const today = todayStr();
+  const wDelta = Progression.weeklyAverageDelta(seriesFromLog('dailyLog', 'bodyweightKg'), today);
+  const sDelta = Progression.weeklyAverageDelta(seriesFromLog('dailyLog', 'sodiumMg'), today);
+  const swDelta = Progression.weeklyAverageDelta(seriesFromLog('swimLogs', 'avgSwolf'), today);
+  const progress = getLowerBodyProgress();
+  const streak = Progression.consecutivePassedAtStage(progress.sessions, progress.stage);
+  const fmt = (v, unit, digits) => (v === null ? '—' : `${v.toFixed(digits ?? 1)}${unit}`);
+  const fmtDelta = (v, unit, digits) =>
+    v === null ? '' : ` (${v > 0 ? '+' : ''}${v.toFixed(digits ?? 1)}${unit})`;
+  el.innerHTML = `
+<div class="ws-summary-row"><span class="ws-summary-lbl">7일 평균 체중</span><span class="ws-summary-val">${fmt(wDelta.thisAvg, 'kg')}${fmtDelta(wDelta.delta, 'kg')}</span></div>
+<div class="ws-summary-row"><span class="ws-summary-lbl">이번주 평균 나트륨</span><span class="ws-summary-val">${fmt(sDelta.thisAvg, 'mg', 0)}</span></div>
+<div class="ws-summary-row"><span class="ws-summary-lbl">하체 재도입 진행</span><span class="ws-summary-val">STAGE ${progress.stage} · 연속 ${streak}회 통과</span></div>
+<div class="ws-summary-row"><span class="ws-summary-lbl">SWOLF 평균</span><span class="ws-summary-val">${fmt(swDelta.thisAvg, '')}${fmtDelta(swDelta.delta, '')}</span></div>`;
+}
+
 initStorage().then(async () => {
   // An explicit schema version is authoritative. A legacy migrV10 flag is
   // unverified, but still blocks older remaps so indexes are never shifted
@@ -2863,6 +3140,7 @@ initStorage().then(async () => {
     await migrateV10();
     await migrateV11();
     await migrateV12();
+    await migrateV13();
   } catch (error) {
     console.error('[storage migration] initialization failed', error);
   }
@@ -2873,7 +3151,7 @@ initStorage().then(async () => {
   buildWeekStrip();
   buildSelector();
   renderReadiness();
-  showRoutine({ 1: 'A', 4: 'B', 0: 'C' }[new Date().getDay()] || 'A');
+  showRoutine({ 1: 'A', 3: 'B' }[new Date().getDay()] || 'A');
   updateCoachPanel();
   renderRestTimer();
   updateBackupNote();
@@ -2881,7 +3159,7 @@ initStorage().then(async () => {
   hydrateNotionWebhookSettings();
   flushNotionWebhookOutbox();
   const savedTab = gls('activeTab');
-  if (['gym', 'history', 'settings'].includes(savedTab)) switchTabById(savedTab);
+  if (['gym', 'history', 'daily', 'settings'].includes(savedTab)) switchTabById(savedTab);
   const sb = document.getElementById('soundBtn');
   if (sb) sb.textContent = soundOn() ? '🔔' : '🔕';
 });
