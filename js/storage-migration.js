@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const CURRENT_SCHEMA_VERSION = 13;
+  const CURRENT_SCHEMA_VERSION = 14;
   const B_RECORD_RE = /^rec:B_([1-6])_(\d{4}-\d{2}-\d{2})$/;
   const B_PR_RE = /^pr:B_([1-6])$/;
 
@@ -240,6 +240,69 @@
     return { ok: true, original, result, moves, conflicts: [] };
   }
 
+  /* v13 -> v14: 화/목 상체 근비대 루틴으로 재배치한다. 기록에는 영구
+     exerciseId를 새겨 이후 루틴 간 같은 종목 이력을 안전하게 공유한다.
+     v13에서 보관 처리했던 C루틴 기록은 선택 루틴으로 복원한다. */
+  const V14_MAP = {
+    A: { 0: [2, 'lat-pulldown'], 1: [1, 'dumbbell-row'], 2: [4, 'reverse-pec-deck'], 3: [3, 'lateral-raise'], 4: [null, 'crunch'], 5: [null, 'side-plank'], 6: [7, 'leg-extension'] },
+    B: { 0: [2, 'dumbbell-row'], 1: [0, 'chest-press'], 2: [4, 'lateral-raise'], 3: [3, 'shoulder-press-supported'], 4: [5, 'reverse-pec-deck'], 5: [1, 'lat-pulldown'], 6: [7, 'leg-extension'] },
+  };
+  const C_V14_IDS = ['chest-press', 'shoulder-press-legacy', 'reverse-pec-deck', 'lateral-raise', 'triceps-pushdown'];
+
+  function transformV13ToV14(source) {
+    const original = clone(source || {});
+    const result = clone(original);
+    const moves = [];
+    const archive = (rk, idx, suffix, value, kind) => {
+      const tag = V14_MAP[rk][idx][1];
+      const prefix = kind === 'rec' ? 'archivedRec' : kind === 'pr' ? 'archivedPr' : 'archivedPrExerciseId';
+      return `${prefix}:${rk}_${tag}${suffix || ''}`;
+    };
+    Object.keys(original).forEach((key) => {
+      let m = key.match(/^(rec):([AB])_(\d+)_(\d{4}-\d{2}-\d{2})$/);
+      if (!m) m = key.match(/^(pr|prExerciseId):([AB])_(\d+)$/);
+      if (m) {
+        const kind = m[1], rk = m[2], idx = Number(m[3]);
+        const mapped = V14_MAP[rk][idx] || (idx >= 7 ? [idx + 1, original[key]?.exerciseId || null] : null);
+        if (!mapped) return;
+        const suffix = kind === 'rec' ? `_${m[4]}` : '';
+        const to = mapped[0] === null ? archive(rk, idx, suffix, original[key], kind) : `${kind}:${rk}_${mapped[0]}${suffix}`;
+        const value = clone(original[key]);
+        if (kind === 'rec' && value && mapped[1]) value.exerciseId = mapped[1];
+        moves.push({ from: key, to, value });
+        return;
+      }
+      m = key.match(/^archived(Rec|Pr|PrExerciseId):C_(\d+)(?:_(\d{4}-\d{2}-\d{2}))?$/);
+      if (m) {
+        const kind = m[1] === 'Rec' ? 'rec' : m[1] === 'Pr' ? 'pr' : 'prExerciseId';
+        const idx = Number(m[2]);
+        const suffix = kind === 'rec' ? `_${m[3]}` : '';
+        const value = clone(original[key]);
+        if (kind === 'rec' && value && C_V14_IDS[idx]) value.exerciseId = C_V14_IDS[idx];
+        moves.push({ from: key, to: `${kind}:C_${idx}${suffix}`, value });
+      }
+    });
+
+    const moveSources = new Set(moves.map((move) => move.from));
+    const conflicts = moves.filter((move) => Object.prototype.hasOwnProperty.call(original, move.to) && !moveSources.has(move.to))
+      .map((move) => ({ from: move.from, to: move.to, sourceValue: clone(move.value), targetValue: clone(original[move.to]) }));
+    if (conflicts.length) return { ok: false, original, result: original, moves, conflicts };
+    moves.forEach((move) => delete result[move.from]);
+    moves.forEach((move) => { result[move.to] = clone(move.value); });
+    ['A', 'B'].forEach((rk) => {
+      const key = `weightOverrides:${rk}`;
+      if (!Object.prototype.hasOwnProperty.call(original, key)) return;
+      const next = {};
+      Object.entries(original[key] || {}).forEach(([idxText, value]) => {
+        const idx = Number(idxText);
+        const mapped = V14_MAP[rk][idx] || (idx >= 7 ? [idx + 1] : null);
+        if (mapped && mapped[0] !== null) next[mapped[0]] = value;
+      });
+      result[key] = next;
+    });
+    return { ok: true, original, result, moves, conflicts: [] };
+  }
+
   function classifyStorage(source) {
     const snapshot = source || {};
     const version = Number(snapshot.storageSchemaVersion) || null;
@@ -311,7 +374,7 @@
       throw new Error('invalid backup payload');
     const startVersion = payload.schemaVersion;
     if (startVersion === CURRENT_SCHEMA_VERSION) return clone(payload.data);
-    if (![9, 10, 11, 12].includes(startVersion))
+    if (![9, 10, 11, 12, 13].includes(startVersion))
       throw new Error(`unsupported backup schema version: ${startVersion}`);
 
     let data = clone(payload.data);
@@ -328,7 +391,7 @@
     // v10 -> v11 never renamed identity keys, so v9/v10 backups fall
     // straight through to the v11 -> v12 B-routine reindex below. A v12
     // backup is already in that shape, so it skips straight to v12 -> v13.
-    if (startVersion !== 12) {
+    if (startVersion < 12) {
       const converted12 = transformV11ToV12(data);
       if (!converted12.ok) {
         const error = new Error('backup has conflicting B routine keys');
@@ -337,13 +400,22 @@
       }
       data = converted12.result;
     }
-    const converted13 = transformV12ToV13(data);
-    if (!converted13.ok) {
-      const error = new Error('backup has conflicting B routine keys');
-      error.conflicts = converted13.conflicts;
+    if (startVersion < 13) {
+      const converted13 = transformV12ToV13(data);
+      if (!converted13.ok) {
+        const error = new Error('backup has conflicting B routine keys');
+        error.conflicts = converted13.conflicts;
+        throw error;
+      }
+      data = converted13.result;
+    }
+    const converted14 = transformV13ToV14(data);
+    if (!converted14.ok) {
+      const error = new Error('backup has conflicting routine keys');
+      error.conflicts = converted14.conflicts;
       throw error;
     }
-    data = converted13.result;
+    data = converted14.result;
     data.storageSchemaVersion = CURRENT_SCHEMA_VERSION;
     return data;
   }
@@ -408,5 +480,6 @@
     reconcileStorageSnapshots,
     transformV9ToV10,
     transformV12ToV13,
+    transformV13ToV14,
   };
 });

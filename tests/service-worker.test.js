@@ -14,7 +14,7 @@ vm.runInNewContext(fs.readFileSync('sw.js','utf8'), context, {filename:'sw.js'})
 async function dispatch(type, event={}) { let waited; event.waitUntil=p=>{waited=Promise.resolve(p)}; handlers[type](event); await waited; return event; }
 (async()=>{
   await dispatch('install'); assert.ok(!added.includes('./js/rehab.js')); assert.ok(added.includes('./js/completion-sync.js')); assert.ok(added.includes('./js/progression.js')); assert.ok(context.skipped); console.log('ok - fresh install precaches the simplified app modules');
-  await dispatch('activate'); assert.deepEqual(deleted.sort(),['routine-v8','routine-v9']); assert.ok(context.claimed); console.log('ok - update removes old caches and claims clients');
+  await dispatch('activate'); assert.deepEqual(deleted.sort(),['routine-v10','routine-v8','routine-v9']); assert.ok(context.claimed); console.log('ok - update removes old caches and claims clients');
   const appResponse={url:'cached-app'}; store.set('https://app.test/js/app.js',appResponse);
   let responsePromise; handlers.fetch({request:{method:'GET',url:'https://app.test/js/app.js',mode:'same-origin'},respondWith:p=>{responsePromise=p},waitUntil:()=>{}}); assert.equal(await responsePromise,appResponse); console.log('ok - offline app.js uses matching cache');
   handlers.fetch({request:{method:'GET',url:'https://app.test/js/missing.js',mode:'same-origin'},respondWith:p=>{responsePromise=p},waitUntil:()=>{}}); const missing=await responsePromise; assert.equal(missing.type,'error'); console.log('ok - missing offline asset does not receive HTML fallback');

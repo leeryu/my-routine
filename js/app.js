@@ -186,6 +186,45 @@ const ROUTINES = {
     ],
   },
 };
+
+function hypertrophyExercise(id, name, target, sets, reps, repMin, repMax, directMuscle, defKg, weight, tip) {
+  return { id, name, target, sets, reps, repMin, repMax, directMuscle, defKg, weight, con: '반동 없이 목표 근육으로 수축.', ecc: '가동범위 안에서 2~3초 제어.', tip, warn: null };
+}
+Object.assign(ROUTINES, {
+  A: {
+    label: '헬스 A', day: '화요일', tag: '상체 근비대 메인 · 8종목', exercises: [
+      hypertrophyExercise('chest-press', '체스트 프레스', '가슴 직접세트', 4, '6~10', 6, 10, '가슴', 40, '현재 작업중량', '마지막 작업세트 RIR 1~2.'),
+      hypertrophyExercise('dumbbell-row', '덤벨 로우', '등/광배 직접세트', 4, '8~12', 8, 12, '등/광배', 16, '현재 작업중량', '마지막 작업세트 RIR 1~2. 허리 회전을 줄인다.'),
+      hypertrophyExercise('lat-pulldown', '랫풀다운', '등/광배 직접세트', 3, '8~12', 8, 12, '등/광배', 35, '현재 작업중량', '마지막 작업세트 RIR 1~2.'),
+      hypertrophyExercise('lateral-raise', '사이드 레터럴 레이즈', '측면삼각근 직접세트', 3, '12~20', 12, 20, '측면삼각근', 6, '현재 작업중량', '마지막 작업세트 RIR 1~2. 반동보다 긴장을 우선한다.'),
+      hypertrophyExercise('reverse-pec-deck', '리버스 펙덱', '후면삼각근 직접세트', 3, '12~20', 12, 20, '후면삼각근', 40, '현재 작업중량', '마지막 작업세트 RIR 1~2.'),
+      hypertrophyExercise('biceps-curl', '이두 컬', '이두 직접세트', 2, '10~15', 10, 15, '이두', 0, '현재 작업중량', '마지막 작업세트 RIR 1~2.'),
+      hypertrophyExercise('triceps-pushdown', '삼두 푸쉬다운', '삼두 직접세트', 2, '10~15', 10, 15, '삼두', 0, '현재 작업중량', '마지막 작업세트 RIR 1~2.'),
+      { id: 'leg-extension', name: '레그 익스텐션', target: '하체 재도입 · 증상 기반', sets: 3, reps: '통증 없는 범위', weight: '현재 재도입 단계', defKg: 0, con: '무릎 90% 지점까지만.', ecc: '천천히 2~3초.', tip: '통증 0~2/10, 세트 중 증가 없음, 다음날 악화 없음이 우선이다.', warn: '⚠️ 날짜가 아닌 2~3회 안정 세션을 기준으로 진행.' },
+    ],
+  },
+  B: {
+    label: '헬스 B', day: '목요일', tag: '수영 회복 고려 · 8종목', exercises: [
+      hypertrophyExercise('chest-press', '체스트 프레스', '가슴 직접세트', 3, '8~12', 8, 12, '가슴', 40, '현재 작업중량', 'RIR 2~3. 실패세트와 추가 프레스는 피한다.'),
+      hypertrophyExercise('lat-pulldown', '랫풀다운', '등/광배 직접세트', 2, '8~12', 8, 12, '등/광배', 40, '현재 작업중량', 'RIR 2~3. 계획 세트만 완료한다.'),
+      hypertrophyExercise('dumbbell-row', '덤벨 로우', '등/광배 직접세트', 2, '8~12', 8, 12, '등/광배', 20, '현재 작업중량', 'RIR 2~3. A보다 가볍게 수행한다.'),
+      hypertrophyExercise('shoulder-press-supported', '숄더 프레스(등받이 지지)', '어깨 직접세트', 2, '8~12', 8, 12, null, 20, '현재 작업중량', 'RIR 2~3. 허리 과신전을 피한다.'),
+      hypertrophyExercise('lateral-raise', '사이드 레터럴 레이즈', '측면삼각근 직접세트', 4, '12~20', 12, 20, '측면삼각근', 6, '현재 작업중량', '마지막 작업세트 RIR 1~2.'),
+      hypertrophyExercise('reverse-pec-deck', '리버스 펙덱', '후면삼각근 직접세트', 2, '12~20', 12, 20, '후면삼각근', 40, '현재 작업중량', '마지막 작업세트 RIR 1~2.'),
+      hypertrophyExercise('biceps-curl', '이두 컬', '이두 직접세트', 2, '10~15', 10, 15, '이두', 0, '현재 작업중량', '마지막 작업세트 RIR 1~2.'),
+      { id: 'leg-extension', name: '레그 익스텐션', target: '하체 보조 · 증상 기반', sets: 3, reps: '통증 없는 범위', weight: '현재 재도입 단계', defKg: 40, con: '무릎 90% 지점까지만.', ecc: '천천히 2~3초.', tip: '기존 하체 재도입 정책을 유지한다.', warn: '⚠️ 날짜가 아닌 증상과 연속 안정 세션을 기준으로 진행.' },
+    ],
+  },
+  C: {
+    label: 'C루틴', day: '선택 루틴', tag: '기존 기록 보존 · 기본 일정 제외', exercises: [
+      hypertrophyExercise('chest-press', '체스트 프레스', '가슴', 3, '10회', 8, 12, null, 0, '조절', '기존 C루틴 기록용.'),
+      hypertrophyExercise('shoulder-press-legacy', '숄더 프레스', '어깨', 3, '10회', 8, 12, null, 0, '조절', '기존 C루틴 기록용.'),
+      hypertrophyExercise('reverse-pec-deck', '리버스 펙덱', '후면어깨', 3, '12회', 12, 20, null, 0, '가볍게', '기존 C루틴 기록용.'),
+      hypertrophyExercise('lateral-raise', '레터럴 레이즈', '측면어깨', 3, '12회', 12, 20, null, 0, '가볍게', '기존 C루틴 기록용.'),
+      hypertrophyExercise('triceps-pushdown', '케이블 푸쉬다운', '삼두', 3, '12회', 10, 15, null, 0, '조절', '기존 C루틴 기록용.'),
+    ],
+  },
+});
 const CLINICAL_PROFILE = {
   assessedAt: '2026-07-27', source: '재활의학과 진료', status: 'active', updatedAt: '2026-07-31', version: 1,
   structuralAbnormality: '없음', spineAlignment: '정상', pelvisAlignment: '정상', hipAlignment: '정상',
@@ -194,15 +233,15 @@ const CLINICAL_PROFILE = {
   goals: ['갈비뼈-골반 중립 유지', '코어 안정성', '목 정렬 개선'],
   summary: '현재 검사상 뼈·관절의 구조적 이상이나 정렬 이상은 확인되지 않았습니다.\n거북목 경향과 코어 안정성 부족으로 인한 가벼운 골반 전방경사가 있습니다.\n목표는 골반을 억지로 말아 넣는 것이 아니라, 갈비뼈와 골반의 중립을 유지한 채 움직이는 능력을 높이는 것입니다.',
 };
-const WEEKLY_GOALS = { A: 1, B: 1, C: 1 };
+const WEEKLY_GOALS = { A: 1, B: 1 };
 const DAY_INFO = [
-  { label: '월', type: 'A', rk: 'A' },
-  { label: '화', type: '홈코어', rk: null },
-  { label: '수', type: 'B', rk: 'B' },
-  { label: '목', type: '홈코어', rk: null },
+  { label: '월', type: '휴식/코어', rk: null },
+  { label: '화', type: 'A', rk: 'A' },
+  { label: '수', type: '코어/휴식', rk: null },
+  { label: '목', type: 'B', rk: 'B' },
   { label: '금', type: '휴식', rk: null },
-  { label: '토', type: '수영', rk: null },
-  { label: '일', type: '수영', rk: null },
+  { label: '토', type: '메인수영', rk: null },
+  { label: '일', type: '기술수영/휴식', rk: null },
 ];
 const BAR_WEIGHTS = [
   { label: '바벨 20kg', kg: 20 },
@@ -216,8 +255,12 @@ const MUSCLE_MAP = {
   '체스트 프레스': ['가슴'],
   '리버스 펙덱': ['후면어깨', '등'],
   '레터럴 레이즈': ['측면어깨'],
+  '사이드 레터럴 레이즈': ['측면어깨'],
   '숄더 프레스': ['어깨'],
+  '숄더 프레스(등받이 지지)': ['어깨'],
   '케이블 푸쉬다운': ['삼두'],
+  '삼두 푸쉬다운': ['삼두'],
+  '이두 컬': ['이두'],
   크런치: ['코어'],
   '사이드 플랭크': ['코어'],
   '레그 익스텐션': ['하체'],
@@ -284,6 +327,8 @@ const MIGRATION_BACKUP_V12 = 'migrationBackup:v12';
 const MIGRATION_STATUS_V12 = 'migrationStatus:v12';
 const MIGRATION_BACKUP_V13 = 'migrationBackup:v13';
 const MIGRATION_STATUS_V13 = 'migrationStatus:v13';
+const MIGRATION_BACKUP_V14 = 'migrationBackup:v14';
+const MIGRATION_STATUS_V14 = 'migrationStatus:v14';
 
 function storageSnapshot() {
   return JSON.parse(JSON.stringify(_cache));
@@ -394,6 +439,7 @@ function migrateV9() {
 }
 async function migrateV10() {
   const source = storageSnapshot();
+  if ([11, 12, 13, 14].includes(Number(source.storageSchemaVersion))) return { status: 'already-migrated' };
   const classification = StorageMigration.classifyStorage(source);
   if (classification.type === 'v10') return { status: 'ready-for-v11' };
   if (classification.type === 'current') {
@@ -476,7 +522,7 @@ async function migrateV11() {
     return { status: 'backup-failed' };
   }
   const after = JSON.parse(JSON.stringify(before));
-  after.storageSchemaVersion = STORAGE_SCHEMA_VERSION;
+  after.storageSchemaVersion = 11;
   after.clinicalProfile = { ...CLINICAL_PROFILE, ...(after.clinicalProfile || {}), medicalRecommendation: { ...CLINICAL_PROFILE.medicalRecommendation, ...(after.clinicalProfile?.medicalRecommendation || {}) } };
   after.weeklyGoals = after.weeklyGoals || WEEKLY_GOALS;
   after[MIGRATION_STATUS_V11] = { status: 'completed', completedAt: new Date().toISOString(), sourceSchemaVersion: 10, movedKeys: [] };
@@ -514,7 +560,7 @@ async function migrateV12() {
     return conflict;
   }
   const after = transformed.result;
-  after.storageSchemaVersion = STORAGE_SCHEMA_VERSION;
+  after.storageSchemaVersion = 12;
   after[MIGRATION_STATUS_V12] = { status: 'completed', completedAt: new Date().toISOString(), sourceSchemaVersion: 11, movedKeys: transformed.moves.map(({ from, to }) => ({ from, to })) };
   try {
     await StorageMigration.commitSnapshot({ set: persistSet, delete: persistDelete }, before, after, [MIGRATION_STATUS_V12, 'storageSchemaVersion']);
@@ -553,7 +599,7 @@ async function migrateV13() {
     return conflict;
   }
   const after = transformed.result;
-  after.storageSchemaVersion = STORAGE_SCHEMA_VERSION;
+  after.storageSchemaVersion = 13;
   after[MIGRATION_STATUS_V13] = { status: 'completed', completedAt: new Date().toISOString(), sourceSchemaVersion: 12, movedKeys: transformed.moves.map(({ from, to }) => ({ from, to })) };
   try {
     await StorageMigration.commitSnapshot({ set: persistSet, delete: persistDelete }, before, after, [MIGRATION_STATUS_V13, 'storageSchemaVersion']);
@@ -562,6 +608,36 @@ async function migrateV13() {
     try { await persistSet(MIGRATION_STATUS_V13, { status: 'failed', failedAt: new Date().toISOString(), message: String(error.message || error) }); } catch {}
     throw error;
   }
+}
+async function migrateV14() {
+  const before = storageSnapshot();
+  if (Number(before.storageSchemaVersion) === 14) {
+    if (!before[MIGRATION_STATUS_V14]) await persistSet(MIGRATION_STATUS_V14, { status: 'completed-unverified', detectedAt: new Date().toISOString(), sourceSchemaVersion: 14, movedKeys: [] });
+    return { status: 'current' };
+  }
+  if (Number(before.storageSchemaVersion) !== 13) return { status: 'not-applicable' };
+  const existingBackup = before[MIGRATION_BACKUP_V14];
+  if (existingBackup && existingBackup.sourceSchemaVersion !== 13) {
+    const conflict = { status: 'backup-conflict', detectedAt: new Date().toISOString(), sourceSchemaVersion: 13 };
+    await persistSet(MIGRATION_STATUS_V14, conflict);
+    return conflict;
+  }
+  const backupOk = await createSafetyBackup(MIGRATION_BACKUP_V14, 13, before, Object.keys(before));
+  if (!backupOk) {
+    await persistSet(MIGRATION_STATUS_V14, { status: 'backup-failed', failedAt: new Date().toISOString() });
+    return { status: 'backup-failed' };
+  }
+  const transformed = StorageMigration.transformV13ToV14(before);
+  if (!transformed.ok) {
+    const conflict = { status: 'conflict', detectedAt: new Date().toISOString(), sourceSchemaVersion: 13, conflicts: transformed.conflicts };
+    await persistSet(MIGRATION_STATUS_V14, conflict);
+    return conflict;
+  }
+  const after = transformed.result;
+  after.storageSchemaVersion = 14;
+  after[MIGRATION_STATUS_V14] = { status: 'completed', completedAt: new Date().toISOString(), sourceSchemaVersion: 13, movedKeys: transformed.moves.map(({ from, to }) => ({ from, to })) };
+  await StorageMigration.commitSnapshot({ set: persistSet, delete: persistDelete }, before, after, [MIGRATION_STATUS_V14, 'storageSchemaVersion']);
+  return { status: 'completed' };
 }
 async function initStorage() {
   const localSnapshot = {};
@@ -695,11 +771,13 @@ function getDateForDayIdx(idx) {
 
 /* ═══ COACHING ENGINE ═══ */
 function getExHistory(rk, idx) {
-  const prefix = `rec:${rk}_${idx}_`;
+  const ex = ROUTINES[rk].exercises[idx];
+  const today = todayStr();
   return Object.keys(_cache)
-    .filter((k) => k.startsWith(prefix))
-    .map((k) => ({ date: k.replace(prefix, ''), rec: gls(k) }))
-    .filter((x) => x.rec?.summary)
+    .map((k) => ({ match: k.match(/^rec:([ABC])_(\d+)_(\d{4}-\d{2}-\d{2})$/), rec: gls(k) }))
+    .filter((x) => x.match && x.match[3] !== today && x.rec?.summary)
+    .filter((x) => x.rec.exerciseId ? x.rec.exerciseId === ex.id : x.match[1] === rk && Number(x.match[2]) === idx)
+    .map((x) => ({ date: x.match[3], rec: x.rec }))
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 function maxKgRec(rec, sets) {
@@ -748,6 +826,15 @@ function detectPlateau(rk, idx, preHist) {
 function getSmartRec(rk, idx, preHist) {
   const ex = ROUTINES[rk].exercises[idx];
   const hist = preHist || getExHistory(rk, idx);
+  if (ex.repMax) {
+    const progress = Progression.evaluateDoubleProgression(ex, hist);
+    const lastKg = hist.length ? Progression.workingWeight(hist[0].rec, ex.sets) : 0;
+    if (!hist.length) return { action: 'START', kg: ex.defKg || 0, msg: `첫 기록 · 목표 ${ex.repMin}~${ex.repMax}회, 마지막 세트 RIR을 기록하세요`, restSecs: 90 };
+    if (progress.state === 'increase') return { action: 'INCREASE', kg: 0, msg: `증량 조건 달성 · ${lastKg}kg → 다음 최소 중량을 고려하세요`, restSecs: 90 };
+    if (progress.state === 'top-once') return { action: 'MAINTAIN', kg: lastKg, msg: `상한 반복 1/2회 · ${lastKg}kg로 한 번 더 안정적으로 완료하세요`, restSecs: 90 };
+    if (progress.state === 'adapting') return { action: 'MAINTAIN', kg: lastKg, msg: `새 중량 적응 중 · 반복수를 범위 안에서 쌓으세요`, restSecs: 90 };
+    if (hist.length) return { action: 'MAINTAIN', kg: lastKg, msg: progress.repsDelta === null ? '기록을 한 번 더 쌓으면 진행 추세를 계산합니다.' : `같은 중량 총 반복 ${progress.repsDelta >= 0 ? '+' : ''}${progress.repsDelta}회 · 목표 범위 안에서 누적하세요`, restSecs: 90 };
+  }
   if (!hist.length)
     return {
       action: 'START',
@@ -944,7 +1031,9 @@ function enqueueExerciseNotionCompletion(idx, ex, rec) {
     exerciseId: ex.id || null,
     completedAt: new Date().toISOString(),
     summary: rec.summary || '',
-    rpe: rec.rpe || '',
+    lastRir: rec.lastRir ?? '',
+    totalReps: rec.totalReps || 0,
+    progressionStatus: rec.progressionStatus || '',
     pain: rec.pain || '',
     note: rec.note || '',
   });
@@ -1019,12 +1108,13 @@ function flushRoutineInputs(routineKey, date) {
         parts.push(`${rec['kg_' + s]}kg×${rec['reps_' + s]}`);
     }
     rec.summary = parts.join(' / ');
-    const rpe = document.getElementById(`rpe_${idx}`);
+    const rir = document.getElementById(`rir_${idx}`);
     const pain = document.getElementById(`pain_${idx}`);
     const note = document.getElementById(`note_${idx}`);
-    if (rpe) rec.rpe = rpe.value || '';
+    if (rir) rec.lastRir = rir.value || '';
     if (pain) rec.pain = pain.value || '';
     if (note) rec.note = note.value || '';
+    stampProgression(idx, rec);
     clearTimeout(window['_t' + idx]);
     saveRecord(`${routineKey}_${idx}_${date}`, rec);
   });
@@ -1051,7 +1141,9 @@ function finalizeWorkoutCompletion(routineKey, date) {
           id: ex.id || null,
           name: ex.name,
           summary: rec.summary || '',
-          rpe: rec.rpe || '',
+          lastRir: rec.lastRir ?? '',
+          totalReps: rec.totalReps || 0,
+          progressionStatus: rec.progressionStatus || '',
           pain: rec.pain || '',
           note: rec.note || '',
         };
@@ -1179,6 +1271,11 @@ function buildSelector() {
 function selectRoutine(key) {
   showRoutine(key);
 }
+function exerciseRecordBrief(record, setCount) {
+  const values = Progression.setValues(record, setCount);
+  const kg = Progression.workingWeight(record, setCount) || Math.max(0, ...values.map((set) => set.kg));
+  return `${kg ? kg + 'kg · ' : ''}${values.map((set) => set.reps || '—').join('/')}`;
+}
 function showRoutine(key) {
   currentRoutine = key;
   document.querySelectorAll('.routine-chip').forEach((c) => {
@@ -1198,7 +1295,8 @@ function showRoutine(key) {
 
     /* 종목당 이력 조회를 한 번만 하고 코치 추천·정체 감지에 재사용 (중복 스캔 제거) */
     const hist = getExHistory(key, idx);
-    const smartRec = getSmartRec(key, idx, hist);
+    const currentHistory = rec.summary ? [{ date: today, rec }, ...hist] : hist;
+    const smartRec = getSmartRec(key, idx, currentHistory);
     const plateau = detectPlateau(key, idx, hist);
 
     /* Previous session data for pre-fill */
@@ -1247,11 +1345,10 @@ function showRoutine(key) {
   </div>
 </div>`;
     }
-    const prevHtml = rec.summary
-      ? `<div class="rec-prev">이전: <strong>${rec.summary}</strong></div>`
-      : prevRec.summary
-        ? `<div class="rec-prev">참고 (${hist[0]?.date || '?'}): <strong>${prevRec.summary}</strong></div>`
-        : '';
+    const prevHtml = prevRec.summary ? `<div class="rec-prev">지난번 (${hist[0]?.date || '?'}): <strong>${exerciseRecordBrief(prevRec, ex.sets)}</strong></div>` : '';
+    const compareHtml = prevRec.summary
+      ? `<div class="progress-compare" id="compare_${idx}">지난번 ${exerciseRecordBrief(prevRec, ex.sets)} · 오늘 입력을 시작하세요</div>`
+      : `<div class="progress-compare" id="compare_${idx}">첫 기록입니다</div>`;
 
     /* ── TOP INSIGHT (정보 위계): 정체 경고 > 코치 추천, 한 번에 하나만 ── */
     const applyKg =
@@ -1267,15 +1364,15 @@ function showRoutine(key) {
             ? '⚖️'
             : '🎯';
     const topInsight = plateau
-      ? `<div class="top-insight plateau">📊 ${plateau}</div>`
+      ? `<div class="top-insight plateau" id="progress_${idx}">📊 ${plateau}</div>`
       : smartRec.msg
-        ? `<div class="top-insight rec"><span class="ti-icon">${recIcon}</span><span class="ti-text">${smartRec.msg}</span>${applyKg}</div>`
+        ? `<div class="top-insight rec" id="progress_${idx}"><span class="ti-icon">${recIcon}</span><span class="ti-text">${smartRec.msg}</span>${applyKg}</div>`
         : '';
 
-    const rpeVal = rec.rpe || '';
+    const rirVal = rec.lastRir ?? '';
     const painVal = rec.pain || '';
     const noteVal = escapeHtml(rec.note || '');
-    const extraHtml = `<div class="rec-extra"><select id="rpe_${idx}"><option value="">RPE 선택</option>${[6, 7, 8, 9, 10].map((v) => `<option value="${v}"${String(rpeVal) === String(v) ? ' selected' : ''}>RPE ${v} ${v <= 6 ? '쉬움' : v === 7 ? '여유' : v === 8 ? '적정' : v === 9 ? '힘듦' : '한계'}</option>`).join('')}</select><select id="pain_${idx}"><option value="">통증 없음</option><option value="muscle"${painVal === 'muscle' ? ' selected' : ''}>근육 자극</option><option value="joint"${painVal === 'joint' ? ' selected' : ''}>관절 시큰</option><option value="nerve"${painVal === 'nerve' ? ' selected' : ''}>저림/방사통</option></select><textarea class="rec-note" id="note_${idx}" placeholder="오늘 느낌 메모: 광배 느낌, 허리 당김 등">${noteVal}</textarea></div>`;
+    const extraHtml = `<div class="rec-extra"><select id="rir_${idx}" onchange="saveEx(${idx},true)"><option value="">마지막 세트 RIR</option>${['0','1','2','3+'].map((v) => `<option value="${v}"${String(rirVal) === v ? ' selected' : ''}>RIR ${v}</option>`).join('')}</select><select id="pain_${idx}"><option value="">통증 없음</option><option value="muscle"${painVal === 'muscle' ? ' selected' : ''}>근육 자극</option><option value="joint"${painVal === 'joint' ? ' selected' : ''}>관절 시큰</option><option value="nerve"${painVal === 'nerve' ? ' selected' : ''}>저림/방사통</option></select><textarea class="rec-note" id="note_${idx}" placeholder="오늘 느낌 메모: 광배 느낌, 허리 당김 등">${noteVal}</textarea></div>`;
 
     const prHtml = pr
       ? `<span class="pr-badge" style="display:inline-flex">🏆 PR ${pr}kg</span>`
@@ -1324,7 +1421,7 @@ function showRoutine(key) {
   ${ex.tip ? `<div class="tip-box">💡 ${ex.tip}</div>` : ''}
   ${ex.warn ? `<div class="warn-box">⚠️ ${ex.warn}</div>` : ''}
 </div>
-<div class="rec-body">${topInsight}${moreHtml}<div class="quick-row"><button class="quick-btn primary" onclick="copyPrevious(${idx})" type="button">지난 기록 복사</button><button class="quick-btn" onclick="sameAsFirst(${idx})" type="button">1세트로 통일</button><button class="quick-btn" onclick="bumpExercise(${idx},2.5)" type="button">전체 +2.5kg</button><button class="quick-btn danger" onclick="stopForPain(${idx})" type="button">통증 중단</button></div>${setRowsHtml}${extraHtml}<button class="rec-save-btn" onclick="saveEx(${idx})" type="button">저장</button></div>`;
+<div class="rec-body">${topInsight}${compareHtml}${moreHtml}<div class="quick-row"><button class="quick-btn primary" onclick="copyPrevious(${idx})" type="button">지난 기록 복사</button><button class="quick-btn" onclick="sameAsFirst(${idx})" type="button">1세트로 통일</button><button class="quick-btn" onclick="bumpExercise(${idx},2.5)" type="button">전체 +2.5kg</button><button class="quick-btn danger" onclick="stopForPain(${idx})" type="button">통증 중단</button></div>${setRowsHtml}${extraHtml}<button class="rec-save-btn" onclick="saveEx(${idx})" type="button">저장</button></div>`;
     content.appendChild(card);
   });
   updateProgress();
@@ -1450,8 +1547,36 @@ function onInpChange(idx, s) {
     ormEl.textContent = `추정 1RM: ${(parseFloat(kg) * (1 + parseInt(rp) / 30)).toFixed(1)}kg`;
     ormEl.classList.add('show');
   }
+  updateExerciseComparison(idx);
   clearTimeout(window['_t' + idx]);
   window['_t' + idx] = setTimeout(() => saveEx(idx, true), 600);
+}
+function updateExerciseComparison(idx) {
+  const ex = ROUTINES[currentRoutine].exercises[idx];
+  const el = document.getElementById(`compare_${idx}`);
+  if (!ex || !el) return;
+  const current = {};
+  for (let s = 0; s < ex.sets; s++) {
+    current['kg_' + s] = Number(document.getElementById(`kg_${idx}_${s}`)?.value) || 0;
+    current['reps_' + s] = Number(document.getElementById(`rp_${idx}_${s}`)?.value) || 0;
+  }
+  const previous = getExHistory(currentRoutine, idx)[0]?.rec;
+  const currentTotal = Progression.totalReps(current, ex.sets);
+  if (!previous) { el.textContent = currentTotal ? `현재 ${exerciseRecordBrief(current, ex.sets)} · 총 ${currentTotal}회` : '첫 기록입니다'; return; }
+  const delta = currentTotal - Progression.totalReps(previous, ex.sets);
+  el.textContent = `지난번 ${exerciseRecordBrief(previous, ex.sets)} · 현재 ${exerciseRecordBrief(current, ex.sets)} · ${currentTotal ? `총 ${currentTotal}회 (${delta >= 0 ? '+' : ''}${delta})` : '입력 전'}`;
+}
+function updateProgressionInsight(idx, rec) {
+  const ex = ROUTINES[currentRoutine].exercises[idx];
+  const el = document.getElementById(`progress_${idx}`);
+  if (!ex?.repMax || !el) return;
+  const result = Progression.evaluateDoubleProgression(ex, [{ date: todayStr(), rec }, ...getExHistory(currentRoutine, idx)]);
+  el.textContent = result.state === 'increase' ? `📈 증량 조건 달성 · ${result.currentWeight}kg → 다음 최소 중량을 고려하세요` : `⚖️ ${result.label}${result.repsDelta === null ? '' : ` · 지난번 대비 ${result.repsDelta >= 0 ? '+' : ''}${result.repsDelta} reps`}`;
+}
+function stampProgression(idx, rec) {
+  const ex = ROUTINES[currentRoutine].exercises[idx];
+  rec.totalReps = Progression.totalReps(rec, ex.sets);
+  if (ex.repMax) rec.progressionStatus = Progression.evaluateDoubleProgression(ex, [{ date: todayStr(), rec }, ...getExHistory(currentRoutine, idx)]).state;
 }
 function toggleSetCheck(idx, s) {
   const btn = document.getElementById(`chk_${idx}_${s}`);
@@ -1471,8 +1596,8 @@ function toggleSetCheck(idx, s) {
 
   /* ── Adaptive rest time (NEW) ── */
   if (isChecked) {
-    const rpe = +document.getElementById(`rpe_${idx}`)?.value || 0;
-    const restSecs = rpe >= 9 ? 120 : rpe >= 1 && rpe <= 7 ? 75 : 90;
+    const rir = document.getElementById(`rir_${idx}`)?.value || '';
+    const restSecs = rir === '0' ? 120 : 90;
     setRestDuration(restSecs);
     toggleRest(true);
     showToast(`✅ ${ex.name} ${s + 1}세트 완료 · 휴식 ${formatRestTime(restSecs)} 시작`);
@@ -1516,10 +1641,12 @@ function toggleSetCheck(idx, s) {
   } else if (!isChecked) {
     showToast('↩️ 되돌림 — 다시 누르면 완료 처리');
   }
-  rec.rpe = document.getElementById(`rpe_${idx}`)?.value || rec.rpe || '';
+  rec.lastRir = document.getElementById(`rir_${idx}`)?.value || rec.lastRir || '';
   rec.pain = document.getElementById(`pain_${idx}`)?.value || rec.pain || '';
   rec.note = document.getElementById(`note_${idx}`)?.value || rec.note || '';
+  stampProgression(idx, rec);
   saveRecord(rKey, rec);
+  updateProgressionInsight(idx, rec);
   document.getElementById('ex-' + idx)?.classList.toggle('done', allChecked);
   if (allChecked) {
     enqueueExerciseNotionCompletion(idx, ex, rec);
@@ -1542,10 +1669,12 @@ function saveEx(idx, silent) {
     if (kg && rp) parts.push(`${kg}kg×${rp}`);
   }
   rec.summary = parts.join(' / ');
-  rec.rpe = document.getElementById(`rpe_${idx}`)?.value || '';
+  rec.lastRir = document.getElementById(`rir_${idx}`)?.value || '';
   rec.pain = document.getElementById(`pain_${idx}`)?.value || '';
   rec.note = document.getElementById(`note_${idx}`)?.value || '';
+  stampProgression(idx, rec);
   saveRecord(rKey, rec);
+  updateProgressionInsight(idx, rec);
   if (!silent) showToast('💾 저장됨');
   updateProgress();
 }
@@ -2153,6 +2282,33 @@ function getMuscleCoachText(muscles) {
     return `현재 최다 부위는 ${topName}. 측면어깨 볼륨은 상대적으로 낮아서 다음 운동에 레터럴레이즈 1~2세트 추가가 적절하다.`;
   return `현재 최다 부위는 ${topName}. 큰 편중 없이 진행 중이니 중량보다 주간 반복성과 회복을 유지해.`;
 }
+const DIRECT_SET_GOALS = { '가슴': 7, '등/광배': 11, '측면삼각근': 7, '후면삼각근': 5, '이두': 4, '삼두': 2 };
+function getWeeklyDirectSets(dates) {
+  const totals = {};
+  Object.keys(DIRECT_SET_GOALS).forEach((muscle) => { totals[muscle] = 0; });
+  Object.keys(_cache).forEach((key) => {
+    const match = key.match(/^rec:([AB])_(\d+)_(\d{4}-\d{2}-\d{2})$/);
+    if (!match || !dates.has(match[3])) return;
+    const ex = ROUTINES[match[1]]?.exercises[Number(match[2])];
+    const rec = gls(key) || {};
+    if (!ex?.directMuscle || (rec.exerciseId && rec.exerciseId !== ex.id)) return;
+    let completed = 0;
+    for (let s = 0; s < ex.sets; s++) if (rec['checked_' + s] || (rec.allDone && rec['reps_' + s])) completed++;
+    totals[ex.directMuscle] += completed;
+  });
+  return totals;
+}
+function getProgressionReport() {
+  const seen = new Set();
+  const rows = [];
+  ['A', 'B'].forEach((rk) => ROUTINES[rk].exercises.forEach((ex, idx) => {
+    if (!ex.repMax || seen.has(ex.id)) return;
+    seen.add(ex.id);
+    const status = Progression.evaluateDoubleProgression(ex, getExHistory(rk, idx));
+    if (status.state !== 'insufficient') rows.push(`${ex.name}: ${status.label}`);
+  }));
+  return rows;
+}
 function buildWeeklyReport() {
   const el = document.getElementById('weeklyReport');
   if (!el) return;
@@ -2197,6 +2353,9 @@ function buildWeeklyReport() {
     ? '비교 데이터 부족'
     : `${volDiff >= 0 ? '▲' : '▼'} ${Math.abs(volDiff)}%`;
 
+  const directSets = getWeeklyDirectSets(last7);
+  const directHtml = Object.entries(DIRECT_SET_GOALS).map(([muscle, goal]) => `<span>${muscle} <b>${directSets[muscle]}/${goal}</b>세트</span>`).join('');
+  const progressionRows = getProgressionReport();
   el.innerHTML = `
     <div class="report-head">
       <div><div class="report-kicker">최근 7일</div><div class="report-title">${status}</div></div>
@@ -2207,7 +2366,9 @@ function buildWeeklyReport() {
       <div class="report-metric"><strong>${formatKg(Math.round(cur.vol))}</strong><span>총 볼륨</span><small>지난주 ${formatKg(Math.round(prev.vol))}</small></div>
       <div class="report-metric"><strong>${cur.days ? formatKg(Math.round(cur.vol / cur.days)) : '0kg'}</strong><span>회당 볼륨</span><small>강도 참고값</small></div>
     </div>
-    <div class="report-coach"><b>🤖 코치 판단</b><span>${coach}</span></div>`;
+    <div class="report-coach"><b>🤖 코치 판단</b><span>${coach}</span></div>
+    <div class="direct-set-report"><b>주간 직접세트</b><div>${directHtml}</div></div>
+    <div class="progression-report"><b>더블 프로그레션</b><span>${progressionRows.length ? progressionRows.join(' · ') : '완료 기록을 쌓으면 표시됩니다.'}</span></div>`;
 }
 function buildMuscleGrid() {
   const grid = document.getElementById('muscleGrid');
@@ -2568,6 +2729,7 @@ function localGymFeedback() {
   else if (rs < 75)
     lines.push('오늘은 보통 컨디션. 마지막 세트 1~2회 여유 남겨라.');
   else lines.push('오늘은 정상 볼륨 가능. 단, 통증 나오면 바로 감량.');
+  if (currentRoutine === 'B') lines.push('B루틴은 토요일 메인 수영 회복을 위해 계획 세트만 수행하고 실패 세트·추가 프레스는 피하세요.');
   if (avgRpe)
     lines.push(
       `평균 RPE ${avgRpe.toFixed(1)}. ${avgRpe >= 9 ? '다음 세션 증량 금지.' : avgRpe <= 7 ? '다음 세션 일부 종목 증량 후보.' : '강도 적정.'}`,
@@ -3141,6 +3303,7 @@ initStorage().then(async () => {
     await migrateV11();
     await migrateV12();
     await migrateV13();
+    await migrateV14();
   } catch (error) {
     console.error('[storage migration] initialization failed', error);
   }
@@ -3151,7 +3314,7 @@ initStorage().then(async () => {
   buildWeekStrip();
   buildSelector();
   renderReadiness();
-  showRoutine({ 1: 'A', 3: 'B' }[new Date().getDay()] || 'A');
+  showRoutine({ 2: 'A', 4: 'B' }[new Date().getDay()] || 'A');
   updateCoachPanel();
   renderRestTimer();
   updateBackupNote();

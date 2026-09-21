@@ -16,17 +16,23 @@ ok('navigation is workout, history, daily, and settings',
   !/id="tab-(rehab|swim|rules)"/.test(html));
 ok('removed feature modules are not loaded or cached',
   !/js\/rehab\.js/.test(html) && !/js\/rehab\.js/.test(sw));
-ok('beginner start action and prominent timer exist',
-  /id="beginnerTitle"/.test(html) && /function startTodayWorkout/.test(app) &&
+ok('today routine overview and prominent timer exist',
+  /id="routineOverview"/.test(html) && /function renderRoutineOverview/.test(app) &&
   /\.rest-timer\{font-size:56px/.test(css));
+ok('focus mode and floating action bar are removed',
+  !/id="focusOverlay"/.test(html) && !/id="actionBar"/.test(html) &&
+  !/function openFocusMode/.test(app) && !/\.focus-overlay/.test(css));
+ok('set completion gives immediate visible feedback',
+  /btn\.textContent = isChecked \? '✓ 완료됨' : '✓ 완료'/.test(app) &&
+  /세트 완료 · 휴식/.test(app));
 ok('Notion webhook uses a local outbox and completion event',
   /NOTION_WEBHOOK_OUTBOX/.test(app) && /buildNotionEvent/.test(app) &&
   /id="notionWebhookUrl"/.test(html));
 ok('browser bundle contains no Notion token', !/NOTION_TOKEN/.test(app + html));
 ok('calendar no longer renders rehabilitation markers',
   !/corrDoneCount/.test(app) && !/교정 전체 수행일/.test(html));
-ok('C routine is removed and weekly schedule replaces Sat/Sun gym day',
-  !/^\s*C: \{/m.test(app) && /id="tab-daily"/.test(html) &&
+ok('C routine remains optional while weekly schedule uses Sat/Sun swimming',
+  /day: '선택 루틴'/.test(app) && /id="tab-daily"/.test(html) &&
   /js\/progression\.js/.test(html) && /js\/progression\.js/.test(sw));
 {
   const bBlock = app.slice(app.indexOf('\n  B: {'), app.indexOf('\n};'));

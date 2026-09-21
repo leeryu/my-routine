@@ -1,5 +1,5 @@
 /* 배포 시 앱 파일 변경이 있으면 CACHE 버전을 올릴 것 (v1 → v2 …) */
-const CACHE = 'routine-v10';
+const CACHE = 'routine-v11';
 const CORE = [
   './',
   './index.html',

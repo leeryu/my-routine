@@ -493,3 +493,7 @@ body.dark .beginner-start{background:linear-gradient(135deg,#252143,#3a3376)}bod
 .ws-summary-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:10px 12px}
 .ws-summary-lbl{font-size:12px;font-weight:700;color:var(--text-2)}
 .ws-summary-val{font-family:var(--mono);font-size:13px;font-weight:900;color:var(--text)}
+.direct-set-report,.progression-report{margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+.direct-set-report>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.direct-set-report span{font-size:12px;padding:5px 8px;border-radius:999px;background:var(--bg)}
+.progression-report{display:flex;flex-direction:column;gap:6px}.progression-report span{font-size:13px;line-height:1.5;color:var(--text-2)}
+.progress-compare{margin:8px 0;padding:8px 10px;border-radius:9px;background:var(--bg);font-size:12px;color:var(--text-2)}

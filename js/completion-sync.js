@@ -31,7 +31,7 @@
     const exerciseLines = workout.exercises.map((exercise) => {
       const details = [
         exercise.summary || '세트 상세 없음',
-        exercise.rpe ? `RPE ${exercise.rpe}` : '',
+        exercise.lastRir !== '' && exercise.lastRir !== undefined ? `마지막 세트 RIR ${exercise.lastRir}` : '',
         exercise.pain ? `통증 ${exercise.pain}` : '',
         exercise.note ? `메모 ${exercise.note}` : '',
       ].filter(Boolean).join(' / ');
@@ -95,7 +95,9 @@
       exerciseId: input.exerciseId || null,
       completedAt,
       summary: input.summary || '',
-      rpe: input.rpe || '',
+      lastRir: input.lastRir ?? '',
+      totalReps: Number(input.totalReps) || 0,
+      progressionStatus: input.progressionStatus || '',
       pain: input.pain || '',
       note: input.note || '',
     };
@@ -105,7 +107,7 @@
     const exercise = clone(completion);
     const details = [
       exercise.summary || '세트 상세 없음',
-      exercise.rpe ? `RPE ${exercise.rpe}` : '',
+      exercise.lastRir !== '' ? `마지막 세트 RIR ${exercise.lastRir}` : '',
       exercise.pain ? `통증 ${exercise.pain}` : '',
       exercise.note ? `메모 ${exercise.note}` : '',
     ].filter(Boolean).join(' / ');

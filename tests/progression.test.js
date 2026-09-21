@@ -47,6 +47,22 @@ ok('nextStage/prevStage clamp to the 1-5 range',
   Progression.prevStage(3) === 2);
 
 {
+  const exercise = { sets: 3, repMax: 12 };
+  const record = (kg, reps, lastRir) => ({ kg_0: kg, kg_1: kg, kg_2: kg, reps_0: reps, reps_1: reps, reps_2: reps, lastRir, allDone: true });
+  ok('double progression requires two consecutive top-range sessions at the same weight and RIR 1-2',
+    Progression.evaluateDoubleProgression(exercise, [
+      { rec: record(40, 12, '1') }, { rec: record(40, 12, '2') },
+    ]).state === 'increase' &&
+    Progression.evaluateDoubleProgression(exercise, [
+      { rec: record(40, 12, '0') }, { rec: record(40, 12, '2') },
+    ]).state !== 'increase');
+  ok('a higher working weight is reported as an adaptation session',
+    Progression.evaluateDoubleProgression(exercise, [
+      { rec: record(42.5, 8, '2') }, { rec: record(40, 12, '2') },
+    ]).state === 'adapting');
+}
+
+{
   const base = {
     mon: { key: 'mon', dayLabel: '월', label: '헬스A + 홈코어' },
     tue: { key: 'tue', dayLabel: '화', label: '홈코어' },

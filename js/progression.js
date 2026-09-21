@@ -90,6 +90,40 @@
     return clampStage(clampStage(stage) - 1);
   }
 
+  function setValues(record, setCount) {
+    return Array.from({ length: setCount }, (_, index) => ({ kg: Number(record?.['kg_' + index]) || 0, reps: Number(record?.['reps_' + index]) || 0 }));
+  }
+  function totalReps(record, setCount) {
+    return setValues(record, setCount).reduce((sum, set) => sum + set.reps, 0);
+  }
+  function workingWeight(record, setCount) {
+    const weights = setValues(record, setCount).map((set) => set.kg).filter((kg) => kg > 0);
+    return weights.length && weights.every((kg) => kg === weights[0]) ? weights[0] : 0;
+  }
+  function isStableTop(record, exercise) {
+    const sets = setValues(record, exercise.sets);
+    const rir = String(record?.lastRir ?? '');
+    return sets.every((set) => set.kg > 0 && set.reps >= exercise.repMax) && workingWeight(record, exercise.sets) > 0 && (rir === '1' || rir === '2');
+  }
+  function evaluateDoubleProgression(exercise, history) {
+    const completed = (history || []).filter((item) => item?.rec?.allDone || totalReps(item?.rec, exercise.sets) > 0);
+    if (!completed.length) return { state: 'insufficient', label: '데이터 부족', topStreak: 0, repsDelta: null };
+    const current = completed[0].rec;
+    const previous = completed[1]?.rec;
+    const currentWeight = workingWeight(current, exercise.sets);
+    const previousWeight = previous ? workingWeight(previous, exercise.sets) : 0;
+    const reps = totalReps(current, exercise.sets);
+    const previousReps = previous ? totalReps(previous, exercise.sets) : null;
+    const repsDelta = previousReps === null ? null : reps - previousReps;
+    if (previousWeight > 0 && currentWeight > previousWeight) return { state: 'adapting', label: '새 중량 적응 중', topStreak: 0, currentWeight, reps, repsDelta };
+    const currentTop = isStableTop(current, exercise);
+    const previousTop = !!previous && isStableTop(previous, exercise) && previousWeight === currentWeight;
+    if (currentTop && previousTop) return { state: 'increase', label: '증량 조건 달성', topStreak: 2, currentWeight, reps, repsDelta };
+    if (currentTop) return { state: 'top-once', label: '증량 조건 1/2', topStreak: 1, currentWeight, reps, repsDelta };
+    const state = repsDelta === null ? 'insufficient' : repsDelta > 0 ? 'up' : repsDelta < 0 ? 'down' : 'maintain';
+    return { state, label: state === 'up' ? '상승' : state === 'down' ? '하락' : state === 'maintain' ? '유지' : '데이터 부족', topStreak: 0, currentWeight, reps, repsDelta };
+  }
+
   /* ── 주간 스케줄: 월요일 회복 체크에 걸리면 월→화 순연, 이하 순차 하루씩 밀림 ── */
   const WEEK_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   function shiftScheduleForRecovery(baseSchedule, homeCoreDay) {
@@ -113,6 +147,11 @@
     clampStage,
     nextStage,
     prevStage,
+    setValues,
+    totalReps,
+    workingWeight,
+    isStableTop,
+    evaluateDoubleProgression,
     WEEK_ORDER,
     shiftScheduleForRecovery,
   };
