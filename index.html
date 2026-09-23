@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>내 루틴</title>
 <meta name="theme-color" content="#6c5ce7">
 <link rel="manifest" href="manifest.json">
@@ -10,145 +10,59 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="css/style.css">
-
 </head>
 <body class="gym-active">
-<button class="theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="다크모드 전환">🌙</button>
 
-<div class="hdr">
-  <div class="hdr-top">
-    <div>
-      <div class="hdr-greeting" id="greeting">안녕하세요</div>
-      <div class="hdr-name">내 루틴</div>
-      <div class="hdr-date" id="todayLabel"></div>
+<header class="topbar" id="topbar">
+  <div class="tb-row">
+    <div class="tb-left">
+      <div class="tb-date" id="todayLabel"></div>
+      <div class="tb-title" id="progTitle"></div>
     </div>
-    <div class="streak-box">
-      <div class="streak-num" id="streakNum">0</div>
-      <div class="streak-label">🔥 연속</div>
-    </div>
+    <div class="tb-seg" id="routineSeg" role="group" aria-label="오늘 루틴 선택"></div>
   </div>
-  <div class="hdr-prog-bar">
-    <div class="prog-ring-wrap">
-      <svg class="prog-svg" width="46" height="46" viewBox="0 0 46 46">
-        <circle class="prog-track" cx="23" cy="23" r="19"/>
-        <circle class="prog-fill" id="progFill" cx="23" cy="23" r="19" stroke-dasharray="119.4" stroke-dashoffset="119.4"/>
-      </svg>
-      <div class="prog-label" id="progLabel">0%</div>
-    </div>
-    <div class="prog-text">
-      <div class="prog-title" id="progTitle">오늘 운동 시작해봐</div>
-      <div class="prog-sub" id="progSub"></div>
-    </div>
-  </div>
-</div>
+  <div class="tb-prog"><div class="tb-bar"><div class="tb-fill" id="progFill"></div></div><span class="tb-prog-text" id="progText"></span></div>
+  <div class="tb-week" id="weekChip"></div>
+</header>
 
 <div class="week-wrap"><div class="week-strip" id="weekStrip"></div></div>
 
-<div class="main">
-  <!-- 헬스 -->
-  <div class="tab-panel active" id="tab-gym">
-    <div class="complete-banner" id="completeBanner">
-      <h2>🎉 운동 완료!</h2>
-      <p id="completeTime"></p>
-      <div class="complete-stats">
-        <div class="cs"><span class="cs-val" id="completeExCount">0</span><div class="cs-label">운동 종목</div></div>
-        <div class="cs"><span class="cs-val" id="completeVolume">0</span><div class="cs-label">총 볼륨 kg</div></div>
-        <div class="cs"><span class="cs-val" id="completeSets">0</span><div class="cs-label">총 세트</div></div>
-      </div>
-      <button class="cal-btn" id="calBtn" onclick="copyWorkoutSummary()">📋 운동 요약 복사</button>
-      <button class="cal-btn" onclick="exportBackup()">📤 백업</button>
-      <p class="notion-sync-status" id="notionSyncStatus"></p>
-    </div>
-    <section class="beginner-start" aria-labelledby="beginnerTitle">
-      <div class="beginner-kicker">오늘은 이것만 하면 돼요</div>
-      <h2 id="beginnerTitle">루틴을 고르고 첫 운동을 시작하세요</h2>
-      <p id="beginnerGuide">지난 기록은 자동으로 채워집니다. 무게를 확인하고 완료만 누르세요.</p>
-      <button type="button" onclick="startTodayWorkout()">운동 시작</button>
-    </section>
-    <div class="rest-bar" role="timer" aria-live="polite">
-      <div class="rest-heading"><strong>휴식 타이머</strong><span>세트 완료 시 자동 시작</span></div>
-      <div class="rest-timer" id="restDisplay">1:30</div>
-      <div class="rest-actions">
-        <button type="button" onclick="adjustRestTime(-15,event)" aria-label="휴식시간 15초 줄이기">−15초</button>
-        <button class="rest-btn" id="restBtn" type="button" onclick="toggleRest()">시작</button>
-        <button type="button" onclick="adjustRestTime(15,event)" aria-label="휴식시간 15초 추가">+15초</button>
-        <button class="sound-btn" id="soundBtn" type="button" onclick="toggleSound()" aria-label="휴식 종료음 켜기/끄기">🔕</button>
-      </div>
-      <div class="rest-prog-track"><div class="rest-prog-fill" id="restFill" style="width:100%"></div></div>
-      <div class="rest-hint" id="restHint"></div>
-    </div>
-    <div class="today-summary" id="todaySummary">
-      <div class="ts-card"><div class="ts-val" id="tsRemain">—</div><div class="ts-lbl">남은운동</div></div>
-      <div class="ts-card"><div class="ts-val" id="tsTime">—</div><div class="ts-lbl">예상시간</div></div>
-      <div class="ts-card"><div class="ts-val" id="tsVolume">—</div><div class="ts-lbl">현재볼륨</div></div>
-    </div>
-    <div class="coach-nudge" id="coachNudge">🤖 코치 대기 중</div>
-    <div class="routine-selector" id="routineSelector"></div>
-    <div class="routine-overview" id="routineOverview" aria-label="오늘 루틴 전체 종목"></div>
+<main class="main">
+  <!-- 오늘 운동 -->
+  <section class="tab-panel active" id="tab-gym" aria-label="오늘 운동">
+    <div id="dayCard"></div>
+    <div id="readinessBox"></div>
+    <div class="complete-banner" id="completeBanner" aria-live="polite"></div>
     <div id="routineContent"></div>
-    <button class="ai-btn" onclick="getAiFeedback()">🤖 로컬 코치 피드백</button>
-    <div class="ai-result" id="aiResult"></div>
-  </div>
+    <div id="lowerBodyInline"></div>
+  </section>
 
   <!-- 기록 -->
-  <div class="tab-panel" id="tab-history">
-    <div class="stats-strip">
-      <div class="stat-card"><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">총 운동일</div></div>
-      <div class="stat-card"><div class="stat-val" id="statMonVol">—</div><div class="stat-lbl">이번달 볼륨</div></div>
-      <div class="stat-card"><div class="stat-val" id="statPRs">—</div><div class="stat-lbl">PR 기록</div></div>
-    </div>
+  <section class="tab-panel" id="tab-history" aria-label="기록">
     <details class="hist-sec" open>
-      <summary><div class="sec-hdr"><div class="sec-icon">🏆</div><div class="sec-title">개인 기록 (PR)</div><span class="sec-chev">▾</span></div></summary>
-      <div class="pr-board" id="prBoard"><div style="padding:16px;text-align:center;font-size:13px;color:var(--text-3)">기록 없음</div></div>
+      <summary><div class="sec-hdr"><div class="sec-icon">📆</div><div class="sec-title">이번 주</div><span class="sec-chev">▾</span></div></summary>
+      <div class="weekly-report" id="weekReport"></div>
     </details>
     <details class="hist-sec" open>
-      <summary><div class="sec-hdr"><div class="sec-icon">📈</div><div class="sec-title">진행도 차트</div><div class="sec-badge">추정 1RM</div><span class="sec-chev">▾</span></div></summary>
+      <summary><div class="sec-hdr"><div class="sec-icon">📈</div><div class="sec-title">종목 진행</div><div class="sec-badge">차트 · PR</div><span class="sec-chev">▾</span></div></summary>
       <div class="chart-box">
         <div class="chart-sel-row" id="chartSel"></div>
         <div id="chartArea"><div class="chart-empty">운동을 선택하세요</div></div>
+        <div id="prBox"></div>
       </div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">🧠</div><div class="sec-title">주간 코치 리포트</div><span class="sec-chev">▾</span></div></summary>
-      <div class="weekly-report" id="weeklyReport">기록 누적 후 분석 가능</div>
     </details>
     <details class="hist-sec" open>
-      <summary><div class="sec-hdr"><div class="sec-icon">📆</div><div class="sec-title">주간 요약</div><span class="sec-chev">▾</span></div></summary>
-      <div class="ws-summary-box" id="weeklySummaryBox"><div class="pc-empty">기록이 쌓이면 표시됨</div></div>
+      <summary><div class="sec-hdr"><div class="sec-icon">⚖️</div><div class="sec-title">몸·영양 추세</div><span class="sec-chev">▾</span></div></summary>
+      <div class="ws-summary-box" id="weeklySummaryBox"></div>
     </details>
     <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">💪</div><div class="sec-title">근육별 이번달 볼륨</div><span class="sec-chev">▾</span></div></summary>
-      <div class="muscle-grid" id="muscleGrid"></div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">이번달 출석</div><span class="sec-chev">▾</span></div></summary>
-      <div class="cal-box" id="calBox"></div>
-      <div class="cal-legend">● 운동 완료일</div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">📊</div><div class="sec-title">주간 볼륨</div><span class="sec-chev">▾</span></div></summary>
-      <div id="histChart"></div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">🧮</div><div class="sec-title">플레이트 계산기</div><span class="sec-chev">▾</span></div></summary>
-      <div class="plate-box">
-        <div class="pc-row">
-          <input class="pc-inp" type="number" inputmode="decimal" id="pcKg" placeholder="목표 중량" oninput="calcPlates()">
-          <span class="pc-unit">kg</span>
-        </div>
-        <div class="pc-bar-sel" id="pcBarSel"></div>
-        <div class="pc-result" id="pcResult"><div class="pc-empty">중량을 입력하세요</div></div>
-      </div>
-    </details>
-    <details class="hist-sec">
-      <summary><div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">최근 운동</div><span class="sec-chev">▾</span></div></summary>
+      <summary><div class="sec-hdr"><div class="sec-icon">📋</div><div class="sec-title">최근 기록</div><span class="sec-chev">▾</span></div></summary>
       <div id="histLog"></div>
     </details>
-  </div>
+  </section>
 
   <!-- 데일리 -->
-  <div class="tab-panel" id="tab-daily">
-    <div id="mondayRecoveryBox"></div>
+  <section class="tab-panel" id="tab-daily" aria-label="데일리">
     <details class="hist-sec" open>
       <summary><div class="sec-hdr"><div class="sec-icon">📅</div><div class="sec-title">주간 스케줄</div><span class="sec-chev">▾</span></div></summary>
       <div class="ws-box" id="weeklyScheduleBox"></div>
@@ -165,53 +79,59 @@
       <summary><div class="sec-hdr"><div class="sec-icon">🦵</div><div class="sec-title">하체 재도입 트래커</div><span class="sec-chev">▾</span></div></summary>
       <div id="lowerBodyBox"></div>
     </details>
-  </div>
+  </section>
 
   <!-- 설정 -->
-  <div class="tab-panel" id="tab-settings">
-    <div class="settings-hero"><span>⚙️</span><div><h2>설정</h2><p>백업과 Notion 연동만 모았습니다.</p></div></div>
+  <section class="tab-panel" id="tab-settings" aria-label="설정">
+    <div class="sec-hdr"><div class="sec-icon">🎨</div><div class="sec-title">화면·소리</div></div>
+    <div class="settings-box">
+      <div class="set-line"><span>테마</span><div class="seg" id="themeSeg" role="group" aria-label="테마"></div></div>
+      <label class="set-line"><span>휴식 종료음</span><input type="checkbox" id="soundSetting" onchange="toggleSound()"></label>
+    </div>
     <div class="sec-hdr"><div class="sec-icon">💾</div><div class="sec-title">데이터 관리</div></div>
     <div class="backup-box">
       <div class="backup-note" id="backupNote">마지막 백업: 확인 중…</div>
       <div class="backup-btns">
-        <button class="ai-btn" onclick="exportBackup()">📤 전체 백업 (JSON)</button>
-        <button class="ai-btn" onclick="document.getElementById('importFile').click()">📥 백업 복원</button>
+        <button class="ai-btn" type="button" onclick="exportBackup()">📤 전체 백업 (JSON)</button>
+        <button class="ai-btn" type="button" onclick="document.getElementById('importFile').click()">📥 백업 복원</button>
       </div>
       <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
       <div class="backup-hint">기록은 이 브라우저에만 저장된다. 폰 교체·브라우저 데이터 삭제 전 반드시 백업.</div>
       <div class="autobk-hdr">자동 백업 (기기 내 매일 1회 자동 저장, 최근 5개 보관)</div>
       <div id="autoBackupBox"></div>
     </div>
-    <div class="divider"></div>
     <div class="sec-hdr"><div class="sec-icon">N</div><div class="sec-title">Notion 자동 기록</div></div>
     <div class="webhook-box">
-      <label class="webhook-toggle"><input id="notionWebhookEnabled" type="checkbox"> 루틴 완료 시 Notion에 자동 기록</label>
+      <label class="webhook-toggle"><input id="notionWebhookEnabled" type="checkbox"> 루틴 완료 시 Notion에 요약 1페이지 기록</label>
       <label>중계 웹훅 URL<input id="notionWebhookUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+      <label>중계기 시크릿 (WEBHOOK_SECRET)<input id="notionWebhookSecret" type="password" placeholder="Apps Script 스크립트 속성의 값" autocomplete="off"></label>
+      <div class="webhook-hint" id="notionSecretHint"></div>
       <div class="backup-btns">
         <button class="ai-btn" type="button" onclick="saveNotionWebhookSettings()">설정 저장</button>
         <button class="ai-btn" type="button" onclick="testNotionWebhook()">시험 전송</button>
       </div>
-      <ol class="setup-steps"><li>저장소의 <code>integrations/notion-webhook.gs</code>를 Apps Script에 배포</li><li>스크립트 속성에 Notion 토큰 저장</li><li>웹 앱 URL을 여기에 입력하고 시험 전송</li></ol>
-      <div class="backup-hint">Notion 토큰은 앱이나 GitHub에 넣지 않습니다. 운동 기록은 사람이 읽는 요약과 AI가 읽기 쉬운 구조화 데이터로 함께 저장됩니다.</div>
+      <ol class="setup-steps"><li>저장소의 <code>integrations/notion-webhook.gs</code>를 Apps Script에 배포</li><li>스크립트 속성에 Notion 토큰·시크릿 저장</li><li>웹 앱 URL과 시크릿을 여기에 입력하고 시험 전송</li></ol>
+      <div class="backup-hint">Notion 토큰은 앱이나 GitHub에 넣지 않습니다. 시크릿은 이 기기에만 저장돼요(백업 파일에는 포함). 기록은 사람이 읽는 요약과 AI가 읽기 쉬운 구조화 데이터로 함께 저장됩니다.</div>
     </div>
-  </div>
-</div>
+  </section>
+</main>
 
 <div class="bottom-dock" id="bottomDock">
   <button type="button" class="dock-toggle" id="dockToggle" onclick="toggleBottomDockMode()" aria-label="휴식 타이머 보기">⏱</button>
   <nav class="bnav" id="bnav">
-    <button class="bnav-btn active" onclick="switchTab('gym')"><span class="bnav-icon">🏋️</span><span class="bnav-label">오늘 운동</span></button>
-    <button class="bnav-btn" onclick="switchTab('history')"><span class="bnav-icon">📊</span><span class="bnav-label">기록</span></button>
-    <button class="bnav-btn" onclick="switchTab('daily')"><span class="bnav-icon">📅</span><span class="bnav-label">데일리</span></button>
-    <button class="bnav-btn" onclick="switchTab('settings')"><span class="bnav-icon">⚙️</span><span class="bnav-label">설정</span></button>
+    <button class="bnav-btn active" type="button" onclick="switchTab('gym')"><span class="bnav-icon">🏋️</span><span class="bnav-label">오늘 운동</span></button>
+    <button class="bnav-btn" type="button" onclick="switchTab('history')"><span class="bnav-icon">📊</span><span class="bnav-label">기록</span></button>
+    <button class="bnav-btn" type="button" onclick="switchTab('daily')"><span class="bnav-icon">📅</span><span class="bnav-label">데일리</span></button>
+    <button class="bnav-btn" type="button" onclick="switchTab('settings')"><span class="bnav-icon">⚙️</span><span class="bnav-label">설정</span></button>
   </nav>
-  <div class="bottom-rest-bar" id="bottomRestBar">
+  <div class="bottom-rest-bar" id="bottomRestBar" role="timer" aria-live="polite">
     <div class="brb-top">
-      <div class="brb-info"><span class="brb-label">휴식 타이머</span><span class="brb-time" id="brbDisplay">1:30</span></div>
+      <div class="brb-info"><span class="brb-label">휴식 타이머</span><span class="brb-time" id="brbDisplay">1:30</span><span class="brb-hint" id="brbHint"></span></div>
       <div class="brb-controls">
         <button type="button" class="brb-adj" onclick="adjustRestTime(-15,event)" aria-label="휴식시간 15초 줄이기">−15</button>
         <button type="button" class="brb-main" id="brbBtn" onclick="toggleRest()">시작</button>
         <button type="button" class="brb-adj" onclick="adjustRestTime(15,event)" aria-label="휴식시간 15초 추가">+15</button>
+        <button type="button" class="brb-adj" data-sound-btn onclick="toggleSound()" aria-label="휴식 종료음 켜기/끄기">🔕</button>
       </div>
     </div>
     <div class="brb-track"><div class="brb-fill" id="brbFill" style="width:100%"></div></div>
@@ -224,3 +144,5 @@
 <script src="js/completion-sync.js" defer></script>
 <script src="js/progression.js" defer></script>
 <script src="js/app.js" defer></script>
+</body>
+</html>

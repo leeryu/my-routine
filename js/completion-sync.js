@@ -31,9 +31,11 @@
     const exerciseLines = workout.exercises.map((exercise) => {
       const details = [
         exercise.summary || '세트 상세 없음',
-        exercise.lastRir !== '' && exercise.lastRir !== undefined ? `마지막 세트 RIR ${exercise.lastRir}` : '',
+        exercise.lastRir !== '' && exercise.lastRir !== undefined && exercise.lastRir !== '?' ? `마지막 세트 RIR ${exercise.lastRir}` : '',
         exercise.pain ? `통증 ${exercise.pain}` : '',
+        exercise.stopped ? '통증으로 중단' : '',
         exercise.note ? `메모 ${exercise.note}` : '',
+        exercise.next ? `다음 ${exercise.next}` : '',
       ].filter(Boolean).join(' / ');
       return `- ${exercise.name}: ${details}`;
     });
@@ -42,7 +44,9 @@
       `${workout.routineLabel} 운동 완료 결과입니다.`,
       `날짜: ${workout.date}`,
       `총 볼륨: ${workout.volumeKg}kg / 총 ${workout.totalSets}세트`,
-      `컨디션: 수면 ${readiness.sleep ?? '-'} / 피로 ${readiness.fatigue ?? '-'} / 통증 ${readiness.pain ?? '-'} / 회복 ${readiness.score ?? '-'}점`,
+      readiness.score === null || readiness.score === undefined
+        ? '컨디션: 미입력'
+        : `컨디션: 수면 ${readiness.sleep}/5 / 피로 ${readiness.fatigue}/5 / 통증 ${readiness.pain}/5 / 회복 ${readiness.score}점`,
       '',
       ...exerciseLines,
       '',
@@ -53,7 +57,7 @@
       '',
       `- **총 볼륨:** ${workout.volumeKg}kg`,
       `- **총 세트:** ${workout.totalSets}세트`,
-      `- **회복 점수:** ${readiness.score ?? '-'}점`,
+      `- **회복 점수:** ${readiness.score === null || readiness.score === undefined ? '미입력' : readiness.score + '점'}`,
       `- **컨디션:** 수면 ${readiness.sleep ?? '-'} / 피로 ${readiness.fatigue ?? '-'} / 통증 ${readiness.pain ?? '-'}`,
       '',
       '## 운동 기록',
@@ -81,57 +85,6 @@
     };
   }
 
-  function buildExerciseCompletion(input) {
-    const completedAt = input.completedAt || new Date().toISOString();
-    const id = `gym-ex:${input.routineKey}:${input.exerciseIdx}:${input.date}`;
-    return {
-      id,
-      type: 'gym-exercise',
-      date: input.date,
-      routineKey: input.routineKey,
-      routineLabel: input.routineLabel,
-      exerciseIdx: Number(input.exerciseIdx),
-      exerciseName: input.exerciseName,
-      exerciseId: input.exerciseId || null,
-      completedAt,
-      summary: input.summary || '',
-      lastRir: input.lastRir ?? '',
-      totalReps: Number(input.totalReps) || 0,
-      progressionStatus: input.progressionStatus || '',
-      pain: input.pain || '',
-      note: input.note || '',
-    };
-  }
-
-  function buildExerciseNotionEvent(completion) {
-    const exercise = clone(completion);
-    const details = [
-      exercise.summary || '세트 상세 없음',
-      exercise.lastRir !== '' ? `마지막 세트 RIR ${exercise.lastRir}` : '',
-      exercise.pain ? `통증 ${exercise.pain}` : '',
-      exercise.note ? `메모 ${exercise.note}` : '',
-    ].filter(Boolean).join(' / ');
-    const title = `${exercise.date} ${exercise.routineLabel} · ${exercise.exerciseName}`;
-    const markdown = [
-      `# ${title}`,
-      '',
-      `- **세트 기록:** ${details}`,
-      '',
-      '```json',
-      JSON.stringify(exercise, null, 2),
-      '```',
-    ].join('\n');
-    return {
-      schemaVersion: 1,
-      event: 'exercise.completed',
-      eventId: exercise.id,
-      createdAt: exercise.completedAt,
-      destination: { type: 'notion' },
-      notion: { title, markdown },
-      exercise,
-    };
-  }
-
   function enqueue(outbox, event) {
     const next = Array.isArray(outbox) ? clone(outbox) : [];
     if (!next.some((item) => item.eventId === event.eventId)) next.push(clone(event));
@@ -142,5 +95,5 @@
     return (Array.isArray(outbox) ? outbox : []).filter((item) => item.eventId !== eventId);
   }
 
-  return { buildWorkoutCompletion, buildNotionEvent, buildExerciseCompletion, buildExerciseNotionEvent, enqueue, markDelivered };
+  return { buildWorkoutCompletion, buildNotionEvent, enqueue, markDelivered };
 });

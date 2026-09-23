@@ -16,15 +16,16 @@ ok('navigation is workout, history, daily, and settings',
   !/id="tab-(rehab|swim|rules)"/.test(html));
 ok('removed feature modules are not loaded or cached',
   !/js\/rehab\.js/.test(html) && !/js\/rehab\.js/.test(sw));
-ok('today routine overview and prominent timer exist',
-  /id="routineOverview"/.test(html) && /function renderRoutineOverview/.test(app) &&
-  /\.rest-timer\{font-size:56px/.test(css));
+ok('workout tab uses a sticky top bar, one-line set rows and a single dock timer',
+  /id="topbar"/.test(html) && /\.topbar\{position:sticky/.test(css) &&
+  /class="set-row/.test(app) && /\.set-row\{/.test(css) &&
+  !/class="rest-bar"/.test(html) && /id="bottomRestBar"/.test(html));
 ok('focus mode and floating action bar are removed',
   !/id="focusOverlay"/.test(html) && !/id="actionBar"/.test(html) &&
   !/function openFocusMode/.test(app) && !/\.focus-overlay/.test(css));
-ok('set completion gives immediate visible feedback',
-  /btn\.textContent = isChecked \? '✓ 완료됨' : '✓ 완료'/.test(app) &&
-  /세트 완료 · 휴식/.test(app));
+ok('set completion gives immediate visible feedback and asks for the last-set RIR',
+  /btn\.classList\.toggle\('checked'\)/.test(app) &&
+  /세트 완료 · 휴식/.test(app) && /마지막 세트 RIR 고르면 다음 종목으로/.test(app));
 ok('Notion webhook uses a local outbox and completion event',
   /NOTION_WEBHOOK_OUTBOX/.test(app) && /buildNotionEvent/.test(app) &&
   /id="notionWebhookUrl"/.test(html));
@@ -34,14 +35,16 @@ ok('calendar no longer renders rehabilitation markers',
 ok('C routine remains optional while weekly schedule uses Sat/Sun swimming',
   /day: '선택 루틴'/.test(app) && /id="tab-daily"/.test(html) &&
   /js\/progression\.js/.test(html) && /js\/progression\.js/.test(sw));
-{
-  const bBlock = app.slice(app.indexOf('\n  B: {'), app.indexOf('\n};'));
-  const order = ['덤벨 로우', '체스트 프레스', '레터럴 레이즈', '숄더 프레스', '리버스 펙덱', '랫풀다운', '레그 익스텐션']
-    .map((name) => bBlock.indexOf(`name: '${name}'`));
-  ok('B routine follows the new exercise order and drops 팔로프프레스',
-    order.every((idx, i) => idx !== -1 && (i === 0 || idx > order[i - 1])) &&
-    !bBlock.includes("팔로프프레스"));
-}
+ok('weekly schedule has a single source and legacy duplicates are gone',
+  /const WEEK_PLAN = \[/.test(app) && !/WEEKLY_SCHEDULE_BASE/.test(app) && !/const DAY_INFO/.test(app));
+ok('plate calculator, day-streak box, tonnage muscle coaching and duplicate coach surfaces are removed',
+  !/calcPlates|pcKg/.test(app + html) && !/streakNum/.test(app + html) &&
+  !/getMuscleCoachText|muscleGrid/.test(app + html) && !/coachNudge|getAiFeedback/.test(app + html));
+ok('Notion receives only the workout summary and can carry the relay secret',
+  !/buildExerciseNotionEvent|enqueueExerciseNotionCompletion/.test(app) &&
+  /id="notionWebhookSecret"/.test(html) && /searchParams\.set\('secret'/.test(app));
+ok('readiness is never faked when the check-in is missing',
+  /if \(!hasReadinessToday\(\)\) return null;/.test(app));
 ok('daily tab exposes lower-body progression and weekly schedule storage',
   /function getLowerBodyProgress/.test(app) &&
   /function getEffectiveWeeklySchedule/.test(app) &&
