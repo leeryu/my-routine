@@ -48,41 +48,81 @@ ok('nextStage/prevStage clamp to the 1-5 range',
 
 {
   const exercise = { sets: 3, repMax: 12 };
-  const record = (kg, reps, lastRir) => ({ kg_0: kg, kg_1: kg, kg_2: kg, reps_0: reps, reps_1: reps, reps_2: reps, lastRir, allDone: true });
-  ok('double progression requires two consecutive top-range sessions at the same weight and RIR 1-2',
+  const record = (kg, reps, lastRir) => ({ kg_0: kg, kg_1: kg, kg_2: kg, reps_0: reps, reps_1: reps, reps_2: reps, lastRir, allDone: true, summary: `${kg}kg` });
+  ok('double progression requires two consecutive top-range sessions at the same weight with RIR 1 or more',
     Progression.evaluateDoubleProgression(exercise, [
       { rec: record(40, 12, '1') }, { rec: record(40, 12, '2') },
     ]).state === 'increase' &&
     Progression.evaluateDoubleProgression(exercise, [
       { rec: record(40, 12, '0') }, { rec: record(40, 12, '2') },
     ]).state !== 'increase');
+  ok('RIR 3+ at the top of the range is an immediate increase signal, RIR 3 counts toward the streak',
+    Progression.evaluateDoubleProgression(exercise, [{ rec: record(40, 12, '3+') }]).state === 'increase' &&
+    Progression.evaluateDoubleProgression(exercise, [{ rec: record(40, 12, '3') }, { rec: record(40, 12, '3') }]).state === 'increase');
+  ok('missing RIR never counts as a top-range session',
+    Progression.evaluateDoubleProgression(exercise, [{ rec: record(40, 12, '') }, { rec: record(40, 12, '') }]).state === 'maintain');
   ok('a higher working weight is reported as an adaptation session',
     Progression.evaluateDoubleProgression(exercise, [
       { rec: record(42.5, 8, '2') }, { rec: record(40, 12, '2') },
     ]).state === 'adapting');
+  ok('nextWeight adds the exercise increment without float noise',
+    Progression.nextWeight(6, 1) === 7 && Progression.nextWeight(40, 2.5) === 42.5 && Progression.nextWeight(12.5, 1.25) === 13.75);
+  ok('plateau needs three completed sessions with the same top weight and no rep gain',
+    Progression.isPlateau(exercise, [{ rec: record(40, 10, '2') }, { rec: record(40, 10, '2') }, { rec: record(40, 10, '2') }]) === true &&
+    Progression.isPlateau(exercise, [{ rec: record(40, 11, '2') }, { rec: record(40, 10, '2') }, { rec: record(40, 10, '2') }]) === false &&
+    Progression.isPlateau(exercise, [{ rec: record(40, 10, '2') }, { rec: record(40, 10, '2') }]) === false &&
+    Progression.isPlateau(exercise, [{ rec: record(42.5, 8, '2') }, { rec: record(40, 10, '2') }, { rec: record(40, 10, '2') }]) === false);
+}
+
+{
+  const rec = (exerciseId, summary = 'x') => ({ exerciseId, summary });
+  const entries = [
+    { key: 'rec:A_0_2026-09-15', rec: rec('chest-press') },
+    { key: 'rec:B_0_2026-09-17', rec: rec('chest-press') },
+    { key: 'rec:A_0_2026-09-22', rec: rec('chest-press') },
+    { key: 'rec:A_0_2026-09-08', rec: { summary: 'legacy' } },
+    { key: 'rec:A_0_2026-09-01', rec: rec('dumbbell-bench-press') },
+    { key: 'rec:A_1_2026-09-15', rec: { exerciseId: 'chest-press' } },
+  ];
+  const routineScope = Progression.selectHistory(entries, { routineKey: 'A', exerciseId: 'chest-press', legacyIdx: 0, excludeDate: '2026-09-22' });
+  ok('routine-scoped history keeps only the same routine and exercise, excluding today and empty records',
+    routineScope.map((x) => x.date).join(',') === '2026-09-15,2026-09-08');
+  const exerciseScope = Progression.selectHistory(entries, { routineKey: 'A', exerciseId: 'chest-press', scope: 'exercise' });
+  ok('exercise-scoped history crosses routines but never mixes a variant exercise or unmatched legacy slots',
+    exerciseScope.map((x) => `${x.routineKey}${x.date}`).join(',') === 'A2026-09-22,B2026-09-17,A2026-09-15');
+  const variantScope = Progression.selectHistory(entries, { routineKey: 'A', exerciseId: 'dumbbell-bench-press' });
+  ok('variant history does not pick up legacy records of the base slot', variantScope.length === 1);
 }
 
 {
   const base = {
-    mon: { key: 'mon', dayLabel: '월', label: '헬스A + 홈코어' },
-    tue: { key: 'tue', dayLabel: '화', label: '홈코어' },
-    wed: { key: 'wed', dayLabel: '수', label: '헬스B' },
-    thu: { key: 'thu', dayLabel: '목', label: '홈코어 또는 휴식' },
-    fri: { key: 'fri', dayLabel: '금', label: '휴식' },
-    sat: { key: 'sat', dayLabel: '토', label: '수영 45~60분' },
-    sun: { key: 'sun', dayLabel: '일', label: '수영 60~90분' },
+    mon: { key: 'mon', label: '홈코어 또는 휴식', kind: 'core' },
+    tue: { key: 'tue', label: '헬스 A', kind: 'gym', rk: 'A' },
+    wed: { key: 'wed', label: '홈코어 또는 휴식', kind: 'core' },
+    thu: { key: 'thu', label: '헬스 B', kind: 'gym', rk: 'B' },
+    fri: { key: 'fri', label: '휴식', kind: 'rest' },
+    sat: { key: 'sat', label: '메인 수영', kind: 'swim' },
+    sun: { key: 'sun', label: '기술 수영 또는 휴식', kind: 'swim' },
   };
-  const { schedule, droppedDay } = Progression.shiftScheduleForRecovery(base, { label: '홈코어 (헬스A는 화요일로 이동)' });
-  ok('shiftScheduleForRecovery moves Monday to home-core and cascades the rest by one day',
-    schedule.mon.label === '홈코어 (헬스A는 화요일로 이동)' &&
-    schedule.tue.label === '헬스A + 홈코어' &&
-    schedule.wed.label === '홈코어' &&
-    schedule.thu.label === '헬스B' &&
-    schedule.fri.label === '홈코어 또는 휴식' &&
-    schedule.sat.label === '휴식' &&
-    schedule.sun.label === '수영 45~60분' &&
-    droppedDay.label === '수영 60~90분');
+  const { schedule, droppedDay } = Progression.shiftScheduleForRecovery(base, 'tue', { label: '회복', kind: 'rest' });
+  ok('recovery shift moves A one day and the Friday rest day absorbs the cascade',
+    schedule.mon.label === '홈코어 또는 휴식' &&
+    schedule.tue.label === '회복' &&
+    schedule.wed.label === '헬스 A' &&
+    schedule.thu.label === '홈코어 또는 휴식' &&
+    schedule.fri.label === '헬스 B' &&
+    schedule.sat.label === '메인 수영' &&
+    schedule.sun.label === '기술 수영 또는 휴식' &&
+    droppedDay === null);
+  const noRest = Progression.shiftScheduleForRecovery(base, 'sat', { label: '회복', kind: 'rest' });
+  ok('without a rest day after the shift the last pushed day is dropped',
+    noRest.schedule.sun.label === '메인 수영' && noRest.droppedDay.label === '기술 수영 또는 휴식');
 }
+
+ok('goalStreak ignores an unfinished current week and stops at the first missed past week',
+  Progression.goalStreak([false, true, true, false, true]) === 2 &&
+  Progression.goalStreak([true, true, false]) === 2 &&
+  Progression.goalStreak([false, false, true]) === 0);
 
 {
   const entries = [

@@ -362,6 +362,7 @@
       key.startsWith('sessionRevision:') ||
       key === 'wh' ||
       key === 'swimLogs' ||
+      key === 'coreLogs' ||
       key === 'streak' ||
       key === 'dailyLog' ||
       key === 'lowerBodyProgress' ||
