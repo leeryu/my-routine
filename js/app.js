@@ -1485,46 +1485,127 @@ function renderCompleteBanner(completion) {
 <div class="complete-stats"><div class="cs"><span class="cs-val">${completion.exercises.length}</span><div class="cs-label">종목</div></div><div class="cs"><span class="cs-val">${formatKg(completion.volumeKg)}</span><div class="cs-label">총 볼륨</div></div><div class="cs"><span class="cs-val">${completion.totalSets}</span><div class="cs-label">세트</div></div></div>
 <div class="done-next"><b>다음 세션 예고</b><ul>${nextLines}${cautionLines}</ul></div>
 <div class="done-advice">${score === null || score === undefined ? '컨디션 미입력' : `컨디션 ${score}점`} · 단백질 ${PROTEIN_TARGET_TEXT} · 수면 7시간+${completion.routineKey === 'B' ? ' · 토요일 메인 수영 전 회복 우선' : ''}</div>
-<div class="done-btns"><button class="cal-btn" id="calBtn" type="button" onclick="copyWorkoutSummary()">📋 요약 복사</button><button class="cal-btn" type="button" onclick="exportBackup()">📤 백업</button></div>
-<p class="notion-sync-status" id="notionSyncStatus"></p>
-<pre class="summary-fallback" id="summaryFallback" hidden></pre>`;
+<div class="done-btns"><button class="cal-btn" id="calBtn" type="button" onclick="copyDayShare('${completion.date}', this)">📋 AI용 복사</button><button class="cal-btn" type="button" onclick="exportBackup()">📤 백업</button></div>
+<p class="notion-sync-status" id="notionSyncStatus"></p>`;
 }
-function buildWorkoutSummary() {
-  const rk = currentRoutine;
-  const r = ROUTINES[rk];
-  const today = todayStr();
-  const totalSets = r.exercises.reduce((sum, e) => sum + e.sets, 0);
-  const logs = r.exercises.map((_, i) => {
-    const ex = effectiveExercise(rk, i, today);
-    const rec = getRecord(`${rk}_${i}_${today}`);
-    const extra = [
-      rec.lastRir !== undefined && rec.lastRir !== '' ? `RIR ${rec.lastRir === '?' ? '모름' : rec.lastRir}` : '',
-      rec.pain ? `통증 ${rec.pain}` : '',
-      rec.note ? `메모 ${rec.note}` : '',
-    ].filter(Boolean).join(' / ');
-    return rec.summary ? `- ${ex.name}: ${rec.summary}${extra ? ' (' + extra + ')' : ''}` : null;
-  }).filter(Boolean).join('\n');
-  const rd = getReadiness();
-  const score = readinessScore();
-  const condition = score === null ? '컨디션: 미입력' : `컨디션: 수면 ${rd.sleep}/5 · 피로 ${rd.fatigue}/5 · 통증 ${rd.pain}/5 (회복 ${score}점)`;
-  const next = nextSessionPlan(rk, today).map((p) => `- ${p.name}: ${p.msg}`).join('\n');
-  return `💪 ${r.label} 완료\n날짜: ${today}\n총 볼륨: ${computeVolume(rk)}kg\n총 세트: ${totalSets}세트\n${condition}\n\n${logs || '기록 없음'}\n\n다음 세션 예고\n${next}\n\n(분석 요청: 위 기록 기준으로 다음 세션 중량·볼륨·회복을 판단해 주세요.)`;
+/* ── AI 공유: 그 날 기록(헬스·수영·코어·몸)을 Claude/ChatGPT 프롬프트로 만든다 ── */
+const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
+function gymRoutineKeyOn(date) {
+  const keys = Object.keys(ROUTINES);
+  const snap = keys.find((rk) => gls(`workout:${rk}:${date}`));
+  if (snap) return snap;
+  if (date === todayStr() && currentRoutine) return currentRoutine;
+  return keys.find((rk) => ROUTINES[rk].exercises.some((_, i) => getRecord(`${rk}_${i}_${date}`).summary)) || null;
 }
-function copyWorkoutSummary() {
-  if (!currentRoutine) return;
-  const btn = document.getElementById('calBtn');
-  const text = buildWorkoutSummary();
-  const fallback = () => {
-    const el = document.getElementById('summaryFallback');
-    if (el) { el.hidden = false; el.textContent = text; }
-    showToast('📋 요약을 화면에 표시했어');
+function collectGymSession(rk, date) {
+  const routine = ROUTINES[rk];
+  const snap = gls(`workout:${rk}:${date}`);
+  const isToday = date === todayStr();
+  const entries = recEntries();
+  const livePlan = !snap && isToday ? nextSessionPlan(rk, date) : [];
+  const exercises = routine.exercises.map((_, idx) => {
+    const ex = effectiveExercise(rk, idx, date);
+    const rec = getRecord(`${rk}_${idx}_${date}`);
+    const prev = Progression.selectHistory(entries, { routineKey: rk, exerciseId: ex.id, legacyIdx: ex.isVariant ? null : idx, excludeDate: date })
+      .find((h) => h.date < date);
+    const frozen = snap?.exercises?.[idx];
+    return {
+      name: ex.name,
+      summary: rec.summary || '',
+      lastRir: rec.lastRir ?? '',
+      pain: rec.pain || '',
+      note: rec.note || '',
+      stopped: !!rec.stopped,
+      prev: prev ? `${shortDate(prev.date)} ${prev.rec.summary}` : '',
+      next: frozen?.next ?? livePlan.find((p) => p.idx === idx)?.msg ?? '',
+    };
+  });
+  const raw = gls('readiness:' + date) || {};
+  const complete = READINESS_SCALES.every(([k]) => Number(raw[k]) >= 1);
+  const readiness = snap?.readiness || { sleep: raw.sleep ?? null, fatigue: raw.fatigue ?? null, pain: raw.pain ?? null,
+    score: complete ? Math.round((raw.sleep / 5) * 40 + ((6 - raw.fatigue) / 5) * 30 + ((6 - raw.pain) / 5) * 30) : null };
+  return {
+    routineLabel: routine.label,
+    volumeKg: snap?.volumeKg ?? computeVolume(rk, date),
+    totalSets: snap?.totalSets ?? routine.exercises.reduce((sum, _, i) => sum + recSetCount(getRecord(`${rk}_${i}_${date}`)), 0),
+    readiness,
+    exercises,
   };
+}
+function buildDayShareText(date) {
+  const rk = gymRoutineKeyOn(date);
+  const swim = swimDoneOn(date) ? getSwimLog(date) : null;
+  const coreLog = getCoreLog(date);
+  const coreNames = CORE_ROUTINE.filter((x) => coreLog.checks?.[x.id]).map((x) => x.name);
+  const body = getDailyLog(date);
+  const bodyHas = ['bodyweightKg', 'kcal', 'proteinG', 'sodiumMg'].some((k) => body[k] !== undefined && body[k] !== '');
+  const day = new Date(date + 'T00:00:00');
+  return CompletionSync.buildDayPrompt({
+    date,
+    weekday: WEEKDAY_KO[day.getDay()],
+    context: [
+      `주 일정: 헬스 A/B ${WEEKLY_TARGETS.gym}회 · 수영 ${WEEKLY_TARGETS.swim}회+ · 홈코어 ${WEEKLY_TARGETS.core}회 (더블 프로그레션, 마지막 세트 RIR로 증량 판정)`,
+      `재활의학과 소견: ${CLINICAL_PROFILE.coreStability ? '코어 안정성 부족' : ''}${CLINICAL_PROFILE.forwardHead ? ' · 거북목 경향' : ''}${CLINICAL_PROFILE.anteriorPelvicTilt ? ' · 가벼운 골반 전방경사' : ''}, 구조적 운동 제한 없음. 목표는 갈비뼈-골반 중립·코어 안정성`,
+      `영양 목표: 단백질 ${PROTEIN_TARGET_TEXT}`,
+    ],
+    gym: rk ? collectGymSession(rk, date) : null,
+    swim,
+    core: coreNames.length ? { doneCount: coreNames.length, total: CORE_ROUTINE.length, names: coreNames } : null,
+    body: bodyHas ? body : null,
+  });
+}
+function hasShareableRecord(date) {
+  return !!gymRoutineKeyOn(date) || swimDoneOn(date) || coreDoneOn(date);
+}
+async function copyTextToClipboard(text) {
   if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(text).then(() => {
-      if (btn) btn.textContent = '✅ 복사됨';
-      showToast('📋 운동 요약 복사됨');
-    }).catch(fallback);
-  } else fallback();
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch { return false; }
+}
+/* 복사가 막힌 환경(HTTP·인앱 브라우저)에서는 선택 가능한 텍스트로 보여준다 */
+function showShareFallback(text) {
+  let box = document.getElementById('shareFallback');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'shareFallback';
+    box.className = 'share-modal';
+    box.innerHTML = '<div class="share-sheet"><div class="share-hdr"><b>길게 눌러 전체 선택 후 복사</b><button type="button" class="share-close" aria-label="닫기">✕</button></div><textarea readonly class="share-text"></textarea></div>';
+    box.addEventListener('click', (e) => { if (e.target === box || e.target.classList.contains('share-close')) box.classList.remove('show'); });
+    document.body.appendChild(box);
+  }
+  const ta = box.querySelector('textarea');
+  ta.value = text;
+  box.classList.add('show');
+  ta.focus();
+  ta.select();
+}
+async function copyDayShare(date, btn) {
+  const target = date || todayStr();
+  if (!hasShareableRecord(target)) { showToast('복사할 기록이 아직 없어'); return; }
+  const text = buildDayShareText(target);
+  if (await copyTextToClipboard(text)) {
+    showToast('📋 복사됨 · Claude/ChatGPT에 붙여넣기');
+    if (btn) {
+      const label = btn.dataset.label || btn.textContent;
+      btn.dataset.label = label;
+      btn.textContent = '✅ 복사됨';
+      setTimeout(() => { btn.textContent = label; }, 2000);
+    }
+  } else {
+    showShareFallback(text);
+    showToast('복사가 막혀서 텍스트를 띄웠어');
+  }
 }
 
 /* ── 하체 재도입: 헬스일 루틴 아래에 인라인 기록 ── */
@@ -2305,7 +2386,8 @@ function buildHistLog(index) {
   logWrap.innerHTML = `<div class="hist-log">${items.slice(0, 30).map((h) => {
     const snap = h.kind === 'gym' && h.id ? gls(`workout:${h.id.split(':')[1]}:${h.date}`) : null;
     const detail = snap ? `<div class="hist-ex">${snap.exercises.filter((e) => e.summary).map((e) => `<div><b>${escapeHtml(e.name)}</b> ${escapeHtml(e.summary)}${e.lastRir && e.lastRir !== '?' ? ` · RIR ${escapeHtml(e.lastRir)}` : ''}${e.pain ? ' · ⚠️통증' : ''}</div>`).join('')}</div>` : '';
-    const inner = `<span class="hist-date">${shortDate(h.date)}</span><span class="hist-main"><span class="hist-routine">${icon[h.kind]} ${escapeHtml(h.title)}</span><span class="hist-detail">${escapeHtml(h.detail)}</span></span>`;
+    const copyBtn = `<button type="button" class="hist-copy" aria-label="${shortDate(h.date)} 기록 AI용 복사" onclick="event.preventDefault();event.stopPropagation();copyDayShare('${h.date}', this)">📋</button>`;
+    const inner = `<span class="hist-date">${shortDate(h.date)}</span><span class="hist-main"><span class="hist-routine">${icon[h.kind]} ${escapeHtml(h.title)}</span><span class="hist-detail">${escapeHtml(h.detail)}</span></span>${copyBtn}`;
     return detail ? `<details class="hist-log-item"><summary>${inner}<span class="sec-chev">▾</span></summary>${detail}</details>` : `<div class="hist-log-item">${inner}</div>`;
   }).join('')}</div>`;
 }

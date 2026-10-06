@@ -219,7 +219,6 @@ body.dark .tb-seg button.active{background:#fff;color:#3d33a8}
 .cal-btn{min-height:44px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:12px;color:#fff;font-size:13px;font-weight:800;cursor:pointer}
 .notion-sync-status{min-height:16px;margin-top:8px;font-size:12px;font-weight:800;color:rgba(255,255,255,.92);text-align:center}
 .notion-sync-status.error{color:#ffe1e1}
-.summary-fallback{margin-top:10px;background:rgba(0,0,0,.18);border-radius:10px;padding:10px;font-size:11px;white-space:pre-wrap;user-select:all}
 
 /* ═══ LOWER BODY INLINE ═══ */
 .lb-inline{background:var(--surface);border:1.5px dashed var(--border);border-radius:var(--r);padding:12px 14px;margin:4px 0 12px}
@@ -346,6 +345,15 @@ div.hist-log-item,.hist-log-item>summary{display:flex;gap:12px;align-items:flex-
 .hist-detail{color:var(--text-3);font-size:12px}
 .hist-ex{padding:0 14px 12px 66px;font-size:12px;color:var(--text-2);display:flex;flex-direction:column;gap:3px}
 .hist-ex b{color:var(--text)}
+.hist-copy{flex-shrink:0;min-width:44px;min-height:44px;margin:-8px -8px -8px 0;background:none;border:0;border-radius:12px;font-size:16px;cursor:pointer}
+.hist-copy:active{background:var(--accent-soft)}
+.share-today{display:block;width:100%;margin:12px 0 4px}
+.share-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:flex-end;background:rgba(0,0,0,.45)}
+.share-modal.show{display:flex}
+.share-sheet{width:100%;max-height:80vh;display:flex;flex-direction:column;gap:8px;background:var(--surface);border-radius:var(--r) var(--r) 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom))}
+.share-hdr{display:flex;align-items:center;justify-content:space-between;font-size:13px}
+.share-close{min-width:44px;min-height:44px;background:none;border:0;color:var(--text-2);font-size:16px;cursor:pointer}
+.share-text{width:100%;height:50vh;resize:none;background:var(--inp);color:var(--text);border:1px solid var(--border);border-radius:var(--rs);padding:10px;font:12px/1.5 var(--sans)}
 
 /* ═══ DAILY ═══ */
 .ws-box{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
