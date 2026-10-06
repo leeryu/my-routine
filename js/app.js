@@ -1545,7 +1545,6 @@ function buildDayShareText(date) {
     weekday: WEEKDAY_KO[day.getDay()],
     context: [
       `주 일정: 헬스 A/B ${WEEKLY_TARGETS.gym}회 · 수영 ${WEEKLY_TARGETS.swim}회+ · 홈코어 ${WEEKLY_TARGETS.core}회 (더블 프로그레션, 마지막 세트 RIR로 증량 판정)`,
-      `재활의학과 소견: ${CLINICAL_PROFILE.coreStability ? '코어 안정성 부족' : ''}${CLINICAL_PROFILE.forwardHead ? ' · 거북목 경향' : ''}${CLINICAL_PROFILE.anteriorPelvicTilt ? ' · 가벼운 골반 전방경사' : ''}, 구조적 운동 제한 없음. 목표는 갈비뼈-골반 중립·코어 안정성`,
       `영양 목표: 단백질 ${PROTEIN_TARGET_TEXT}`,
     ],
     gym: rk ? collectGymSession(rk, date) : null,
