@@ -36,7 +36,7 @@ const ROUTINES = (() => {
       ],
     },
     B: {
-      label: '헬스 B', day: '목요일', tag: '수영 회복 고려 · 8종목', exercises: [
+      label: '헬스 B', day: '금요일', tag: '수영 회복 고려 · 8종목', exercises: [
         hypertrophyExercise('chest-press', '체스트 프레스', '가슴 직접세트', 3, '8~12', 8, 12, '가슴', 40, '현재 작업중량', 'RIR 2~3. 실패세트와 추가 프레스는 피한다.'),
         hypertrophyExercise('lat-pulldown', '랫풀다운', '등/광배 직접세트', 2, '8~12', 8, 12, '등/광배', 40, '현재 작업중량', 'RIR 2~3. 계획 세트만 완료한다.'),
         hypertrophyExercise('dumbbell-row', '덤벨 로우', '등/광배 직접세트', 2, '8~12', 8, 12, '등/광배', 20, '현재 작업중량', 'RIR 2~3. A보다 반복 여유를 더 남긴다.'),
@@ -74,11 +74,13 @@ const WEEK_PLAN = [
   { key: 'mon', label: '월', type: '휴식/코어', rk: null, kind: 'core', plan: '홈코어 또는 휴식', kcal: 'rest' },
   { key: 'tue', label: '화', type: 'A', rk: 'A', kind: 'gym', plan: '헬스 A', kcal: 'gym' },
   { key: 'wed', label: '수', type: '코어/휴식', rk: null, kind: 'core', plan: '홈코어 또는 휴식', kcal: 'rest' },
-  { key: 'thu', label: '목', type: 'B', rk: 'B', kind: 'gym', plan: '헬스 B', kcal: 'gym' },
-  { key: 'fri', label: '금', type: '휴식', rk: null, kind: 'rest', plan: '휴식', kcal: 'rest' },
+  { key: 'thu', label: '목', type: '수영', rk: null, kind: 'swim', plan: '수영 (못 하면 헬스 B로 전환)', kcal: 'swim1', fallbackB: true, absorbsShift: true },
+  { key: 'fri', label: '금', type: 'B', rk: 'B', kind: 'gym', plan: '헬스 B', kcal: 'gym' },
   { key: 'sat', label: '토', type: '메인수영', rk: null, kind: 'swim', plan: '메인 수영', kcal: 'swim2' },
   { key: 'sun', label: '일', type: '기술수영/휴식', rk: null, kind: 'swim', plan: '기술 수영 또는 휴식', kcal: 'swim1' },
 ];
+/* 이번 주에 B를 이미 끝냈을 때의 금요일. 휴식이 기본, 홈코어는 제안 */
+const FRIDAY_AFTER_B = { key: 'fri', label: '금', type: '휴식/코어', rk: null, kind: 'rest', plan: '휴식 또는 홈코어 (이번 주 B 완료)', kcal: 'rest', suggestCore: true };
 const RECOVERY_DAY = { label: '화', type: '회복', rk: null, kind: 'rest', plan: '회복 (헬스 A는 다음 날로)', kcal: 'rest' };
 const CALORIE_TABLE = {
   gym: { label: '헬스일', kcal: '2,250~2,300', proteinG: '130~140g', fatG: '55~70g' },
@@ -524,8 +526,15 @@ function fmtDate(d) {
     day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
+/* 날짜 경계·주 시작(월요일)은 기기 시간대와 무관하게 Asia/Seoul 기준 */
+const SEOUL_DATE_FMT = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' });
+function seoulDateStr(d) {
+  const p = {};
+  SEOUL_DATE_FMT.formatToParts(d || new Date()).forEach((x) => { p[x.type] = x.value; });
+  return `${p.year}-${p.month}-${p.day}`;
+}
 function todayStr() {
-  return fmtDate(new Date());
+  return seoulDateStr(new Date());
 }
 
 /* ═══ 공통 유틸 ═══ */
@@ -557,7 +566,7 @@ function addDays(dateStr, n) {
   return fmtDate(d);
 }
 function weekIndex(date) {
-  return ([6, 0, 1, 2, 3, 4, 5])[(date || new Date()).getDay()];
+  return ([6, 0, 1, 2, 3, 4, 5])[(date || new Date(todayStr() + 'T00:00:00')).getDay()];
 }
 /* 이번 주(월~일) 날짜 목록. offsetWeeks로 과거 주 */
 function weekDates(offsetWeeks) {
@@ -592,17 +601,30 @@ function saveWeeklyRecoveryEntry(weekKey, patch) {
 function recoveryCheckDayKey() {
   return WEEK_PLAN.find((d) => d.rk === 'A')?.key || 'tue';
 }
+/* 이번 주(월~일, Seoul) 어제까지 B 완료 기록이 있는지. 오늘 끝낸 B는 오늘 화면을 바꾸지 않도록 제외 */
+function bDoneEarlierThisWeek() {
+  const today = todayStr();
+  const label = ROUTINES.B.label;
+  const history = getHistory();
+  return weekDates(0).some((d) => d < today && (!!gls(`workout:B:${d}`) || history.some((h) => h.date === d && h.routine === label)));
+}
 function getEffectiveWeeklySchedule() {
   const base = {};
   WEEK_PLAN.forEach((d) => { base[d.key] = d; });
   const entry = weeklyRecoveryEntry();
-  if (!entry || !entry.shifted) return { schedule: base, droppedDay: null, shifted: false };
-  const fromKey = entry.fromKey;
-  const recovery = { ...RECOVERY_DAY, label: base[fromKey].label };
-  const { schedule: raw, droppedDay } = Progression.shiftScheduleForRecovery(base, fromKey, recovery);
-  const schedule = {};
-  Progression.WEEK_ORDER.forEach((k) => { schedule[k] = { ...raw[k], key: k, label: base[k].label }; });
-  return { schedule, droppedDay, shifted: true };
+  let result = { schedule: base, droppedDay: null, shifted: false };
+  if (entry && entry.shifted) {
+    const fromKey = entry.fromKey;
+    const recovery = { ...RECOVERY_DAY, label: base[fromKey].label };
+    const { schedule: raw, droppedDay } = Progression.shiftScheduleForRecovery(base, fromKey, recovery);
+    const schedule = {};
+    Progression.WEEK_ORDER.forEach((k) => { schedule[k] = { ...raw[k], key: k, label: base[k].label }; });
+    result = { schedule, droppedDay, shifted: true };
+  }
+  if (result.schedule.fri.rk === 'B' && bDoneEarlierThisWeek()) {
+    result.schedule = { ...result.schedule, fri: { ...FRIDAY_AFTER_B } };
+  }
+  return result;
 }
 function todayPlan() {
   return getEffectiveWeeklySchedule().schedule[Progression.WEEK_ORDER[weekIndex()]];
@@ -798,7 +820,7 @@ const REC_ICONS = { INCREASE: '📈', REDUCE: '📉', MAINTAIN: '⚖️', PLATEA
 
 /* ═══ 헤더 · 주간 스트립 ═══ */
 function buildHeader() {
-  const now = new Date();
+  const now = new Date(todayStr() + 'T00:00:00');
   const days = ['일', '월', '화', '수', '목', '금', '토'];
   document.getElementById('todayLabel').textContent = `${now.getMonth() + 1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
   renderRoutineSeg();
@@ -882,7 +904,7 @@ function renderDayCard() {
 <label class="chk-row"><input type="checkbox" id="mrcLat"> 광배·후면삼각근·회전근개 피로</label>
 <label class="chk-row"><input type="checkbox" id="mrcFatigue"> 전신 피로도 높음</label>
 <label class="chk-row"><input type="checkbox" id="mrcRom"> 어깨 가동범위 제한</label>
-<div class="day-hint">하나라도 해당하면 오늘은 회복, 헬스 A는 수요일·B는 금요일로 하루씩 밀려요.</div>
+<div class="day-hint">하나라도 해당하면 오늘은 회복, 헬스 A는 수요일로 하루 밀리고 목요일 수영은 이번 주 생략돼요.</div>
 <button type="button" class="btn-primary" onclick="submitRecoveryCheck()">확인 완료</button></div>`;
     return;
   }
@@ -896,7 +918,7 @@ function renderDayCard() {
 }
 function restCardHtml(plan) {
   return `<div class="day-title">${plan.type === '회복' ? '오늘은 회복일' : '오늘은 쉬는 날'}</div>
-<div class="day-hint">가벼운 걷기·스트레칭 정도면 충분해요. 단백질 ${PROTEIN_TARGET_TEXT}, 수면 7시간+.</div>
+<div class="day-hint">${plan.suggestCore ? '이번 주 헬스 B는 이미 끝냈어요. 쉬거나 홈코어 10분(위 탭)을 추천해요. ' : ''}가벼운 걷기·스트레칭 정도면 충분해요. 단백질 ${PROTEIN_TARGET_TEXT}, 수면 7시간+.</div>
 <div class="day-actions"><button type="button" class="btn-ghost" onclick="setDayMode('A')">그래도 헬스 A</button><button type="button" class="btn-ghost" onclick="setDayMode('B')">그래도 헬스 B</button></div>`;
 }
 function swimCardHtml(plan) {
@@ -915,7 +937,8 @@ function swimCardHtml(plan) {
   <label>SWOLF 평균<input type="number" inputmode="decimal" value="${val(log.avgSwolf)}" onchange="saveSwimLogField('avgSwolf', this.value)"></label>
   <label>스트로크 수<input type="number" inputmode="numeric" value="${val(log.strokeCount)}" onchange="saveSwimLogField('strokeCount', this.value)"></label>
 </div></details>
-<div class="day-hint">토요일 메인 수영 전날(금)은 휴식, B 루틴은 실패세트 없이 끝내는 게 이 일정의 전제예요.</div>`;
+${plan.fallbackB && !done ? '<button type="button" class="btn-ghost" onclick="switchToBToday()">오늘 수영 못 함 → 헬스 B로 전환</button>' : ''}
+<div class="day-hint">토요일 메인 수영 전날(금)의 B 루틴은 실패세트 없이 끝내는 게 이 일정의 전제예요.</div>`;
 }
 function coreCardHtml() {
   const log = getCoreLog(todayStr());
@@ -925,6 +948,10 @@ function coreCardHtml() {
 <div class="core-list">${CORE_ROUTINE.map((x) => `<button type="button" class="core-item${checks[x.id] ? ' on' : ''}" onclick="toggleCoreItem('${x.id}')" aria-pressed="${!!checks[x.id]}"><span class="core-box">${checks[x.id] ? '✓' : ''}</span><span class="core-text"><b>${escapeHtml(x.name)}</b> <em>${x.dose}</em><small>${escapeHtml(x.cue)}</small></span></button>`).join('')}</div>
 <button type="button" class="btn-primary" onclick="finishCore()"${doneCount ? '' : ' disabled'}>${log.done ? '✓ 홈코어 완료됨' : '홈코어 완료'}</button>
 <div class="day-hint">진료 목표(갈비뼈-골반 중립·코어 안정성)용 기본 루틴이에요. 담당 선생님 처방이 따로 있으면 그걸 우선.</div>`;
+}
+function switchToBToday() {
+  showToast('🏋️ 오늘은 헬스 B로 전환');
+  setDayMode('B');
 }
 function toggleSwimDone() {
   const today = todayStr();
@@ -966,7 +993,7 @@ function submitRecoveryCheck() {
   };
   const shifted = Object.values(flags).some(Boolean);
   saveWeeklyRecoveryEntry(Progression.isoWeekKey(todayStr()), { flags, shifted, fromKey: recoveryCheckDayKey(), answeredAt: new Date().toISOString(), version: 2 });
-  showToast(shifted ? '🔁 오늘은 회복 · A는 수요일, B는 금요일로 이동' : '✅ 컨디션 좋음 — 원래 일정대로');
+  showToast(shifted ? '🔁 오늘은 회복 · A는 수요일로 이동' : '✅ 컨디션 좋음 — 원래 일정대로');
   buildWeekStrip();
   setDayMode(shifted ? 'X' : 'A', shifted ? 'rest' : undefined);
 }
