@@ -42,7 +42,7 @@ assert.match(source, /\{ key: 'tue', label: '화', type: 'A', rk: 'A', kind: 'gy
 assert.match(source, /\{ key: 'thu', label: '목', type: '수영', rk: null, kind: 'swim'/);
 assert.match(source, /\{ key: 'fri', label: '금', type: 'B', rk: 'B', kind: 'gym'/);
 assert.match(source, /\{ key: 'sat', label: '토', type: '메인수영', rk: null, kind: 'swim'/);
-assert.match(source, /\{ key: 'sun', label: '일', type: '기술수영\/휴식', rk: null, kind: 'swim'/);
+assert.match(source, /\{ key: 'sun', label: '일', type: '기술수영', rk: null, kind: 'swim'/);
 [A, B].forEach((routine) => routine.exercises.forEach((ex) => {
   assert.ok(ex.increment > 0 && ex.restSecs > 0, `${ex.id} needs increment and restSecs`);
 }));

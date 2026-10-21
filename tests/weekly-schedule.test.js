@@ -11,6 +11,7 @@ function boot(nowKst, store) {
     apply: () => el,
     set: () => true,
   });
+  const captured = {};
   const ls = { ...store };
   const localStorage = {
     get length() { return Object.keys(ls).length; },
@@ -22,7 +23,7 @@ function boot(nowKst, store) {
   const fixed = Date.parse(nowKst + ':00+09:00');
   const ctx = vm.createContext({
     console, localStorage, setTimeout, clearTimeout,
-    document: { getElementById: () => el, querySelectorAll: () => [], querySelector: () => el, documentElement: el, body: el, addEventListener() {} },
+    document: { getElementById: (id) => (['weekStrip', 'dayCard', 'weeklyScheduleBox'].includes(id) ? (captured[id] ||= { innerHTML: '' }) : el), querySelectorAll: () => [], querySelector: () => el, documentElement: el, body: el, addEventListener() {} },
     window: { addEventListener() {} },
     navigator: {}, location: { protocol: 'http:' },
   });
@@ -34,6 +35,7 @@ function boot(nowKst, store) {
   });
   vm.runInContext(fs.readFileSync('js/app.js', 'utf8'), ctx);
   const run = (code) => vm.runInContext(code, ctx);
+  run.captured = captured;
   Object.entries(store || {}).forEach(([k, v]) => run(`_cache[${JSON.stringify(k.replace(/^routine:/, ''))}] = ${v}`));
   return run;
 }
@@ -113,5 +115,37 @@ test('recovery shift keeps the old outcome: A→Wed, core→Thu, B stays Fri, no
   const r = JSON.parse(run('JSON.stringify((() => { const e = getEffectiveWeeklySchedule(); return { d: e.droppedDay, s: Progression.WEEK_ORDER.map((k) => e.schedule[k].plan) }; })())'));
   assert.equal(r.d, null);
   assert.deepEqual(r.s, ['홈코어 또는 휴식', '회복 (헬스 A는 다음 날로)', '헬스 A', '홈코어 또는 휴식', '헬스 B', '메인 수영', '기술 수영 또는 휴식']);
+});
+const pills = (run) => run.captured.weekStrip.innerHTML.split('<div class="day-pill').slice(1);
+test('Thursday strip shows swim by default and flips to clickable B after the conversion', () => {
+  const run = boot('2026-10-22T10:00', {});
+  run('buildWeekStrip()');
+  assert.match(pills(run)[3], /수영/);
+  assert.doesNotMatch(pills(run)[3], /clickable/);
+  run('switchToBToday()');
+  assert.match(pills(run)[3], /dp-type">B</);
+  assert.match(pills(run)[3], /clickable/);
+});
+test('Thursday strip shows B on a later day when the B session was completed that Thursday', () => {
+  const run = boot('2026-10-23T10:00', done('B', '2026-10-22'));
+  run('buildWeekStrip()');
+  assert.match(pills(run)[3], /dp-type">B</);
+  assert.match(pills(run)[4], /dp-type">휴식\/코어</);
+});
+test('Thursday swim card: full-width B conversion button is right under the swim-done button, hidden once swim is done', () => {
+  const run = boot('2026-10-22T10:00', {});
+  const html = run('swimCardHtml(todayPlan())');
+  assert.ok(html.indexOf('swim-done') < html.indexOf('switchToBToday()') && html.indexOf('switchToBToday()') < html.indexOf('dl-grid'));
+  assert.match(html, /btn-block/);
+  const doneRun = boot('2026-10-22T10:00', { 'routine:swimLogs': JSON.stringify({ '2026-10-22': { done: true } }) });
+  assert.doesNotMatch(doneRun('swimCardHtml(todayPlan())'), /switchToBToday/);
+  const sat = boot('2026-10-24T10:00', {});
+  assert.doesNotMatch(sat('swimCardHtml(todayPlan())'), /switchToBToday/);
+});
+test('plan labels stay short so the header title is not truncated; fallback hint lives in the schedule row', () => {
+  const run = boot('2026-10-22T10:00', {});
+  assert.equal(plan(run).plan, '수영');
+  run('renderWeeklySchedule()');
+  assert.match(run.captured.weeklyScheduleBox.innerHTML, /못 하면 헬스 B로 전환/);
 });
 console.log(`${n} weekly schedule tests passed`);

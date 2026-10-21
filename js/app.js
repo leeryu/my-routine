@@ -74,10 +74,10 @@ const WEEK_PLAN = [
   { key: 'mon', label: '월', type: '휴식/코어', rk: null, kind: 'core', plan: '홈코어 또는 휴식', kcal: 'rest' },
   { key: 'tue', label: '화', type: 'A', rk: 'A', kind: 'gym', plan: '헬스 A', kcal: 'gym' },
   { key: 'wed', label: '수', type: '코어/휴식', rk: null, kind: 'core', plan: '홈코어 또는 휴식', kcal: 'rest' },
-  { key: 'thu', label: '목', type: '수영', rk: null, kind: 'swim', plan: '수영 (못 하면 헬스 B로 전환)', kcal: 'swim1', fallbackB: true, absorbsShift: true },
+  { key: 'thu', label: '목', type: '수영', rk: null, kind: 'swim', plan: '수영', kcal: 'swim1', fallbackB: true, absorbsShift: true },
   { key: 'fri', label: '금', type: 'B', rk: 'B', kind: 'gym', plan: '헬스 B', kcal: 'gym' },
   { key: 'sat', label: '토', type: '메인수영', rk: null, kind: 'swim', plan: '메인 수영', kcal: 'swim2' },
-  { key: 'sun', label: '일', type: '기술수영/휴식', rk: null, kind: 'swim', plan: '기술 수영 또는 휴식', kcal: 'swim1' },
+  { key: 'sun', label: '일', type: '기술수영', rk: null, kind: 'swim', plan: '기술 수영 또는 휴식', kcal: 'swim1' },
 ];
 /* 이번 주에 B를 이미 끝냈을 때의 금요일. 휴식이 기본, 홈코어는 제안 */
 const FRIDAY_AFTER_B = { key: 'fri', label: '금', type: '휴식/코어', rk: null, kind: 'rest', plan: '휴식 또는 홈코어 (이번 주 B 완료)', kcal: 'rest', suggestCore: true };
@@ -849,8 +849,10 @@ function buildWeekStrip() {
   const dates = weekDates(0);
   const index = activityIndex();
   strip.innerHTML = Progression.WEEK_ORDER.map((k, i) => {
-    const d = schedule[k];
     const date = dates[i];
+    /* 수영 대신 B로 전환했거나 B를 끝낸 날은 스트립에도 B로 표시 */
+    const asB = schedule[k].fallbackB && (gls(`workout:B:${date}`) || (i === todayIdx && dayMode === 'B'));
+    const d = asB ? { ...schedule[k], type: 'B', rk: 'B' } : schedule[k];
     const done = index.gym.has(date) || index.swim.has(date) || index.core.has(date);
     const cls = ['day-pill', i === todayIdx ? 'today' : '', done ? 'done' : '', d.rk ? 'clickable' : ''].filter(Boolean).join(' ');
     const click = d.rk ? ` onclick="switchTabById('gym');setDayMode('${d.rk}')" role="button" tabindex="0"` : '';
@@ -878,6 +880,7 @@ function setDayMode(mode, sub, persist = true) {
   currentRoutine = ['A', 'B', 'C'].includes(mode) ? mode : null;
   if (persist) sls('dayMode', { date: todayStr(), mode, sub: daySubMode });
   renderRoutineSeg();
+  buildWeekStrip();
   renderGymTab();
 }
 
@@ -928,6 +931,7 @@ function swimCardHtml(plan) {
   const val = (v) => (v ?? '');
   return `<div class="day-title">${escapeHtml(title)}</div>
 <button type="button" class="swim-done${done ? ' on' : ''}" onclick="toggleSwimDone()" aria-pressed="${done}">${done ? '✓ 수영 완료' : '수영 완료 체크'}</button>
+${plan.fallbackB && !done ? '<button type="button" class="btn-ghost btn-block" onclick="switchToBToday()">오늘 수영 못 함 → 헬스 B로 전환</button>' : ''}
 <div class="dl-grid">
   <label>거리(m)<input type="number" inputmode="numeric" value="${val(log.distanceM)}" onchange="saveSwimLogField('distanceM', this.value)"></label>
   <label>시간(분)<input type="number" inputmode="numeric" value="${val(log.minutes)}" onchange="saveSwimLogField('minutes', this.value)"></label>
@@ -937,7 +941,6 @@ function swimCardHtml(plan) {
   <label>SWOLF 평균<input type="number" inputmode="decimal" value="${val(log.avgSwolf)}" onchange="saveSwimLogField('avgSwolf', this.value)"></label>
   <label>스트로크 수<input type="number" inputmode="numeric" value="${val(log.strokeCount)}" onchange="saveSwimLogField('strokeCount', this.value)"></label>
 </div></details>
-${plan.fallbackB && !done ? '<button type="button" class="btn-ghost" onclick="switchToBToday()">오늘 수영 못 함 → 헬스 B로 전환</button>' : ''}
 <div class="day-hint">토요일 메인 수영 전날(금)의 B 루틴은 실패세트 없이 끝내는 게 이 일정의 전제예요.</div>`;
 }
 function coreCardHtml() {
@@ -2458,7 +2461,7 @@ function renderWeeklySchedule() {
     : '';
   el.innerHTML = note + Progression.WEEK_ORDER.map((k, i) => {
     const day = schedule[k];
-    return `<div class="ws-row${i === todayIdx ? ' today' : ''}"><span class="ws-day">${day.label}</span><span class="ws-label">${escapeHtml(day.plan)}</span></div>`;
+    return `<div class="ws-row${i === todayIdx ? ' today' : ''}"><span class="ws-day">${day.label}</span><span class="ws-label">${escapeHtml(day.plan)}${day.fallbackB ? '<small class="ws-sub">못 하면 헬스 B로 전환</small>' : ''}</span></div>`;
   }).join('');
 }
 let selectedWorkoutType = null;
