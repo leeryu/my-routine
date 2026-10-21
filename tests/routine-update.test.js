@@ -12,7 +12,7 @@ vm.runInNewContext(routineSource, context);
 const { A, B, C } = context.ROUTINES;
 
 assert.equal(A.day, '화요일');
-assert.equal(B.day, '목요일');
+assert.equal(B.day, '금요일');
 assert.equal(C.day, '선택 루틴');
 assert.deepEqual(Array.from(A.exercises.slice(0, 7), (ex) => [ex.id, ex.sets, ex.reps]), [
   ['chest-press', 4, '6~10'],
@@ -39,10 +39,11 @@ const totals = {};
 }));
 assert.deepEqual(totals, { '가슴': 7, '등/광배': 11, '측면삼각근': 7, '후면삼각근': 5, '이두': 4, '삼두': 2 });
 assert.match(source, /\{ key: 'tue', label: '화', type: 'A', rk: 'A', kind: 'gym'/);
-assert.match(source, /\{ key: 'thu', label: '목', type: 'B', rk: 'B', kind: 'gym'/);
+assert.match(source, /\{ key: 'thu', label: '목', type: '수영', rk: null, kind: 'swim'/);
+assert.match(source, /\{ key: 'fri', label: '금', type: 'B', rk: 'B', kind: 'gym'/);
 assert.match(source, /\{ key: 'sat', label: '토', type: '메인수영', rk: null, kind: 'swim'/);
 assert.match(source, /\{ key: 'sun', label: '일', type: '기술수영\/휴식', rk: null, kind: 'swim'/);
 [A, B].forEach((routine) => routine.exercises.forEach((ex) => {
   assert.ok(ex.increment > 0 && ex.restSecs > 0, `${ex.id} needs increment and restSecs`);
 }));
-console.log('ok - Tuesday/Thursday routines and weekly direct sets match the requested plan');
+console.log('ok - Tuesday/Friday routines and weekly direct sets match the requested plan');

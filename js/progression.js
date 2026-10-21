@@ -165,7 +165,7 @@
       .sort((a, b) => b.date.localeCompare(a.date));
   }
 
-  /* ── 주간 스케줄: 회복 체크에 걸린 날부터 하루씩 밀고, 첫 휴식일(kind 'rest')이 밀린 하루를 흡수한다.
+  /* ── 주간 스케줄: 회복 체크에 걸린 날부터 하루씩 밀고, 첫 휴식일(kind 'rest' 또는 absorbsShift)이 밀린 하루를 흡수한다.
      휴식일이 없으면 마지막으로 밀려난 일정이 droppedDay가 된다. ── */
   const WEEK_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   function shiftScheduleForRecovery(baseSchedule, fromKey, recoveryDay) {
@@ -179,7 +179,7 @@
       const key = WEEK_ORDER[i];
       const current = baseSchedule[key];
       shifted[key] = carry;
-      carry = current && current.kind === 'rest' ? null : current;
+      carry = current && (current.kind === 'rest' || current.absorbsShift) ? null : current;
     }
     return { schedule: shifted, droppedDay: carry || null };
   }
